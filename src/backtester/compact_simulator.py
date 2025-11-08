@@ -143,6 +143,21 @@ class CompactBacktester:
         except cl.RuntimeError as e:
             log_error(f"Backtest kernel compilation failed: {e}")
             raise
+        
+        # Kernel 3: GPU-accelerated result aggregation
+        aggregate_path = kernel_dir / "aggregate_results.cl"
+        if not aggregate_path.exists():
+            raise FileNotFoundError(f"Kernel not found: {aggregate_path}")
+        
+        aggregate_src = aggregate_path.read_text()
+        
+        try:
+            self.aggregate_program = cl.Program(self.ctx, aggregate_src).build()
+            self._aggregate_kernel = cl.Kernel(self.aggregate_program, "aggregate_bot_results")
+            log_info("[OK] Compiled aggregate_results.cl (GPU result aggregation)")
+        except cl.RuntimeError as e:
+            log_error(f"Aggregation kernel compilation failed: {e}")
+            raise
     
     def backtest_bots(
         self,
@@ -151,47 +166,75 @@ class CompactBacktester:
         cycles: List[Tuple[int, int]]
     ) -> List[BacktestResult]:
         """
-        Backtest bots using data chunking approach for large datasets.
+        Backtest bots using batched approach for GPU memory management.
         
-        NEW APPROACH: Data chunking instead of bot batching
-        - Keep all bots in memory (small footprint)
-        - Slice data into manageable chunks (10-30 days each)
-        - Process all bots against each data chunk in parallel
-        - Aggregate results across all chunks
-        
-        Args:
-            bots: List of compact bot configs
-            ohlcv_data: OHLCV array [N x 5] (open, high, low, close, volume)
-            cycles: List of (start_idx, end_idx) tuples
-        
-        Returns:
-            List of backtest results with detailed metrics
+        Process bots in batches to avoid GPU memory exhaustion while maintaining
+        single-pass data processing for accurate cycle handling.
         """
         num_bots = len(bots)
         num_bars = len(ohlcv_data)
         num_cycles = len(cycles)
         
-        # Memory tracking
-        self.memory_usage.clear()
+        log_info(f"Backtesting {num_bots} bots against {num_bars} bars with {num_cycles} cycles")
         
-        # === DATA CHUNKING STRATEGY ===
-        # Calculate optimal chunk size based on GPU memory
-        chunk_days = self._calculate_optimal_data_chunk_size(ohlcv_data, cycles)
-        bars_per_day = 1440  # Assuming 1m timeframe
-        chunk_size_bars = chunk_days * bars_per_day
+        # === BOT BATCHING FOR GPU MEMORY MANAGEMENT ===
+        # Calculate optimal batch size based on GPU memory
+        batch_size = self._calculate_optimal_bot_batch_size(num_bots)
+        log_info(f"Using bot batching: {batch_size} bots per batch")
         
-        log_info(f"Data chunking strategy: {chunk_days} days per chunk ({chunk_size_bars:,} bars)")
-        log_info(f"Total data: {num_bars:,} bars across {len(cycles)} cycles")
+        all_results = []
         
-        # Create data chunks
-        data_chunks = self._create_data_chunks(ohlcv_data, cycles, chunk_size_bars)
-        log_info(f"Created {len(data_chunks)} data chunks for processing")
+        # Precompute indicators once for the entire dataset
+        indicators_buffer = self._precompute_indicators(ohlcv_data)
         
-        # Process all bots against all data chunks
-        all_results = self._backtest_bots_against_data_chunks(bots, data_chunks)
+        # Process bots in batches
+        for batch_start in range(0, num_bots, batch_size):
+            batch_end = min(batch_start + batch_size, num_bots)
+            bot_batch = bots[batch_start:batch_end]
+            
+            log_debug(f"Processing bot batch {batch_start//batch_size + 1}: bots {batch_start}-{batch_end-1}")
+            
+            # Run backtest kernel for this batch
+            batch_results = self._run_backtest_kernel_direct(bot_batch, ohlcv_data, indicators_buffer, cycles)
+            
+            # Adjust bot IDs back to original indices
+            for i, result in enumerate(batch_results):
+                result.bot_id = bots[batch_start + i].bot_id
+            
+            all_results.extend(batch_results)
         
-        log_info(f"Completed data-chunked backtesting: {len(all_results)} bots processed across {len(data_chunks)} chunks")
+        # Cleanup
+        indicators_buffer.release()
+        
+        log_info(f"Completed batched backtesting: {len(all_results)} results generated")
         return all_results
+
+    def _calculate_optimal_bot_batch_size(self, total_bots: int) -> int:
+        """
+        Calculate optimal bot batch size based on GPU memory constraints.
+        
+        Strategy: Keep GPU memory usage under safe limits while maximizing throughput.
+        """
+        # Conservative estimate: each bot needs ~256 bytes for processing
+        # GPU memory available for bot processing: ~2GB
+        memory_per_bot_bytes = 256
+        available_memory_bytes = 2 * 1024 * 1024 * 1024  # 2GB
+        
+        max_bots_by_memory = available_memory_bytes // memory_per_bot_bytes
+        
+        # Also consider work group limitations
+        max_bots_by_workgroup = 512  # Intel UHD work group size
+        
+        # Use the smaller constraint
+        optimal_batch_size = min(max_bots_by_memory, max_bots_by_workgroup)
+        
+        # Ensure reasonable bounds
+        optimal_batch_size = max(100, min(optimal_batch_size, total_bots))
+        
+        log_debug(f"Bot batch sizing: Memory allows {max_bots_by_memory} bots, workgroups allow {max_bots_by_workgroup} bots")
+        log_debug(f"Selected batch size: {optimal_batch_size} bots")
+        
+        return optimal_batch_size
     
     def _calculate_optimal_data_chunk_size(
         self,
@@ -609,80 +652,245 @@ class CompactBacktester:
         num_bots: int
     ) -> List[BacktestResult]:
         """
-        Aggregate backtest results from all data chunks.
-        
-        For each bot, combine results across all chunks.
+        GPU-accelerated aggregation of backtest results from all data chunks.
+
+        NEW APPROACH: Use GPU to aggregate core metrics, CPU for complex operations.
         """
-        # Group results by bot_id
-        bot_results = {}
-        
+        if not all_chunk_results:
+            return []
+
+        num_chunks = len(all_chunk_results) // num_bots
+        log_info(f"GPU aggregating results for {num_bots} bots across {num_chunks} chunks")
+
+        # === PHASE 1: GPU AGGREGATION OF CORE METRICS ===
+        start_time = time.time()
+
+        # Serialize all chunk results for GPU processing
+        gpu_results = self._serialize_chunk_results_for_gpu(all_chunk_results, num_bots, num_chunks)
+
+        # Run GPU aggregation kernel
+        aggregated_gpu_data = self._run_gpu_aggregation(gpu_results, num_bots, num_chunks)
+
+        gpu_time = time.time() - start_time
+        log_debug(f"GPU aggregation completed in {gpu_time:.4f}s")
+
+        # === PHASE 2: CPU PROCESSING FOR COMPLEX OPERATIONS ===
+        # Group per-cycle arrays by bot_id (CPU operation)
+        bot_cycle_data = self._group_per_cycle_data(all_chunk_results, num_bots)
+
+        # Combine GPU results with CPU cycle data and calculate derived metrics
+        final_results = self._combine_gpu_cpu_results(aggregated_gpu_data, bot_cycle_data, num_bots)
+
+        return final_results
+
+    def _serialize_chunk_results_for_gpu(
+        self,
+        all_chunk_results: List[BacktestResult],
+        num_bots: int,
+        num_chunks: int
+    ) -> np.ndarray:
+        """
+        Serialize chunk results into format expected by GPU aggregation kernel.
+
+        Layout: [chunk][bot][result_fields]
+        """
+        # Result structure size in floats (GPU kernel expects float32)
+        RESULT_SIZE_BYTES = 64 + (100 * 12)  # Base fields + max cycles
+        RESULT_SIZE_FLOATS = RESULT_SIZE_BYTES // 4  # Convert to float32 count
+        total_floats = num_chunks * num_bots * RESULT_SIZE_FLOATS
+
+        # Create flat array for GPU (all float32)
+        gpu_data = np.zeros(total_floats, dtype=np.float32)
+
+        for i, result in enumerate(all_chunk_results):
+            chunk_idx = i // num_bots
+            bot_idx = i % num_bots
+            offset = chunk_idx * num_bots * RESULT_SIZE_FLOATS + bot_idx * RESULT_SIZE_FLOATS
+
+            # Pack core metrics that GPU will aggregate (float32 indices)
+            gpu_data[offset + 1] = float(result.total_trades)        # TOTAL_TRADES_OFFSET // 4
+            gpu_data[offset + 2] = float(result.winning_trades)      # WINNING_TRADES_OFFSET // 4
+            gpu_data[offset + 3] = float(result.losing_trades)       # LOSING_TRADES_OFFSET // 4
+            gpu_data[offset + 4] = result.total_pnl                  # TOTAL_PNL_OFFSET // 4
+            gpu_data[offset + 5] = result.max_drawdown               # MAX_DRAWDOWN_OFFSET // 4
+
+        return gpu_data
+
+    def _run_gpu_aggregation(
+        self,
+        gpu_results: np.ndarray,
+        num_bots: int,
+        num_chunks: int
+    ) -> np.ndarray:
+        """
+        Run GPU kernel to aggregate results across chunks.
+        """
+        # Input buffer: all chunk results
+        input_buf = cl.Buffer(
+            self.ctx,
+            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+            hostbuf=gpu_results
+        )
+
+        # Output buffer: aggregated results per bot (5 floats: trades, wins, losses, pnl, max_dd)
+        output_size = num_bots * 5
+        output_buf = cl.Buffer(
+            self.ctx,
+            cl.mem_flags.WRITE_ONLY,
+            size=output_size * 4  # float32 = 4 bytes
+        )
+
+        # Execute aggregation kernel
+        kernel = self._aggregate_kernel
+        global_size = (num_bots,)
+        local_size = None
+
+        try:
+            kernel(
+                self.queue,
+                global_size,
+                local_size,
+                input_buf,              # All chunk results
+                output_buf,             # Aggregated output
+                np.int32(num_chunks),   # Number of chunks
+                np.int32(num_bots)      # Number of bots
+            )
+
+            self.queue.finish()
+
+        except cl.RuntimeError as e:
+            log_error(f"GPU aggregation kernel failed: {e}")
+            input_buf.release()
+            output_buf.release()
+            raise
+
+        # Read results
+        aggregated_data = np.empty(output_size, dtype=np.float32)
+        cl.enqueue_copy(self.queue, aggregated_data, output_buf)
+
+        # Cleanup
+        input_buf.release()
+        output_buf.release()
+
+        return aggregated_data
+
+    def _group_per_cycle_data(
+        self,
+        all_chunk_results: List[BacktestResult],
+        num_bots: int
+    ) -> Dict[int, Dict]:
+        """
+        Group and aggregate per-cycle arrays by bot_id across all chunks.
+        """
+        bot_cycle_data = {}
+
         for result in all_chunk_results:
             bot_id = result.bot_id
-            
-            if bot_id not in bot_results:
-                # Initialize aggregated result
-                bot_results[bot_id] = BacktestResult(
-                    bot_id=bot_id,
-                    total_trades=0,
-                    winning_trades=0,
-                    losing_trades=0,
-                    per_cycle_trades=[],
-                    per_cycle_wins=[],
-                    per_cycle_pnl=[],
-                    total_pnl=0.0,
-                    max_drawdown=0.0,
-                    sharpe_ratio=0.0,
-                    win_rate=0.0,
-                    avg_win=0.0,
-                    avg_loss=0.0,
-                    profit_factor=0.0,
-                    max_consecutive_wins=0,
-                    max_consecutive_losses=0
-                )
-            
-            # Aggregate metrics
-            aggregated = bot_results[bot_id]
-            aggregated.total_trades += result.total_trades
-            aggregated.winning_trades += result.winning_trades
-            aggregated.losing_trades += result.losing_trades
-            aggregated.total_pnl += result.total_pnl
-            
-            # Track worst drawdown across chunks
-            aggregated.max_drawdown = max(aggregated.max_drawdown, result.max_drawdown)
-            
-            # Extend per-cycle arrays
-            aggregated.per_cycle_trades.extend(result.per_cycle_trades)
-            aggregated.per_cycle_wins.extend(result.per_cycle_wins)
-            aggregated.per_cycle_pnl.extend(result.per_cycle_pnl)
-        
-        # Calculate derived metrics for each bot
+
+            if bot_id not in bot_cycle_data:
+                bot_cycle_data[bot_id] = {
+                    'per_cycle_trades': [],
+                    'per_cycle_wins': [],
+                    'per_cycle_pnl': []
+                }
+
+            # For each cycle, add the chunk's contribution
+            for i in range(len(result.per_cycle_trades)):
+                # Extend arrays to accommodate this cycle if needed
+                while len(bot_cycle_data[bot_id]['per_cycle_trades']) <= i:
+                    bot_cycle_data[bot_id]['per_cycle_trades'].append(0)
+                    bot_cycle_data[bot_id]['per_cycle_wins'].append(0)
+                    bot_cycle_data[bot_id]['per_cycle_pnl'].append(0.0)
+
+                # Aggregate this chunk's contribution to this cycle
+                bot_cycle_data[bot_id]['per_cycle_trades'][i] += result.per_cycle_trades[i]
+                bot_cycle_data[bot_id]['per_cycle_wins'][i] += result.per_cycle_wins[i]
+                bot_cycle_data[bot_id]['per_cycle_pnl'][i] += result.per_cycle_pnl[i]
+
+        return bot_cycle_data
+
+    def _combine_gpu_cpu_results(
+        self,
+        aggregated_gpu_data: np.ndarray,
+        bot_cycle_data: Dict[int, Dict],
+        num_bots: int
+    ) -> List[BacktestResult]:
+        """
+        Combine GPU-aggregated metrics with CPU cycle data and calculate derived metrics.
+        """
         final_results = []
-        for bot_result in bot_results.values():
-            # Calculate win rate
-            if bot_result.total_trades > 0:
-                bot_result.win_rate = bot_result.winning_trades / bot_result.total_trades
-            
-            # Calculate average win/loss
-            if bot_result.winning_trades > 0:
-                bot_result.avg_win = bot_result.total_pnl / bot_result.winning_trades
-            if bot_result.losing_trades > 0:
-                bot_result.avg_loss = abs(bot_result.total_pnl) / bot_result.losing_trades
-            
-            # Calculate profit factor
-            total_wins = bot_result.winning_trades * bot_result.avg_win if bot_result.winning_trades > 0 else 0
-            total_losses = bot_result.losing_trades * bot_result.avg_loss if bot_result.losing_trades > 0 else 0
-            if total_losses > 0:
-                bot_result.profit_factor = total_wins / total_losses
-            
-            # Calculate Sharpe ratio (simplified)
-            if len(bot_result.per_cycle_pnl) > 1:
-                pnl_std = np.std(bot_result.per_cycle_pnl)
-                if pnl_std > 0:
-                    bot_result.sharpe_ratio = np.mean(bot_result.per_cycle_pnl) / pnl_std
-            
+
+        for bot_id in range(num_bots):
+            # Extract GPU-aggregated data
+            offset = bot_id * 5
+            total_trades = int(aggregated_gpu_data[offset])
+            winning_trades = int(aggregated_gpu_data[offset + 1])
+            losing_trades = int(aggregated_gpu_data[offset + 2])
+            total_pnl = aggregated_gpu_data[offset + 3]
+            max_drawdown = aggregated_gpu_data[offset + 4]
+
+            # Get CPU cycle data
+            cycle_data = bot_cycle_data.get(bot_id, {
+                'per_cycle_trades': [],
+                'per_cycle_wins': [],
+                'per_cycle_pnl': []
+            })
+
+            # Calculate final balance
+            final_balance = self.initial_balance + total_pnl
+
+            # Create result object
+            bot_result = BacktestResult(
+                bot_id=bot_id,
+                total_trades=total_trades,
+                winning_trades=winning_trades,
+                losing_trades=losing_trades,
+                per_cycle_trades=cycle_data['per_cycle_trades'],
+                per_cycle_wins=cycle_data['per_cycle_wins'],
+                per_cycle_pnl=cycle_data['per_cycle_pnl'],
+                total_pnl=total_pnl,
+                max_drawdown=max_drawdown,
+                sharpe_ratio=0.0,
+                win_rate=0.0,
+                avg_win=0.0,
+                avg_loss=0.0,
+                profit_factor=0.0,
+                max_consecutive_wins=0,
+                max_consecutive_losses=0,
+                final_balance=final_balance
+            )
+
+            # Calculate derived metrics
+            self._calculate_derived_metrics(bot_result)
             final_results.append(bot_result)
-        
+
         return final_results
+
+    def _calculate_derived_metrics(self, bot_result: BacktestResult):
+        """
+        Calculate win rate, profit factor, Sharpe ratio, etc.
+        """
+        # Calculate win rate
+        if bot_result.total_trades > 0:
+            bot_result.win_rate = bot_result.winning_trades / bot_result.total_trades
+
+        # Calculate average win/loss
+        if bot_result.winning_trades > 0:
+            bot_result.avg_win = bot_result.total_pnl / bot_result.winning_trades
+        if bot_result.losing_trades > 0:
+            bot_result.avg_loss = abs(bot_result.total_pnl) / bot_result.losing_trades
+
+        # Calculate profit factor
+        total_wins = bot_result.winning_trades * bot_result.avg_win if bot_result.winning_trades > 0 else 0
+        total_losses = bot_result.losing_trades * bot_result.avg_loss if bot_result.losing_trades > 0 else 0
+        if total_losses > 0:
+            bot_result.profit_factor = total_wins / total_losses
+
+        # Calculate Sharpe ratio (simplified)
+        if len(bot_result.per_cycle_pnl) > 1:
+            pnl_std = np.std(bot_result.per_cycle_pnl)
+            if pnl_std > 0:
+                bot_result.sharpe_ratio = np.mean(bot_result.per_cycle_pnl) / pnl_std
 
     def _precompute_indicators(self, ohlcv_data: np.ndarray) -> cl.Buffer:
         """

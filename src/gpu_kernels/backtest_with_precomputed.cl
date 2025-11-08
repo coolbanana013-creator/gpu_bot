@@ -335,14 +335,26 @@ void open_position(
     
     if (slot == -1) return;
     
+    // Calculate margin requirement (position value / leverage)
+    float position_value = price * quantity;
+    float margin_required = position_value / leverage;
+    
     // Calculate fees
-    float position_value = price * quantity * leverage;
     float entry_fee = position_value * TAKER_FEE;
     float slippage_cost = position_value * SLIPPAGE;
     
-    // Deduct fees from balance
-    *balance -= (entry_fee + slippage_cost);
-    if (*balance < 0.0f) return;
+    // Total cost = margin + fees
+    float total_cost = margin_required + entry_fee + slippage_cost;
+    
+    // Check if balance is sufficient
+    if (*balance < total_cost) return;
+    
+    // Reserve margin and deduct fees from balance
+    *balance -= total_cost;
+    if (*balance < 0.0f) {
+        *balance += total_cost; // Rollback
+        return;
+    }
     
     // Set position
     positions[slot].is_active = 1;
@@ -356,12 +368,14 @@ void open_position(
         // Long
         positions[slot].tp_price = price * (1.0f + tp_multiplier);
         positions[slot].sl_price = price * (1.0f - sl_multiplier);
-        positions[slot].liquidation_price = price * (1.0f - (1.0f / leverage) + 0.01f);
+        // Liquidation when loss = margin (100% of margin lost)
+        positions[slot].liquidation_price = price * (1.0f - (0.99f / leverage));
     } else {
         // Short
         positions[slot].tp_price = price * (1.0f - tp_multiplier);
         positions[slot].sl_price = price * (1.0f + sl_multiplier);
-        positions[slot].liquidation_price = price * (1.0f + (1.0f / leverage) - 0.01f);
+        // Liquidation when loss = margin
+        positions[slot].liquidation_price = price * (1.0f + (0.99f / leverage));
     }
     
     (*num_positions)++;
@@ -379,34 +393,45 @@ float close_position(
 ) {
     if (!pos->is_active) return 0.0f;
     
-    float pnl;
+    // Calculate raw PnL on the position
+    float price_diff;
     if (pos->direction == 1) {
         // Long
-        pnl = (exit_price - pos->entry_price) * pos->quantity;
+        price_diff = exit_price - pos->entry_price;
     } else {
         // Short
-        pnl = (pos->entry_price - exit_price) * pos->quantity;
+        price_diff = pos->entry_price - exit_price;
     }
     
-    // Apply leverage
-    pnl *= leverage;
+    // PnL = price difference * quantity * leverage
+    float pnl = price_diff * pos->quantity * leverage;
     
-    // Deduct exit fees
-    float position_value = exit_price * pos->quantity * leverage;
+    // Calculate position value and fees
+    float position_value = exit_price * pos->quantity;
     float exit_fee = position_value * (reason == 0 ? MAKER_FEE : TAKER_FEE);
     float slippage_cost = position_value * SLIPPAGE;
     
+    // Deduct exit fees from PnL
     pnl -= (exit_fee + slippage_cost);
     
-    // Liquidation = total loss
+    // Return margin that was reserved
+    float margin_reserved = pos->entry_price * pos->quantity / leverage;
+    float total_return = pnl + margin_reserved;
+    
+    // Liquidation = total loss of margin (max loss = 100% of margin)
     if (reason == 2) {
-        pnl = -(pos->entry_price * pos->quantity * leverage);
+        total_return = 0.0f; // Lose all margin, no return
+    }
+    
+    // Cap maximum loss to margin reserved (prevent >100% loss)
+    if (total_return < 0.0f) {
+        total_return = 0.0f; // Worst case: lose all margin
     }
     
     pos->is_active = 0;
     (*num_positions)--;
     
-    return pnl;
+    return total_return;
 }
 
 /*
@@ -423,6 +448,7 @@ void manage_positions(
     int *winning_trades,
     int *losing_trades,
     float *total_pnl,
+    float *cycle_pnl,  // NEW: track cycle-specific PnL
     float *max_drawdown,
     float initial_balance
 ) {
@@ -472,16 +498,25 @@ void manage_positions(
         }
         
         if (should_close) {
-            float pnl = close_position(pos, exit_price, leverage, num_positions, close_reason);
-            *balance += pnl;
-            *total_pnl += pnl;
+            float return_amount = close_position(pos, exit_price, leverage, num_positions, close_reason);
+            *balance += return_amount;
+            
+            // Calculate actual PnL (return - margin that was reserved)
+            float margin_was = pos->entry_price * pos->quantity / leverage;
+            float actual_pnl = return_amount - margin_was;
+            
+            *total_pnl += actual_pnl;
+            *cycle_pnl += actual_pnl;  // NEW: track in cycle PnL
             (*total_trades)++;
             
-            if (pnl > 0.0f) {
+            if (actual_pnl > 0.0f) {
                 (*winning_trades)++;
             } else {
                 (*losing_trades)++;
             }
+            
+            // Ensure balance never goes negative
+            if (*balance < 0.0f) *balance = 0.0f;
             
             // Update max drawdown
             float current_drawdown = (initial_balance - *balance) / initial_balance;
@@ -607,17 +642,19 @@ __kernel void backtest_with_signals(
         int start_bar = cycle_starts[cycle];
         int end_bar = cycle_ends[cycle];
         
-        // Reset for new cycle
+        // Reset for new cycle - CRITICAL: Start fresh each cycle
         balance = initial_balance;
-        // peak_balance = initial_balance;  // Reset peak for each cycle  // Removed: keep peak across cycles
+        
+        // Close all positions at cycle start (clean slate)
         for (int i = 0; i < MAX_POSITIONS; i++) {
             positions[i].is_active = 0;
         }
         num_positions = 0;
-        // Snapshot totals for this cycle
-        int prev_total_trades = total_trades;
-        int prev_winning_trades = winning_trades;
-        float prev_total_pnl = total_pnl;
+        
+        // Track cycle-specific metrics (isolated per cycle)
+        int cycle_start_trades = total_trades;
+        int cycle_start_wins = winning_trades;
+        float cycle_pnl = 0.0f;  // Isolated PnL for this cycle only
         
         // Iterate through bars in cycle
         for (int bar = start_bar; bar <= end_bar; bar++) {
@@ -642,6 +679,7 @@ __kernel void backtest_with_signals(
                 &winning_trades,
                 &losing_trades,
                 &total_pnl,
+                &cycle_pnl,  // Pass cycle PnL tracker
                 &max_drawdown,
                 initial_balance
             );
@@ -709,31 +747,41 @@ __kernel void backtest_with_signals(
         // Close remaining positions at cycle end
         for (int i = 0; i < MAX_POSITIONS; i++) {
             if (positions[i].is_active) {
-                float pnl = close_position(
+                float return_amount = close_position(
                     &positions[i],
                     ohlcv[end_bar].close,
                     (float)bot.leverage,
                     &num_positions,
                     3  // Signal reversal
                 );
-                balance += pnl;
-                total_pnl += pnl;
+                balance += return_amount;
+                
+                // Calculate actual PnL
+                float margin_was = positions[i].entry_price * positions[i].quantity / (float)bot.leverage;
+                float actual_pnl = return_amount - margin_was;
+                
+                total_pnl += actual_pnl;
+                cycle_pnl += actual_pnl;  // Add to cycle PnL
                 total_trades++;
                 
-                if (pnl > 0.0f) {
+                if (actual_pnl > 0.0f) {
                     winning_trades++;
-                    sum_wins += pnl;
+                    sum_wins += actual_pnl;
                 } else {
                     losing_trades++;
-                    sum_losses += fabs(pnl);
+                    sum_losses += fabs(actual_pnl);
                 }
             }
         }
+        
+        // Ensure balance is capped at zero (never negative)
+        if (balance < 0.0f) balance = 0.0f;
+        
         // Compute per-cycle aggregates and store
         if (cycle < MAX_CYCLES) {
-            cycle_trades_arr[cycle] = total_trades - prev_total_trades;
-            cycle_wins_arr[cycle] = winning_trades - prev_winning_trades;
-            cycle_pnl_arr[cycle] = total_pnl - prev_total_pnl;
+            cycle_trades_arr[cycle] = total_trades - cycle_start_trades;
+            cycle_wins_arr[cycle] = winning_trades - cycle_start_wins;
+            cycle_pnl_arr[cycle] = cycle_pnl;  // Use isolated cycle PnL
         }
     }
     
@@ -743,20 +791,26 @@ __kernel void backtest_with_signals(
     result.total_trades = total_trades;
     result.winning_trades = winning_trades;
     result.losing_trades = losing_trades;
-    result.total_pnl = total_pnl;  // Net P&L including all fees
-    result.final_balance = initial_balance + total_pnl;
-    result.max_drawdown = max_drawdown;
     
-    // Prevent NaN in final balance (check before assignment)
-    if (isnan(balance) || isinf(balance) || balance < 0.0f) {
-        balance = 0.0f;
+    // Calculate average PnL across cycles (not sum!)
+    float avg_pnl = (num_cycles > 0) ? (total_pnl / (float)num_cycles) : 0.0f;
+    result.total_pnl = avg_pnl;
+    
+    // Calculate final balance based on average cycle performance
+    float final_bal = initial_balance + avg_pnl;
+    if (isnan(final_bal) || isinf(final_bal) || final_bal < 0.0f) {
+        final_bal = 0.0f;
     }
-    result.final_balance = balance;
+    result.final_balance = final_bal;
+    
+    // Cap max drawdown at 100% (can't lose more than 100%)
+    if (max_drawdown > 1.0f) max_drawdown = 1.0f;
+    result.max_drawdown = max_drawdown;
     
     result.max_consecutive_wins = (float)max_consecutive_wins;
     result.max_consecutive_losses = (float)max_consecutive_losses;
     
-    // Win rate
+    // Win rate (average across all cycles)
     result.win_rate = (total_trades > 0) ? 
         ((float)winning_trades / (float)total_trades) : 0.0f;
     
@@ -768,22 +822,21 @@ __kernel void backtest_with_signals(
     result.profit_factor = (sum_losses > 0.0f) ? (sum_wins / sum_losses) : 
                           (sum_wins > 0.0f ? 999.0f : 1.0f);
     
-    // Sharpe ratio (with proper NaN prevention)
-    float roi = (initial_balance > 0.01f) ? 
-        ((balance - initial_balance) / initial_balance) : 0.0f;
+    // Sharpe ratio - use average cycle performance
+    float avg_roi = (initial_balance > 0.01f) ? (avg_pnl / initial_balance) : 0.0f;
     
     // Use proper volatility estimate with minimum threshold
     float volatility = fmax(max_drawdown, 0.05f);  // Min 5% volatility
     
     // Safe Sharpe calculation with bounds checking
-    result.sharpe_ratio = (volatility > 0.001f) ? (roi / volatility) : 0.0f;
+    result.sharpe_ratio = (volatility > 0.001f) ? (avg_roi / volatility) : 0.0f;
     
     // Clamp Sharpe to reasonable range [-10, 10]
     result.sharpe_ratio = fmin(fmax(result.sharpe_ratio, -10.0f), 10.0f);
     
-    // Fitness score (multi-objective)
+    // Fitness score (multi-objective) - use average performance
     float fitness = 0.0f;
-    fitness += roi * 100.0f;                          // ROI weight: high
+    fitness += avg_roi * 100.0f;                      // ROI weight: high
     fitness += result.win_rate * 20.0f;               // Win rate weight: medium
     fitness -= max_drawdown * 50.0f;                  // Drawdown penalty: high
     fitness += (result.profit_factor - 1.0f) * 10.0f; // PF weight: medium

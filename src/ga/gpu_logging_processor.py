@@ -9,10 +9,12 @@ import os
 from typing import List, Optional
 from concurrent.futures import ThreadPoolExecutor
 import time
+import csv
 
 from ..utils.validation import log_info, log_warning, log_error, log_debug
 from ..bot_generator.compact_generator import CompactBotConfig
 from ..backtester.compact_simulator import BacktestResult
+from ..indicators.factory import IndicatorFactory
 
 
 class GPULoggingProcessor:
@@ -50,9 +52,7 @@ class GPULoggingProcessor:
             program = cl.Program(self.context, kernel_source).build()
 
             # Load kernels
-            self.kernels['calculate_offsets'] = program.calculate_csv_row_offsets
-            self.kernels['serialize_csv'] = program.serialize_bot_data_to_csv
-            self.kernels['write_header'] = program.write_csv_header
+            self.kernels['serialize_binary'] = program.serialize_bot_data_binary
 
             log_info("Logging kernels compiled successfully")
 
@@ -71,31 +71,190 @@ class GPULoggingProcessor:
     ) -> None:
         """
         GPU-accelerated logging of generation bot data to CSV.
-        Hybrid approach: GPU prepares data, CPU formats CSV for reliability.
         """
         start_time = time.time()
 
-        try:
-            num_bots = len(bots)
-            if num_bots == 0:
-                return
+        num_bots = len(bots)
+        if num_bots == 0:
+            return
 
-            # Create output directory
-            os.makedirs(output_dir, exist_ok=True)
-            csv_file = os.path.join(output_dir, f"generation_{generation}.csv")
+        # Create output directory
+        os.makedirs(output_dir, exist_ok=True)
 
-            # Use CPU fallback for now - GPU string formatting has issues
-            # TODO: Fix GPU CSV formatting kernel
-            self._cpu_fallback_logging(generation, bots, results, initial_balance, num_cycles, output_dir)
+        # Use GPU logging exclusively
+        self._gpu_logging_attempt(generation, bots, results, initial_balance, num_cycles, output_dir)
 
-            elapsed = time.time() - start_time
-            log_debug(f"Logging completed in {elapsed:.3f}s (CPU fallback)")
+        elapsed = time.time() - start_time
+        log_info(f"GPU logging completed for generation {generation} in {elapsed:.3f}s")
 
-        except Exception as e:
-            elapsed = time.time() - start_time
-            log_warning(f"GPU logging failed ({elapsed:.3f}s): {e}")
-            log_info("Falling back to CPU logging")
-            self._cpu_fallback_logging(generation, bots, results, initial_balance, num_cycles, output_dir)
+    def _gpu_logging_attempt(
+        self,
+        generation: int,
+        bots: List[CompactBotConfig],
+        results: List[BacktestResult],
+        initial_balance: float,
+        num_cycles: int,
+        output_dir: str
+    ) -> None:
+        """
+        GPU-accelerated logging using binary serialization.
+        """
+        data_arrays = self._prepare_data_arrays(bots, results, num_cycles)
+        binary_data = self._serialize_bot_data_gpu(data_arrays, generation, initial_balance, num_cycles)
+        csv_data = self._format_csv_from_binary(binary_data, bots, results, generation, initial_balance, num_cycles)
+
+        csv_file = os.path.join(output_dir, f"generation_{generation}.csv")
+        self._write_csv_async(csv_file, csv_data)
+
+    def _serialize_bot_data_gpu(self, data_arrays, generation, initial_balance, num_cycles):
+        """Serialize bot data to binary format using GPU."""
+        num_bots = len(data_arrays['bot_ids'])
+
+        # Calculate buffer size (BotData struct + per-cycle data)
+        bot_data_size = 4 * 6 + 4 * 6 + 8  # ints and floats + indicator indices
+        per_cycle_size = num_cycles * 3 * 4  # 3 floats per cycle
+        record_size = bot_data_size + per_cycle_size
+        total_size = num_bots * record_size
+
+        # Create output buffer
+        output_buffer = np.zeros(total_size, dtype=np.uint8)
+        output_buf = cl.Buffer(self.context, cl.mem_flags.WRITE_ONLY, output_buffer.nbytes)
+
+        # Create input buffers
+        buffers = {}
+        for key, array in data_arrays.items():
+            buffers[key] = cl.Buffer(self.context, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+                                   hostbuf=array)
+
+        # Execute serialization kernel
+        kernel = self.kernels['serialize_binary']
+        kernel.set_args(
+            buffers['bot_ids'], buffers['num_indicators'], buffers['indicator_indices'],
+            buffers['leverages'], buffers['survival_generations'], buffers['total_pnls'],
+            buffers['win_rates'], buffers['total_trades'], buffers['final_balances'],
+            buffers['fitness_scores'], buffers['sharpe_ratios'], buffers['max_drawdowns'],
+            buffers['per_cycle_trades'], buffers['per_cycle_pnls'], buffers['per_cycle_winrates'],
+            output_buf,
+            np.int32(num_bots), np.int32(num_cycles), np.int32(generation), np.float32(initial_balance)
+        )
+
+        cl.enqueue_nd_range_kernel(self.queue, kernel, (num_bots,), None)
+
+        # Read results
+        cl.enqueue_copy(self.queue, output_buffer, output_buf)
+
+        return output_buffer, record_size
+
+    def _format_csv_from_binary(self, binary_data, bots, results, generation, initial_balance, num_cycles):
+        """Format binary data to CSV string on CPU."""
+        output_buffer, record_size = binary_data
+        num_bots = len(bots)
+
+        # Get indicator names for mapping
+        all_indicator_types = IndicatorFactory.get_all_indicator_types()
+        indicator_names = [indicator_type.value for indicator_type in all_indicator_types]
+
+        # Build CSV header
+        header = [
+            'Generation', 'BotID', 'ProfitPct', 'WinRate', 'TotalTrades', 'FinalBalance',
+            'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
+            'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles', 'IndicatorsUsed'
+        ]
+        for i in range(num_cycles):
+            header.extend([f'Cycle{i}_Trades', f'Cycle{i}_ProfitPct', f'Cycle{i}_WinRate'])
+        csv_lines = [';'.join(header)]
+
+        # Process each bot's binary data
+        for bot_idx in range(num_bots):
+            bot = bots[bot_idx]
+            result = results[bot_idx]
+
+            # Parse binary data (little-endian)
+            offset = bot_idx * record_size
+            data_view = output_buffer[offset:offset + record_size].view(dtype=np.uint8)
+
+            # Extract bot data (struct layout)
+            bot_data_offset = 0
+            generation_val = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
+            bot_data_offset += 4
+            bot_id = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
+            bot_data_offset += 4
+            num_indicators = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
+            bot_data_offset += 4
+            leverage = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
+            bot_data_offset += 4
+            survival_generations = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
+            bot_data_offset += 4
+            total_trades = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
+            bot_data_offset += 4
+            total_pnl = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
+            bot_data_offset += 4
+            win_rate = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
+            bot_data_offset += 4
+            final_balance = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
+            bot_data_offset += 4
+            fitness_score = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
+            bot_data_offset += 4
+            sharpe_ratio = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
+            bot_data_offset += 4
+            max_drawdown = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
+            bot_data_offset += 4
+
+            # Extract indicator indices
+            indicator_indices = data_view[bot_data_offset:bot_data_offset+8]
+            bot_data_offset += 8
+
+            # Extract per-cycle data
+            per_cycle_data = []
+            for c in range(num_cycles):
+                trades = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
+                bot_data_offset += 4
+                pnl = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
+                bot_data_offset += 4
+                winrate = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
+                bot_data_offset += 4
+                per_cycle_data.extend([trades, pnl, winrate])
+
+            # Format as CSV row
+            profit_pct = (total_pnl / initial_balance) * 100
+            indicators_used = [indicator_names[idx] for idx in bot.indicator_indices[:bot.num_indicators] if idx < len(indicator_names)]
+            indicators_str = ', '.join(indicators_used)
+
+            row = [
+                str(generation),
+                str(bot_id),
+                f"{profit_pct:.2f}".replace('.', ','),
+                f"{win_rate:.4f}".replace('.', ','),
+                str(total_trades),
+                f"{final_balance:.2f}".replace('.', ','),
+                f"{fitness_score:.2f}".replace('.', ','),
+                f"{sharpe_ratio:.2f}".replace('.', ','),
+                f"{max_drawdown:.4f}".replace('.', ','),
+                str(survival_generations),
+                str(num_indicators),
+                str(leverage),
+                f"{total_pnl:.2f}".replace('.', ','),
+                str(num_cycles),
+                indicators_str
+            ]
+
+            # Add per-cycle data
+            for c in range(num_cycles):
+                base_idx = c * 3
+                c_trades = int(per_cycle_data[base_idx])
+                c_pnl = per_cycle_data[base_idx + 1]
+                c_winrate = per_cycle_data[base_idx + 2]
+                c_profit_pct = (c_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
+
+                row.extend([
+                    str(c_trades),
+                    f"{c_profit_pct:.2f}".replace('.', ','),
+                    f"{c_winrate:.4f}".replace('.', ',')
+                ])
+
+            csv_lines.append(';'.join(row))
+
+        return '\n'.join(csv_lines) + '\n'
 
     def _prepare_data_arrays(self, bots: List[CompactBotConfig], results: List[BacktestResult], num_cycles: int):
         """Prepare numpy arrays for GPU processing."""
@@ -259,61 +418,6 @@ class GPULoggingProcessor:
                 log_error(f"Async CSV write failed: {e}")
 
         self.file_executor.submit(write_task)
-
-    def _cpu_fallback_logging(self, generation, bots, results, initial_balance, num_cycles, output_dir):
-        """CPU fallback for logging when GPU fails."""
-        import csv
-
-        os.makedirs(output_dir, exist_ok=True)
-        csv_file = os.path.join(output_dir, f"generation_{generation}.csv")
-
-        with open(csv_file, 'w', newline='') as f:
-            writer = csv.writer(f, delimiter=';')
-
-            # Write header
-            header = [
-                'Generation', 'BotID', 'ProfitPct', 'WinRate', 'TotalTrades', 'FinalBalance',
-                'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
-                'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles', 'IndicatorsUsed'
-            ]
-            for i in range(num_cycles):
-                header.extend([f'Cycle{i}_Trades', f'Cycle{i}_ProfitPct', f'Cycle{i}_WinRate'])
-            writer.writerow(header)
-
-            # Write data rows
-            for bot, result in zip(bots, results):
-                profit_pct = (result.total_pnl / initial_balance) * 100
-                indicators_used = [str(idx) for idx in bot.indicator_indices[:bot.num_indicators]]
-                indicators_str = ', '.join(indicators_used)
-
-                row = [
-                    generation, bot.bot_id, f"{profit_pct:.2f}".replace('.', ','),
-                    f"{result.win_rate:.4f}".replace('.', ','), result.total_trades,
-                    f"{result.final_balance:.2f}".replace('.', ','), f"{result.fitness_score:.2f}".replace('.', ','),
-                    f"{result.sharpe_ratio:.2f}".replace('.', ','), f"{result.max_drawdown:.4f}".replace('.', ','),
-                    bot.survival_generations, bot.num_indicators, bot.leverage,
-                    f"{result.total_pnl:.2f}".replace('.', ','), num_cycles, indicators_str
-                ]
-
-                # Add per-cycle data
-                for i in range(num_cycles):
-                    try:
-                        c_trades = result.per_cycle_trades[i]
-                        c_pnl = result.per_cycle_pnl[i]
-                        c_wins = result.per_cycle_wins[i]
-                    except:
-                        c_trades, c_pnl, c_wins = 0, 0.0, 0
-
-                    c_profit_pct = (c_pnl / initial_balance) * 100
-                    c_winrate = c_wins / c_trades if c_trades > 0 else 0.0
-
-                    row.extend([
-                        c_trades, f"{c_profit_pct:.2f}".replace('.', ','), f"{c_winrate:.4f}".replace('.', ',')
-                    ])
-
-                writer.writerow(row)
-
-        log_info(f"CPU fallback: Logged {len(bots)} bots to {csv_file}")
 
     def shutdown(self):
         """Shutdown the logging processor."""
