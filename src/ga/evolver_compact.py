@@ -26,7 +26,9 @@ class GeneticAlgorithmEvolver:
         bot_generator: CompactBotGenerator,
         backtester: CompactBacktester,
         mutation_rate: float = 0.15,
-        elite_pct: float = 0.1
+        elite_pct: float = 0.1,
+        pair: str = "xbtusdtm",
+        timeframe: str = "1m"
     ):
         """
         Initialize GA evolver.
@@ -36,11 +38,15 @@ class GeneticAlgorithmEvolver:
             backtester: Backtester instance
             mutation_rate: Probability of mutation (default 15%)
             elite_pct: Percentage of top bots to keep unchanged (default 10%)
+            pair: Trading pair symbol (default "xbtusdtm")
+            timeframe: Timeframe string (default "1m")
         """
         self.bot_generator = bot_generator
         self.backtester = backtester
         self.mutation_rate = mutation_rate
         self.elite_pct = elite_pct
+        self.pair = pair
+        self.timeframe = timeframe
         
         self.current_generation = 0
         self.population: List[CompactBotConfig] = []
@@ -108,51 +114,51 @@ class GeneticAlgorithmEvolver:
         survival_rate: float = 0.5
     ) -> Tuple[List[CompactBotConfig], List[BacktestResult]]:
         """
-        Select top performing bots.
-        Preserves ALL profitable bots (total_pnl > 0) unchanged.
+        Select bots that survived with positive or null profit/loss.
+        Only bots with total_pnl >= 0 are passed to the next generation.
         
         Args:
             population: Current population
             results: Backtest results
-            survival_rate: Fraction of population to keep
+            survival_rate: Fraction of population to keep (used if all bots are profitable)
             
         Returns:
             Tuple of (surviving_bots, surviving_results)
         """
-        # Separate profitable and unprofitable bots
-        profitable_pairs = []
-        unprofitable_pairs = []
+        # Only keep bots with positive or null profit/loss (total_pnl >= 0)
+        surviving_pairs = []
         
         for bot, result in zip(population, results):
-            if result.total_pnl > 0:
-                profitable_pairs.append((bot, result))
-            else:
-                unprofitable_pairs.append((bot, result))
+            if result.total_pnl >= 0:  # Changed from > 0 to >= 0
+                surviving_pairs.append((bot, result))
         
-        # Sort both groups by fitness
-        profitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
-        unprofitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
+        # If no bots survived, keep the least unprofitable one to maintain population
+        if not surviving_pairs:
+            # Sort by least negative profit (closest to zero)
+            all_pairs = list(zip(population, results))
+            all_pairs.sort(key=lambda x: x[1].total_pnl, reverse=True)  # Best to worst
+            surviving_pairs = [all_pairs[0]]  # Keep the least unprofitable
+            log_warning("No bots with non-negative profit found, keeping the least unprofitable bot")
         
-        # Calculate target number of survivors
+        # Sort survivors by fitness score (best first)
+        surviving_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
+        
+        # If we have more survivors than needed, keep only the best ones
         num_survivors = max(1, int(len(population) * survival_rate))
+        if len(surviving_pairs) > num_survivors:
+            surviving_pairs = surviving_pairs[:num_survivors]
         
-        # Preserve ALL profitable bots (up to num_survivors)
-        if len(profitable_pairs) >= num_survivors:
-            survivors = profitable_pairs[:num_survivors]
-        else:
-            survivors = profitable_pairs.copy()
-            remaining_slots = num_survivors - len(profitable_pairs)
-            survivors.extend(unprofitable_pairs[:remaining_slots])
-        
-        survivor_bots = [bot for bot, _ in survivors]
-        survivor_results = [res for _, res in survivors]
+        survivor_bots = [bot for bot, _ in surviving_pairs]
+        survivor_results = [res for _, res in surviving_pairs]
         
         # Increment survival generations for survivors
         for bot in survivor_bots:
             bot.survival_generations += 1
         
         # Update all-time best
-        self._update_all_time_best(survivors)
+        self._update_all_time_best(surviving_pairs)
+        
+        log_info(f"Selected {len(surviving_pairs)} survivors with total_pnl >= 0")
         
         return survivor_bots, survivor_results
     
@@ -487,12 +493,20 @@ class GeneticAlgorithmEvolver:
         with open(csv_file, 'w', newline='') as f:
             writer = csv.writer(f, delimiter=';')  # Use semicolon as delimiter
             
-            # Write header
-            writer.writerow([
+            # Write header (include per-cycle columns)
+            header = [
                 'Generation', 'BotID', 'ProfitPct', 'WinRate', 'TotalTrades', 'FinalBalance', 
                 'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
                 'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles', 'IndicatorsUsed'
-            ])
+            ]
+            # Add dynamic per-cycle columns
+            for i in range(num_cycles):
+                header.extend([
+                    f'Cycle{i}_Trades',
+                    f'Cycle{i}_ProfitPct',
+                    f'Cycle{i}_WinRate'
+                ])
+            writer.writerow(header)
             
             # Write data rows
             for bot, result in zip(bots, results):
@@ -501,7 +515,7 @@ class GeneticAlgorithmEvolver:
                 indicators_used = [indicator_names[idx] for idx in bot.indicator_indices if idx < len(indicator_names)]
                 indicators_str = ', '.join(indicators_used)
                 
-                writer.writerow([
+                row = [
                     gen,
                     bot.bot_id,
                     f"{profit_pct:.2f}".replace('.', ','),
@@ -517,7 +531,30 @@ class GeneticAlgorithmEvolver:
                     f"{result.total_pnl:.2f}".replace('.', ','),
                     num_cycles,
                     indicators_str
-                ])
+                ]
+
+                # Append per-cycle stats (trades, profit% relative to initial balance, winrate)
+                for i in range(num_cycles):
+                    # Safe extraction from result.per_cycle_trades/wins/pnl
+                    try:
+                        c_trades = result.per_cycle_trades[i]
+                        c_wins = result.per_cycle_wins[i]
+                        c_pnl = result.per_cycle_pnl[i]
+                    except Exception:
+                        c_trades = 0
+                        c_wins = 0
+                        c_pnl = 0.0
+
+                    c_profit_pct = (c_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
+                    c_winrate = (c_wins / c_trades) if c_trades > 0 else 0.0
+
+                    row.extend([
+                        c_trades,
+                        f"{c_profit_pct:.2f}".replace('.', ','),
+                        f"{c_winrate:.4f}".replace('.', ',')
+                    ])
+
+                writer.writerow(row)
         
         log_info(f"Logged {len(bots)} bots to {csv_file}")
     
@@ -552,14 +589,19 @@ class GeneticAlgorithmEvolver:
         
         return top_bots
     
-    def save_top_bots(self, filepath: str = RESULTS_FILE, count: int = TOP_BOTS_COUNT):
+    def save_top_bots(self, filepath: str = None, count: int = TOP_BOTS_COUNT):
         """
         Save top bots to file and individual bot files.
         
         Args:
-            filepath: Output file path
+            filepath: Output file path (if None, uses bot directory)
             count: Number of top bots to save
         """
+        if filepath is None:
+            import os
+            bot_dir = f"bots/{self.pair}/{self.timeframe}"
+            os.makedirs(bot_dir, exist_ok=True)
+            filepath = f"{bot_dir}/best_bots.json"
         top_bots = self.get_top_bots(count)
         
         results_data = {
@@ -591,7 +633,10 @@ class GeneticAlgorithmEvolver:
             results_data['top_bots'].append(bot_data)
             
             # Save individual bot file
-            individual_filepath = f"bot_{bot.bot_id}.json"
+            import os
+            bot_dir = f"bots/{self.pair}/{self.timeframe}"
+            os.makedirs(bot_dir, exist_ok=True)
+            individual_filepath = f"{bot_dir}/bot_{bot.bot_id}.json"
             with open(individual_filepath, 'w') as f:
                 json.dump(bot_data, f, indent=2)
             log_info(f"Saved bot {bot.bot_id} to {individual_filepath}")

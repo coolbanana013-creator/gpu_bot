@@ -59,11 +59,19 @@ typedef struct __attribute__((packed)) {
     unsigned char padding[6];  // FIXED: adjusted for 128 byte alignment
 } CompactBotConfig;
 
+// Ensure MAX_CYCLES is defined before BacktestResult uses it
+#ifndef MAX_CYCLES
+#define MAX_CYCLES 100
+#endif
+
 typedef struct __attribute__((packed)) {
     int bot_id;
     int total_trades;
     int winning_trades;
     int losing_trades;
+    int cycle_trades[MAX_CYCLES];
+    int cycle_wins[MAX_CYCLES];
+    float cycle_pnl[MAX_CYCLES];
     float total_pnl;
     float max_drawdown;
     float sharpe_ratio;
@@ -98,6 +106,8 @@ typedef struct {
 #define TAKER_FEE 0.0006f      // 0.06% Kucoin taker
 #define SLIPPAGE 0.0001f       // 0.01% average slippage
 #define MIN_BALANCE_PCT 0.10f  // Stop trading below 10% balance
+// Maximum cycles recorded per bot (must match Python parser)
+#define MAX_CYCLES 100
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -582,6 +592,15 @@ __kernel void backtest_with_signals(
     
     // MEMORY TRACKING: Positions array = 1 × 32 bytes = 32 bytes per bot
     // This is minimal for GPU local memory
+    // Per-cycle aggregates (initialized to zero)
+    int cycle_trades_arr[MAX_CYCLES];
+    int cycle_wins_arr[MAX_CYCLES];
+    float cycle_pnl_arr[MAX_CYCLES];
+    for (int i = 0; i < MAX_CYCLES; i++) {
+        cycle_trades_arr[i] = 0;
+        cycle_wins_arr[i] = 0;
+        cycle_pnl_arr[i] = 0.0f;
+    }
     
     // Backtest across all cycles
     for (int cycle = 0; cycle < num_cycles; cycle++) {
@@ -590,11 +609,15 @@ __kernel void backtest_with_signals(
         
         // Reset for new cycle
         balance = initial_balance;
-        peak_balance = initial_balance;  // Reset peak for each cycle
+        // peak_balance = initial_balance;  // Reset peak for each cycle  // Removed: keep peak across cycles
         for (int i = 0; i < MAX_POSITIONS; i++) {
             positions[i].is_active = 0;
         }
         num_positions = 0;
+        // Snapshot totals for this cycle
+        int prev_total_trades = total_trades;
+        int prev_winning_trades = winning_trades;
+        float prev_total_pnl = total_pnl;
         
         // Iterate through bars in cycle
         for (int bar = start_bar; bar <= end_bar; bar++) {
@@ -706,6 +729,12 @@ __kernel void backtest_with_signals(
                 }
             }
         }
+        // Compute per-cycle aggregates and store
+        if (cycle < MAX_CYCLES) {
+            cycle_trades_arr[cycle] = total_trades - prev_total_trades;
+            cycle_wins_arr[cycle] = winning_trades - prev_winning_trades;
+            cycle_pnl_arr[cycle] = total_pnl - prev_total_pnl;
+        }
     }
     
     // Calculate final metrics
@@ -714,7 +743,8 @@ __kernel void backtest_with_signals(
     result.total_trades = total_trades;
     result.winning_trades = winning_trades;
     result.losing_trades = losing_trades;
-    result.total_pnl = balance - initial_balance;  // Net P&L including all fees
+    result.total_pnl = total_pnl;  // Net P&L including all fees
+    result.final_balance = initial_balance + total_pnl;
     result.max_drawdown = max_drawdown;
     
     // Prevent NaN in final balance (check before assignment)
@@ -761,6 +791,12 @@ __kernel void backtest_with_signals(
     
     result.fitness_score = fitness;
     result.generation_survived = 0;  // Will be updated by evolver
-    
+    // Copy per-cycle aggregates into result (safe bounds)
+    for (int i = 0; i < num_cycles && i < MAX_CYCLES; i++) {
+        result.cycle_trades[i] = cycle_trades_arr[i];
+        result.cycle_wins[i] = cycle_wins_arr[i];
+        result.cycle_pnl[i] = cycle_pnl_arr[i];
+    }
+
     results[bot_idx] = result;
 }

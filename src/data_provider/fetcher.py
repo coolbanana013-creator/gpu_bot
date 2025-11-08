@@ -256,9 +256,17 @@ class DataFetcher:
             else:
                 dates_to_fetch.append((date, file_path))
         
+        # Log summary
+        cached_count = len(file_paths)
+        missing_count = len(dates_to_fetch)
+        if missing_count == 0:
+            log_info(f"All {cached_count} data files are already cached - no downloading needed")
+        else:
+            log_info(f"Data cache status: {cached_count} files cached, {missing_count} files missing")
+        
         # Fetch missing data
         if dates_to_fetch:
-            log_info(f"Need to fetch {len(dates_to_fetch)} missing days")
+            log_info(f"Fetching {missing_count} missing days...")
             
             for date, file_path in dates_to_fetch:
                 # Rate limiting

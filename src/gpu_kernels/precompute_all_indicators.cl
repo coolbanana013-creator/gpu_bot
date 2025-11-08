@@ -10,14 +10,14 @@
  * 
  * OPTIMIZED WORK DISTRIBUTION (Intel UHD Graphics 630):
  * - Global Memory: 26.4 MB total (OHLCV 2.4MB + indicators 24MB) - WELL WITHIN 3.19GB
- * - Work Items: 12,800 total (50 indicators × 256 work items per indicator)
- * - Work Distribution: Bars distributed across 256 work items per indicator
+ * - Work Items: 25,600 total (50 indicators × 512 work items per indicator)
+ * - Work Distribution: Bars distributed across 512 work items per indicator
  * - Stateful Indicators: Computed by work_item_id == 0 (maintains sequential state)
- * - Stateless Indicators: Parallelized across all 256 work items per indicator
+ * - Stateless Indicators: Parallelized across all 512 work items per indicator
  * - Register Pressure: Reduced from 50 work items × 120K operations to ~470 operations per work item
  * - SOLUTION: Better GPU utilization while maintaining all indicator functionality
  * 
- * Each indicator gets 256 work items, but only stateful ones require sequential processing.
+ * Each indicator gets 512 work items, but only stateful ones require sequential processing.
  */
 
 #ifndef M_PI
@@ -884,7 +884,7 @@ __kernel void precompute_all_indicators(
 ) {
     int indicator_id = get_global_id(0);  // Which indicator (0-49)
     int work_item_id = get_global_id(1); // Work item within indicator group (0-255)
-    int work_items_per_indicator = get_global_size(1); // 256 work items per indicator
+    int work_items_per_indicator = get_global_size(1); // Dynamic: 512 work items per indicator
 
     if (indicator_id >= 50) return;
 

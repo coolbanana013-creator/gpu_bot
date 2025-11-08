@@ -128,7 +128,13 @@ def get_user_input(prompt: str, default: any, validator=None) -> any:
         
         if validator:
             try:
-                return validator(user_input)
+                result = validator(user_input)
+                if isinstance(result, bool):
+                    if result:
+                        return user_input
+                    else:
+                        raise ValueError("Invalid input")
+                return result
             except ValueError as e:
                 log_error(f"Invalid input: {e}")
                 continue
@@ -276,10 +282,10 @@ def get_mode1_parameters() -> dict:
     use_seed = get_user_input(
         "Use random seed for reproducibility? (y/n)",
         "y",
-        lambda x: x.lower() in ['y', 'n']
+        lambda x: x if x.lower() in ['y', 'n'] else (_ for _ in ()).throw(ValueError("Must be 'y' or 'n'"))
     )
     
-    if use_seed.lower() == 'y':
+    if use_seed and use_seed.lower() == 'y':
         params['random_seed'] = get_user_input(
             "Random seed",
             DEFAULT_RANDOM_SEED,
@@ -356,12 +362,15 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         backtester = CompactBacktester(
             gpu_context=gpu_context,
             gpu_queue=gpu_queue,
-            initial_balance=params['initial_balance']
+            initial_balance=params['initial_balance'],
+            target_chunk_seconds=1.0  # Smooth 1-second chunk processing
         )
         
         evolver = GeneticAlgorithmEvolver(
             bot_generator=bot_generator,
-            backtester=backtester
+            backtester=backtester,
+            pair="xbtusdtm",
+            timeframe="1m"
         )
         
         # Run evolution
@@ -441,7 +450,7 @@ def get_mode4_parameters() -> dict:
     import glob
     
     # List available saved bots
-    bot_files = glob.glob("bot_*.json")
+    bot_files = glob.glob("bots/xbtusdtm/1m/bot_*.json")
     if bot_files:
         print(f"\nAvailable saved bots: {len(bot_files)}")
         for i, filename in enumerate(sorted(bot_files), 1):
@@ -611,7 +620,8 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         backtester = CompactBacktester(
             gpu_context=gpu_context,
             gpu_queue=gpu_queue,
-            initial_balance=params['initial_balance']
+            initial_balance=params['initial_balance'],
+            target_chunk_seconds=1.0  # Smooth 1-second chunk processing
         )
         
         results = backtester.backtest_bots(
