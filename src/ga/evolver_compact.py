@@ -8,19 +8,112 @@ import copy
 import random
 from typing import List, Dict, Tuple, Optional, Set
 import json
+import time
 
 from ..bot_generator.compact_generator import CompactBotConfig, CompactBotGenerator
 from ..backtester.compact_simulator import BacktestResult, CompactBacktester
 from ..utils.validation import log_info, log_debug, log_warning
 from ..utils.config import TOP_BOTS_COUNT, RESULTS_FILE
 from ..indicators.factory import IndicatorFactory
+from .gpu_ga_processor import GPUGAProcessor
+from .gpu_logging_processor import GPULoggingProcessor
+
+
+class EvolutionProfiler:
+    """Tracks timing and performance metrics for evolution phases."""
+
+    def __init__(self):
+        self.phase_times = {}
+        self.generation_times = []
+        self.start_time = None
+        self.phase_start = None
+
+    def start_evolution(self):
+        """Start overall evolution timing."""
+        self.start_time = time.time()
+        log_info("Evolution profiler started")
+
+    def start_phase(self, phase_name: str):
+        """Start timing a specific phase."""
+        self.phase_start = time.time()
+        if phase_name not in self.phase_times:
+            self.phase_times[phase_name] = []
+        log_debug(f"Started phase: {phase_name}")
+
+    def end_phase(self, phase_name: str):
+        """End timing a specific phase."""
+        if self.phase_start is None:
+            log_warning(f"Phase '{phase_name}' ended without starting")
+            return
+
+        duration = time.time() - self.phase_start
+        self.phase_times[phase_name].append(duration)
+        log_debug(f"Phase '{phase_name}' completed in {duration:.3f}s")
+        self.phase_start = None
+
+    def start_generation(self):
+        """Start timing a generation."""
+        self.gen_start = time.time()
+
+    def end_generation(self, gen_num: int):
+        """End timing a generation."""
+        gen_duration = time.time() - self.gen_start
+        self.generation_times.append(gen_duration)
+        log_info(f"Generation {gen_num} completed in {gen_duration:.3f}s")
+
+    def print_summary(self):
+        """Print comprehensive performance summary."""
+        total_time = time.time() - self.start_time
+
+        print("\n" + "="*80)
+        print("EVOLUTION PERFORMANCE PROFILE")
+        print("="*80)
+
+        print(f"Total evolution time: {total_time:.3f}s")
+        print(f"Total generations: {len(self.generation_times)}")
+
+        if self.generation_times:
+            avg_gen_time = np.mean(self.generation_times)
+            min_gen_time = np.min(self.generation_times)
+            max_gen_time = np.max(self.generation_times)
+            print(f"Average generation time: {avg_gen_time:.3f}s")
+            print(f"Fastest generation: {min_gen_time:.3f}s")
+            print(f"Slowest generation: {max_gen_time:.3f}s")
+
+        print("\nPhase Breakdown:")
+        print("-" * 40)
+
+        for phase, times in self.phase_times.items():
+            if times:
+                avg_time = np.mean(times)
+                total_phase_time = np.sum(times)
+                pct_of_total = (total_phase_time / total_time) * 100
+                print("25")
+
+        # Identify bottlenecks
+        print("\nPotential Bottlenecks:")
+        print("-" * 40)
+
+        if self.phase_times:
+            # Sort phases by average time
+            sorted_phases = sorted(self.phase_times.items(),
+                                 key=lambda x: np.mean(x[1]) if x[1] else 0,
+                                 reverse=True)
+
+            for phase, times in sorted_phases[:3]:  # Top 3 bottlenecks
+                if times:
+                    avg_time = np.mean(times)
+                    pct_of_total = (np.sum(times) / total_time) * 100
+                    print("15")
+
+        print("="*80)
 
 
 class GeneticAlgorithmEvolver:
     """
     Manages genetic algorithm evolution for compact bots.
     """
-    
+
     def __init__(
         self,
         bot_generator: CompactBotGenerator,
@@ -28,11 +121,13 @@ class GeneticAlgorithmEvolver:
         mutation_rate: float = 0.15,
         elite_pct: float = 0.1,
         pair: str = "xbtusdtm",
-        timeframe: str = "1m"
+        timeframe: str = "1m",
+        gpu_context=None,
+        gpu_queue=None
     ):
         """
         Initialize GA evolver.
-        
+
         Args:
             bot_generator: Bot generator instance
             backtester: Backtester instance
@@ -40,6 +135,8 @@ class GeneticAlgorithmEvolver:
             elite_pct: Percentage of top bots to keep unchanged (default 10%)
             pair: Trading pair symbol (default "xbtusdtm")
             timeframe: Timeframe string (default "1m")
+            gpu_context: OpenCL GPU context (optional)
+            gpu_queue: OpenCL GPU command queue (optional)
         """
         self.bot_generator = bot_generator
         self.backtester = backtester
@@ -47,6 +144,28 @@ class GeneticAlgorithmEvolver:
         self.elite_pct = elite_pct
         self.pair = pair
         self.timeframe = timeframe
+
+        # GPU acceleration
+        self.gpu_processor = None
+        if gpu_context is not None and gpu_queue is not None:
+            try:
+                self.gpu_processor = GPUGAProcessor(gpu_context, gpu_queue)
+                log_info("GPU GA acceleration enabled")
+            except Exception as e:
+                log_warning(f"Failed to initialize GPU GA processor: {e}")
+                log_info("Falling back to CPU-only GA operations")
+        
+        # GPU logging acceleration
+        self.gpu_logger = None
+        if gpu_context is not None and gpu_queue is not None:
+            try:
+                self.gpu_logger = GPULoggingProcessor(gpu_context, gpu_queue)
+                log_info("GPU logging acceleration enabled")
+            except Exception as e:
+                log_warning(f"Failed to initialize GPU logging processor: {e}")
+                log_info("Falling back to CPU logging")
+        else:
+            log_info("GPU context not provided, using CPU-only GA operations")
         
         self.current_generation = 0
         self.population: List[CompactBotConfig] = []
@@ -57,6 +176,9 @@ class GeneticAlgorithmEvolver:
         
         # Track best bots across generations
         self.all_time_best: List[Tuple[CompactBotConfig, BacktestResult]] = []
+        
+        # Performance profiler
+        self.profiler = EvolutionProfiler()
         
         log_info("GeneticAlgorithmEvolver initialized (compact architecture)")
         log_info(f"  Mutation rate: {mutation_rate:.1%}")
@@ -125,6 +247,29 @@ class GeneticAlgorithmEvolver:
         Returns:
             Tuple of (surviving_bots, surviving_results)
         """
+        # Use GPU acceleration if available
+        if self.gpu_processor is not None:
+            try:
+                survivor_bots, survivor_results = self.gpu_processor.select_survivors_gpu(
+                    population, results, survival_rate, survival_threshold=0.0
+                )
+                
+                # Increment survival generations for survivors
+                for bot in survivor_bots:
+                    bot.survival_generations += 1
+                
+                # Update all-time best
+                surviving_pairs = list(zip(survivor_bots, survivor_results))
+                self._update_all_time_best(surviving_pairs)
+                
+                log_info(f"GPU-selected {len(surviving_pairs)} survivors with total_pnl >= 0")
+                return survivor_bots, survivor_results
+                
+            except Exception as e:
+                log_warning(f"GPU survivor selection failed: {e}")
+                log_info("Falling back to CPU survivor selection")
+
+        # CPU fallback implementation
         # Only keep bots with positive or null profit/loss (total_pnl >= 0)
         surviving_pairs = []
         
@@ -171,7 +316,7 @@ class GeneticAlgorithmEvolver:
         self.all_time_best.sort(key=lambda x: x[1].fitness_score, reverse=True)
         self.all_time_best = self.all_time_best[:100]
     
-    def mutate_bot(self, bot: CompactBotConfig) -> CompactBotConfig:
+    def _cpu_mutate_bot(self, bot: CompactBotConfig) -> CompactBotConfig:
         """
         Mutate a bot's configuration.
         Uses per-bot probability: mutation_rate% chance to apply ONE random mutation.
@@ -240,7 +385,7 @@ class GeneticAlgorithmEvolver:
         
         return mutated
     
-    def crossover(self, parent1: CompactBotConfig, parent2: CompactBotConfig) -> CompactBotConfig:
+    def _cpu_crossover(self, parent1: CompactBotConfig, parent2: CompactBotConfig) -> CompactBotConfig:
         """
         Perform crossover between two parents using uniform selection.
         For each gene, randomly select from parent1 or parent2.
@@ -348,7 +493,7 @@ class GeneticAlgorithmEvolver:
         """
         Refill population to target size.
         Preserves ALL survivors unchanged (they're already profitable/best).
-        Fills remaining slots with NEW unique indicator combinations.
+        Fills remaining slots with crossover + mutation of survivors.
         
         Args:
             survivors: Surviving bots from selection (profitable + best unprofitable)
@@ -371,17 +516,106 @@ class GeneticAlgorithmEvolver:
             combo = frozenset(bot.indicator_indices[:bot.num_indicators])
             self.used_combinations.add(combo)
         
-        # Fill remaining slots with NEW unique indicator combinations
+        # Fill remaining slots with crossover + mutation of survivors
         next_bot_id = max(bot.bot_id for bot in survivors) + 1
         num_new_bots = target_size - len(survivors)
         
-        for _ in range(num_new_bots):
-            # Generate bot with unique indicator combination
-            new_bot = self.generate_unique_bot(next_bot_id)
-            next_bot_id += 1
-            new_population.append(new_bot)
+        if num_new_bots > 0:
+            # Generate children through crossover and mutation
+            children = self._generate_children(survivors, num_new_bots, next_bot_id)
+            new_population.extend(children)
         
         return new_population
+    
+    def _generate_children(
+        self,
+        parents: List[CompactBotConfig],
+        num_children: int,
+        start_bot_id: int
+    ) -> List[CompactBotConfig]:
+        """
+        Generate children through crossover and mutation.
+        
+        Args:
+            parents: Parent bots for breeding
+            num_children: Number of children to generate
+            start_bot_id: Starting bot ID for new children
+            
+        Returns:
+            List of child bots
+        """
+        if len(parents) < 2:
+            # Not enough parents for crossover, generate new unique bots
+            children = []
+            for i in range(num_children):
+                new_bot = self.generate_unique_bot(start_bot_id + i)
+                children.append(new_bot)
+            return children
+        
+        # Use GPU acceleration if available
+        if self.gpu_processor is not None:
+            try:
+                return self._gpu_generate_children(parents, num_children, start_bot_id)
+            except Exception as e:
+                log_warning(f"GPU child generation failed: {e}")
+                log_info("Falling back to CPU child generation")
+        
+        # CPU fallback
+        return self._cpu_generate_children(parents, num_children, start_bot_id)
+    
+    def _gpu_generate_children(
+        self,
+        parents: List[CompactBotConfig],
+        num_children: int,
+        start_bot_id: int
+    ) -> List[CompactBotConfig]:
+        """GPU-accelerated child generation."""
+        # Create parent pairs for crossover
+        parent_pairs = []
+        for i in range(num_children):
+            p1_idx = i % len(parents)
+            p2_idx = (i + 1) % len(parents)  # Simple pairing strategy
+            parent_pairs.append((parents[p1_idx], parents[p2_idx]))
+        
+        # GPU crossover
+        children = self.gpu_processor.crossover_population_gpu(parent_pairs)
+        
+        # Assign bot IDs
+        for i, child in enumerate(children):
+            child.bot_id = start_bot_id + i
+        
+        # GPU mutation
+        self.gpu_processor.mutate_population_gpu(children, self.mutation_rate)
+        
+        log_debug(f"GPU-generated {len(children)} children via crossover + mutation")
+        return children
+    
+    def _cpu_generate_children(
+        self,
+        parents: List[CompactBotConfig],
+        num_children: int,
+        start_bot_id: int
+    ) -> List[CompactBotConfig]:
+        """CPU fallback for child generation."""
+        children = []
+        
+        for i in range(num_children):
+            # Select two random parents
+            parent1 = random.choice(parents)
+            parent2 = random.choice(parents)
+            
+            # Crossover
+            child = self._cpu_crossover(parent1, parent2)
+            child.bot_id = start_bot_id + i
+            
+            # Mutation
+            if random.random() < self.mutation_rate:
+                self._cpu_mutate_bot(child)
+            
+            children.append(child)
+        
+        log_debug(f"CPU-generated {len(children)} children via crossover + mutation")
+        return children
     
     def run_evolution(
         self,
@@ -400,52 +634,85 @@ class GeneticAlgorithmEvolver:
         """
         log_info(f"\nStarting Evolution: {num_generations} generations, {len(cycles)} cycles")
         
+        # Start profiling
+        self.profiler.start_evolution()
+        
         # Initialize population if needed
+        self.profiler.start_phase("population_initialization")
         if not self.population:
             self.population = self.initialize_population()
+        self.profiler.end_phase("population_initialization")
         
         target_size = len(self.population)
         
         # Run generations
         for gen in range(num_generations):
-            # Evaluate
+            self.profiler.start_generation()
+            log_info(f"\n--- GENERATION {gen} ---")
+            
+            # Phase 1: Population evaluation (backtesting)
+            self.profiler.start_phase("population_evaluation")
+            log_info(f"Evaluating {len(self.population)} bots...")
             self.population_results = self.evaluate_population(
                 self.population,
                 ohlcv_data,
                 cycles
             )
+            self.profiler.end_phase("population_evaluation")
             
-            # Log individual bot performance
+            # Phase 2: Logging generation results
+            self.profiler.start_phase("logging_generation")
+            log_info(f"Logging generation {gen} results...")
             self.log_generation_bots(gen, self.population, self.population_results, initial_balance, len(cycles))
+            self.profiler.end_phase("logging_generation")
             
-            # Select survivors
+            # Phase 3: Survivor selection
+            self.profiler.start_phase("survivor_selection")
+            log_info("Selecting survivors...")
             survivors, survivor_results = self.select_survivors(
                 self.population,
                 self.population_results,
                 survival_rate=0.5
             )
+            self.profiler.end_phase("survivor_selection")
             
-            # Print generation summary
+            # Phase 4: Print generation summary
+            self.profiler.start_phase("generation_summary")
             self._print_generation_summary(gen, survivor_results, initial_balance)
+            self.profiler.end_phase("generation_summary")
             
-            # Release combinations from dead bots
+            # Phase 5: Release combinations from dead bots
+            self.profiler.start_phase("combination_cleanup")
             dead_bots = [bot for bot in self.population if bot not in survivors]
             self.release_combinations(dead_bots)
+            self.profiler.end_phase("combination_cleanup")
             
-            # Refill for next generation
+            # Phase 6: Refill population (crossover/mutation)
+            self.profiler.start_phase("population_refill")
+            log_info("Refilling population...")
             self.population = self.refill_population(survivors, target_size)
+            self.profiler.end_phase("population_refill")
             
             self.current_generation += 1
+            self.profiler.end_generation(gen)
         
         # Final evaluation
+        log_info(f"\n--- FINAL EVALUATION ---")
+        self.profiler.start_phase("final_evaluation")
         self.population_results = self.evaluate_population(
             self.population,
             ohlcv_data,
             cycles
         )
+        self.profiler.end_phase("final_evaluation")
         
-        # Log final generation
+        # Final logging
+        self.profiler.start_phase("final_logging")
         self.log_generation_bots(num_generations, self.population, self.population_results, initial_balance, len(cycles))
+        self.profiler.end_phase("final_logging")
+        
+        # Print performance summary
+        self.profiler.print_summary()
         
         log_info(f"\nEvolution complete!\n")
     
@@ -476,6 +743,22 @@ class GeneticAlgorithmEvolver:
     
     def log_generation_bots(self, gen: int, bots: List[CompactBotConfig], results: List[BacktestResult], initial_balance: float = 100.0, num_cycles: int = 10):
         """Log individual bot performance for this generation to a CSV file."""
+        # Use GPU acceleration if available
+        if self.gpu_logger is not None:
+            try:
+                self.gpu_logger.log_generation_bots_gpu(
+                    gen, bots, results, initial_balance, num_cycles
+                )
+                return
+            except Exception as e:
+                log_warning(f"GPU logging failed: {e}")
+                log_info("Falling back to CPU logging")
+
+        # CPU fallback implementation
+        self._cpu_log_generation_bots(gen, bots, results, initial_balance, num_cycles)
+    
+    def _cpu_log_generation_bots(self, gen: int, bots: List[CompactBotConfig], results: List[BacktestResult], initial_balance: float = 100.0, num_cycles: int = 10):
+        """CPU fallback implementation of generation logging."""
         import os
         import csv
         
@@ -698,3 +981,12 @@ class GeneticAlgorithmEvolver:
             log_info(f"  Indicators: {bot.num_indicators}")
             log_info(f"  Leverage: {bot.leverage}x")
             log_info("")
+    
+    def shutdown(self):
+        """Shutdown GPU processors."""
+        if self.gpu_processor is not None:
+            log_info("Shutting down GPU GA processor")
+        
+        if self.gpu_logger is not None:
+            self.gpu_logger.shutdown()
+            log_info("Shutting down GPU logging processor")

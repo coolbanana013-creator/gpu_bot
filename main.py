@@ -10,6 +10,7 @@ import sys
 import numpy as np
 from typing import Optional
 import pyopencl as cl
+import time
 
 from src.utils.validation import (
     validate_int, validate_float, validate_pair, validate_timeframe,
@@ -311,15 +312,20 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
     print("GENETIC ALGORITHM - STARTING")
     print("="*60)
     
+    # Start data loading profiling
+    data_loading_start = time.time()
+    
     try:
-        # Fetch data
+        # Calculate total days needed
         fetcher = DataFetcher()
         total_days = fetcher.calculate_required_days(
             params['backtest_days'],
             params['cycles']
         )
         
+        # Fetch data
         print(f"\nFetching {total_days} days of {params['pair']} {params['timeframe']} data...")
+        fetch_start = time.time()
         
         file_paths = fetcher.fetch_data_range(
             pair=params['pair'],
@@ -327,8 +333,13 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             total_days=total_days
         )
         
+        fetch_time = time.time() - fetch_start
+        print(f"Data fetching completed in {fetch_time:.3f}s")
+        
         # Load and validate data (GPU-accelerated)
         print("Loading data with GPU acceleration...")
+        load_start = time.time()
+        
         loader = DataLoader(
             file_paths=file_paths,
             timeframe=params['timeframe'],
@@ -346,9 +357,16 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             backtest_days=params['backtest_days']
         )
         
+        load_time = time.time() - load_start
+        total_data_time = time.time() - data_loading_start
+        print(f"Data loading completed in {load_time:.3f}s")
+        print(f"Total data preparation: {total_data_time:.3f}s")
         print(f"Loaded {len(ohlcv_array)} bars, {len(cycle_ranges)} cycles\n")
         
         # Initialize components
+        print("Initializing evolution components...")
+        init_start = time.time()
+        
         bot_generator = CompactBotGenerator(
             population_size=params['population'],
             min_indicators=params['min_indicators'],
@@ -373,11 +391,17 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             bot_generator=bot_generator,
             backtester=backtester,
             pair="xbtusdtm",
-            timeframe="1m"
+            timeframe="1m",
+            gpu_context=gpu_context,
+            gpu_queue=gpu_queue
         )
+        
+        init_time = time.time() - init_start
+        print(f"Component initialization completed in {init_time:.3f}s")
         
         # Run evolution
         print("Running evolution...")
+        evolution_start = time.time()
         
         evolver.run_evolution(
             num_generations=params['generations'],
@@ -386,12 +410,19 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             initial_balance=params['initial_balance']
         )
         
+        evolution_time = time.time() - evolution_start
+        print(f"Evolution completed in {evolution_time:.3f}s")
+        
         # Save and display results
         print("\nSaving results...")
+        results_start = time.time()
         
         evolver.save_top_bots(count=100)
         evolver.print_top_bots(count=10, initial_balance=params['initial_balance'])
         evolver.print_current_generation(initial_balance=params['initial_balance'])
+        
+        results_time = time.time() - results_start
+        print(f"Results processing completed in {results_time:.3f}s")
         
         print("\n" + "="*60)
         print("GENETIC ALGORITHM - COMPLETE")
