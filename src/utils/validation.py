@@ -353,19 +353,26 @@ def validate_pair(pair: str) -> str:
     """
     pair = validate_string(pair, "pair", min_length=5)
     
-    if '/' not in pair:
-        raise ValueError(f"Trading pair must contain '/', got '{pair}'")
+    # Support both standard format (BTC/USDT) and KuCoin Futures format (XBTUSDTM)
+    if '/' in pair:
+        # Standard format: BASE/QUOTE or BASE/QUOTE:SETTLE
+        parts = pair.split('/')
+        if len(parts) != 2:
+            raise ValueError(f"Trading pair must be in format BASE/QUOTE, got '{pair}'")
+        
+        base, quote = parts
+        if not base or not quote:
+            raise ValueError(f"Invalid trading pair format: '{pair}'")
+        
+        # Normalize to uppercase
+        normalized = f"{base.upper()}/{quote.upper()}"
+    else:
+        # KuCoin Futures format: XBTUSDTM (no slash)
+        # Just validate it's not empty and normalize to uppercase
+        if not pair:
+            raise ValueError(f"Invalid trading pair format: '{pair}'")
+        normalized = pair.upper()
     
-    parts = pair.split('/')
-    if len(parts) != 2:
-        raise ValueError(f"Trading pair must be in format BASE/QUOTE, got '{pair}'")
-    
-    base, quote = parts
-    if not base or not quote:
-        raise ValueError(f"Invalid trading pair format: '{pair}'")
-    
-    # Normalize to uppercase
-    normalized = f"{base.upper()}/{quote.upper()}"
     logger.debug(f"Validated pair: {pair} -> {normalized}")
     return normalized
 

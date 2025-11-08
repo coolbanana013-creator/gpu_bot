@@ -115,27 +115,55 @@ class DataFetcher:
         try:
             log_debug(f"Fetching {pair} {timeframe} data for {date.strftime('%Y-%m-%d')}")
             
-            # Fetch data from exchange
-            ohlcv = self.exchange.fetch_ohlcv(
-                symbol=pair,
-                timeframe=timeframe,
-                since=start_ms,
-                limit=1500  # Kucoin limit
-            )
+            # Fetch data from exchange with pagination to get full day
+            all_ohlcv = []
+            current_start = start_ms
+            max_iterations = 20  # Safety limit to prevent infinite loops
+            iteration = 0
             
-            # Filter to only include data for this specific day
-            filtered_ohlcv = [
-                candle for candle in ohlcv
-                if start_ms <= candle[0] < end_ms
-            ]
+            while current_start < end_ms and iteration < max_iterations:
+                iteration += 1
+                
+                ohlcv = self.exchange.fetch_ohlcv(
+                    symbol=pair,
+                    timeframe=timeframe,
+                    since=current_start,
+                    limit=1500  # Kucoin limit (though they may return less)
+                )
+                
+                if not ohlcv:
+                    break
+                
+                # Filter to only include data for this specific day
+                filtered = [
+                    candle for candle in ohlcv
+                    if start_ms <= candle[0] < end_ms
+                ]
+                
+                if not filtered:
+                    break
+                
+                all_ohlcv.extend(filtered)
+                
+                # Move to next batch - use last candle timestamp + 1 minute (60000ms for 1m timeframe)
+                last_timestamp = ohlcv[-1][0]
+                current_start = last_timestamp + 60000  # Move forward by 1 minute
+                
+                # If the last candle returned is beyond our end time, we're done
+                if last_timestamp >= end_ms:
+                    break
+                
+                # Add small delay to avoid rate limiting
+                if iteration < max_iterations:
+                    time.sleep(0.1)
             
-            if not filtered_ohlcv:
+            if not all_ohlcv:
                 log_warning(f"No data returned for {pair} {timeframe} on {date.strftime('%Y-%m-%d')}")
                 return None
             
             # Convert to DataFrame
             df = pd.DataFrame(
-                filtered_ohlcv,
+                all_ohlcv,
                 columns=OHLCV_COLUMNS
             )
             
@@ -158,8 +186,8 @@ class DataFetcher:
                 
         except ccxt.ExchangeError as e:
             log_error(f"Exchange error fetching data for {date.strftime('%Y-%m-%d')}: {e}")
-            # Don't retry on exchange errors
-            return None
+            # CRASH on exchange errors - don't skip silently
+            raise RuntimeError(f"Exchange error for {date.strftime('%Y-%m-%d')}: {e}")
             
         except Exception as e:
             log_error(f"Unexpected error fetching data for {date.strftime('%Y-%m-%d')}: {e}")
@@ -238,11 +266,12 @@ class DataFetcher:
                 
                 df = self._fetch_ohlcv_for_date(pair, timeframe, date)
                 
-                if df is not None and not df.empty:
-                    self._save_data(df, file_path)
-                    file_paths.append(file_path)
-                else:
-                    log_warning(f"Skipping {date.strftime('%Y-%m-%d')} due to missing data")
+                # CRASH if data fetch fails - no silent skipping
+                if df is None or df.empty:
+                    raise RuntimeError(f"Failed to fetch data for {date.strftime('%Y-%m-%d')}: No data returned")
+                
+                self._save_data(df, file_path)
+                file_paths.append(file_path)
         
         # Sort file paths by date (ascending)
         file_paths.sort()
@@ -257,22 +286,23 @@ class DataFetcher:
         self,
         backtest_days: int,
         cycles: int,
-        buffer_multiplier: float = DATA_BUFFER_MULTIPLIER
+        buffer_multiplier: float = 1.2
     ) -> int:
         """
-        Calculate total days of data needed including buffer.
+        Calculate total days of data needed for non-overlapping cycles + buffer.
         
         Args:
             backtest_days: Days per backtest cycle
-            cycles: Number of cycles
-            buffer_multiplier: Extra data multiplier for indicator lookback
+            cycles: Number of non-overlapping cycles
+            buffer_multiplier: Extra 20% buffer for indicator lookback (default 1.2)
             
         Returns:
-            Total days required
+            Total days required (cycles * days_per_cycle * 1.2)
         """
         backtest_days = validate_int(backtest_days, "backtest_days", min_val=1)
         cycles = validate_int(cycles, "cycles", min_val=1)
         
+        # For non-overlapping cycles: need cycles × days_per_cycle + 20% buffer
         base_days = backtest_days * cycles
         total_days = int(base_days * buffer_multiplier)
         

@@ -1,0 +1,88 @@
+Top Bots from Integration Test
+================================================================================
+
+Bot #1
+  Sharpe Ratio: -0.3571
+  Win Rate: 33.72%
+  Total PnL: $14,837.18
+  Total Trades: 1133
+  Final Balance: $7,402.88
+  Max Drawdown: 72.74%
+
+  Configuration:
+    Indicators: 4
+    Risk Strategies: 8
+    Leverage: 10x
+    Take Profit: 14.73%
+    Stop Loss: 4.24%
+
+--------------------------------------------------------------------------------
+
+Bot #2
+  Sharpe Ratio: -0.9639
+  Win Rate: 24.84%
+  Total PnL: $-25,801.17
+  Total Trades: 1083
+  Final Balance: $1,007.79
+  Max Drawdown: 93.29%
+
+  Configuration:
+    Indicators: 3
+    Risk Strategies: 14
+    Leverage: 15x
+    Take Profit: 12.99%
+    Stop Loss: 4.19%
+
+--------------------------------------------------------------------------------
+
+Bot #3
+  Sharpe Ratio: -0.7895
+  Win Rate: 41.30%
+  Total PnL: $-29,788.61
+  Total Trades: 322
+  Final Balance: $979.70
+  Max Drawdown: 114.26%
+
+  Configuration:
+    Indicators: 3
+    Risk Strategies: 9
+    Leverage: 37x
+    Take Profit: 17.75%
+    Stop Loss: 5.72%
+
+--------------------------------------------------------------------------------
+
+Bot #4
+  Sharpe Ratio: -0.9325
+  Win Rate: 14.00%
+  Total PnL: $-25,798.19
+  Total Trades: 50
+  Final Balance: $0.00
+  Max Drawdown: 107.24%
+
+  Configuration:
+    Indicators: 3
+    Risk Strategies: 14
+    Leverage: 32x
+    Take Profit: 15.63%
+    Stop Loss: 5.17%
+
+--------------------------------------------------------------------------------
+
+Bot #5
+  Sharpe Ratio: -0.7033
+  Win Rate: 65.22%
+  Total PnL: $-27,921.32
+  Total Trades: 23
+  Final Balance: $115.66
+  Max Drawdown: 140.55%
+
+  Configuration:
+    Indicators: 3
+    Risk Strategies: 11
+    Leverage: 11x
+    Take Profit: 12.24%
+    Stop Loss: 4.01%
+
+--------------------------------------------------------------------------------
+

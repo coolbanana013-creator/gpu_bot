@@ -24,9 +24,9 @@ from src.utils.config import (
 )
 from src.data_provider.fetcher import DataFetcher
 from src.data_provider.loader import DataLoader
-from src.bot_generator.generator import BotGenerator
-from src.backtester.simulator import GPUBacktester
-from src.ga.evolver import GeneticAlgorithmEvolver
+from src.bot_generator.compact_generator import CompactBotGenerator
+from src.backtester.compact_simulator import CompactBacktester
+from src.ga.evolver_compact import GeneticAlgorithmEvolver  # NEW: Use compact evolver
 
 
 def initialize_gpu() -> tuple:
@@ -149,7 +149,7 @@ def get_mode_selection() -> int:
     
     print("Available Modes:")
     for mode_num, description in MODE_DESCRIPTIONS.items():
-        status = "✓" if mode_num in IMPLEMENTED_MODES else "✗"
+        status = "[OK]" if mode_num in IMPLEMENTED_MODES else "[X]"
         print(f"  {status} Mode {mode_num}: {description}")
     
     print()
@@ -230,39 +230,46 @@ def get_mode1_parameters() -> dict:
         lambda x: validate_timeframe(x)
     )
     
-    # Leverage
-    params['leverage'] = get_user_input(
-        "Leverage (1-125x)",
+    # Leverage range (NEW: min and max)
+    params['min_leverage'] = get_user_input(
+        "Min leverage (1-125x)",
+        1,
+        lambda x: validate_int(int(x), "min_leverage", min_val=1, max_val=125)
+    )
+    
+    params['max_leverage'] = get_user_input(
+        f"Max leverage ({params['min_leverage']}-125x)",
         10,
-        lambda x: validate_leverage(int(x))
+        lambda x: validate_int(int(x), "max_leverage", 
+                              min_val=params['min_leverage'], max_val=125)
     )
     
     # Indicators per bot
     params['min_indicators'] = get_user_input(
-        "Min indicators per bot (1-10)",
+        "Min indicators per bot (1-8)",
         DEFAULT_MIN_INDICATORS,
-        lambda x: validate_int(int(x), "min_indicators", min_val=1, max_val=10)
+        lambda x: validate_int(int(x), "min_indicators", min_val=1, max_val=8)
     )
     
     params['max_indicators'] = get_user_input(
-        f"Max indicators per bot ({params['min_indicators']}-10)",
+        f"Max indicators per bot ({params['min_indicators']}-8)",
         DEFAULT_MAX_INDICATORS,
         lambda x: validate_int(int(x), "max_indicators", 
-                              min_val=params['min_indicators'], max_val=10)
+                              min_val=params['min_indicators'], max_val=8)
     )
     
     # Risk strategies per bot
     params['min_risk_strategies'] = get_user_input(
-        "Min risk strategies per bot (1-10)",
+        "Min risk strategies per bot (1-15)",
         DEFAULT_MIN_RISK_STRATEGIES,
-        lambda x: validate_int(int(x), "min_risk_strategies", min_val=1, max_val=10)
+        lambda x: validate_int(int(x), "min_risk_strategies", min_val=1, max_val=15)
     )
     
     params['max_risk_strategies'] = get_user_input(
-        f"Max risk strategies per bot ({params['min_risk_strategies']}-10)",
+        f"Max risk strategies per bot ({params['min_risk_strategies']}-15)",
         DEFAULT_MAX_RISK_STRATEGIES,
         lambda x: validate_int(int(x), "max_risk_strategies",
-                              min_val=params['min_risk_strategies'], max_val=10)
+                              min_val=params['min_risk_strategies'], max_val=15)
     )
     
     # Random seed
@@ -295,21 +302,18 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         gpu_info: GPU device information dict
     """
     print("\n" + "="*60)
-    print("STARTING MODE 1: GENETIC ALGORITHM")
-    print("="*60 + "\n")
+    print("GENETIC ALGORITHM - STARTING")
+    print("="*60)
     
     try:
-        # Step 1: Fetch data
-        log_info("Step 1/5: Fetching market data...")
+        # Fetch data
         fetcher = DataFetcher()
-        
-        # Calculate required days
         total_days = fetcher.calculate_required_days(
             params['backtest_days'],
             params['cycles']
         )
         
-        log_info(f"Fetching {total_days} days of data for {params['pair']} {params['timeframe']}")
+        print(f"\nFetching {total_days} days of {params['pair']} {params['timeframe']} data...")
         
         file_paths = fetcher.fetch_data_range(
             pair=params['pair'],
@@ -317,8 +321,8 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             total_days=total_days
         )
         
-        # Step 2: Load and validate data
-        log_info("\nStep 2/5: Loading and validating data...")
+        # Load and validate data
+        print("Loading data...")
         loader = DataLoader(
             file_paths=file_paths,
             timeframe=params['timeframe'],
@@ -326,32 +330,30 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         )
         
         ohlcv_data = loader.load_all_data()
+        ohlcv_array = ohlcv_data[['timestamp', 'open', 'high', 'low', 'close', 'volume']].values.astype(np.float32)
         
-        # Generate cycle ranges
         cycle_ranges = loader.generate_cycle_ranges(
             num_cycles=params['cycles'],
             backtest_days=params['backtest_days']
         )
         
-        data_summary = loader.get_data_summary()
-        log_info(f"Data loaded: {data_summary}")
+        print(f"Loaded {len(ohlcv_array)} bars, {len(cycle_ranges)} cycles\n")
         
-        # Step 3: Initialize components with GPU context
-        log_info("\nStep 3/5: Initializing GA components with GPU...")
-        
-        bot_generator = BotGenerator(
+        # Initialize components
+        bot_generator = CompactBotGenerator(
             population_size=params['population'],
             min_indicators=params['min_indicators'],
             max_indicators=params['max_indicators'],
             min_risk_strategies=params['min_risk_strategies'],
             max_risk_strategies=params['max_risk_strategies'],
-            leverage=params['leverage'],
+            min_leverage=params['min_leverage'],
+            max_leverage=params['max_leverage'],
             random_seed=params['random_seed'],
             gpu_context=gpu_context,
             gpu_queue=gpu_queue
         )
         
-        backtester = GPUBacktester(
+        backtester = CompactBacktester(
             gpu_context=gpu_context,
             gpu_queue=gpu_queue,
             initial_balance=params['initial_balance']
@@ -362,27 +364,24 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             backtester=backtester
         )
         
-        # Step 4: Run evolution
-        log_info("\nStep 4/5: Running genetic algorithm evolution...")
+        # Run evolution
+        print("Running evolution...")
         
         evolver.run_evolution(
             num_generations=params['generations'],
-            ohlcv_data=ohlcv_data,
-            cycle_ranges=cycle_ranges
+            ohlcv_data=ohlcv_array,
+            cycles=cycle_ranges
         )
         
-        # Step 5: Save and display results
-        log_info("\nStep 5/5: Saving results...")
+        # Save and display results
+        print("\nSaving results...")
         
-        evolver.save_results()
+        evolver.save_top_bots(count=100)
         evolver.print_top_bots(count=10)
         
         print("\n" + "="*60)
-        print("MODE 1 COMPLETE")
+        print("GENETIC ALGORITHM - COMPLETE")
         print("="*60 + "\n")
-        
-        log_info(f"Results saved to {evolver.backtester}")
-        log_info("Thank you for using the GPU Trading Bot!")
         
     except KeyboardInterrupt:
         log_warning("\n\nExecution interrupted by user")
@@ -436,8 +435,23 @@ def get_mode4_parameters() -> dict:
     )
     
     # Bot source
+    import os
+    import glob
+    
+    # List available saved bots
+    bot_files = glob.glob("bot_*.json")
+    if bot_files:
+        print(f"\nAvailable saved bots: {len(bot_files)}")
+        for i, filename in enumerate(sorted(bot_files), 1):
+            try:
+                with open(filename, 'r') as f:
+                    bot_data = json.load(f)
+                print(f"  {i}. {filename} - ID:{bot_data['bot_id']}, Fitness:{bot_data['fitness_score']:.2f}, Survived:{bot_data.get('survival_generations', 0)} gens")
+            except:
+                print(f"  {i}. {filename} - (invalid file)")
+    
     bot_choice = get_user_input(
-        "Load existing bot ID or generate new? (id/new)",
+        "Load existing bot ID, filename, or generate new? (id/filename/new)",
         "new"
     )
     
@@ -447,8 +461,22 @@ def get_mode4_parameters() -> dict:
             1,
             lambda x: validate_int(int(x), "bot_id", min_val=1)
         )
+        params['bot_source'] = 'id'
+    elif bot_choice.lower() == 'filename':
+        filename = get_user_input(
+            "Bot filename to load (e.g., bot_123.json)",
+            "bot_1.json"
+        )
+        if not os.path.exists(filename):
+            log_error(f"Bot file {filename} not found, generating new bot instead")
+            params['bot_id'] = None
+            params['bot_source'] = 'new'
+        else:
+            params['bot_filename'] = filename
+            params['bot_source'] = 'file'
     else:
         params['bot_id'] = None  # Generate new random bot
+        params['bot_source'] = 'new'
     
     # Initial balance
     params['initial_balance'] = get_user_input(
@@ -521,20 +549,51 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         # Step 3: Get or generate bot
         log_info("\nStep 3/4: Preparing bot...")
         
-        if params['bot_id'] is not None:
-            # TODO: Load bot from saved results
-            log_warning("Bot loading not yet implemented, generating random bot instead")
-            params['bot_id'] = None
+        if params['bot_source'] == 'file':
+            # Load bot from file
+            try:
+                with open(params['bot_filename'], 'r') as f:
+                    bot_data = json.load(f)
+                
+                # Reconstruct bot from saved data
+                from src.bot_generator.compact_generator import CompactBotConfig
+                import numpy as np
+                
+                config = bot_data['config']
+                bot = CompactBotConfig(
+                    bot_id=config['bot_id'] if 'bot_id' in config else bot_data['bot_id'],
+                    num_indicators=config['num_indicators'],
+                    indicator_indices=np.array(config['indicator_indices'] + [0] * (8 - len(config['indicator_indices'])), dtype=np.uint8),
+                    indicator_params=np.array(config['indicator_params'] + [[0.0, 0.0, 0.0]] * (8 - len(config['indicator_params'])), dtype=np.float32),
+                    risk_strategy_bitmap=config['risk_strategy_bitmap'],
+                    tp_multiplier=config['tp_multiplier'],
+                    sl_multiplier=config['sl_multiplier'],
+                    leverage=config['leverage'],
+                    survival_generations=bot_data.get('survival_generations', 0)
+                )
+                log_info(f"Loaded bot from {params['bot_filename']}")
+                log_info(f"Bot ID: {bot.bot_id}, Survival generations: {bot.survival_generations}")
+                
+            except Exception as e:
+                log_error(f"Failed to load bot from {params['bot_filename']}: {e}")
+                log_warning("Generating random bot instead")
+                params['bot_source'] = 'new'
         
-        if params['bot_id'] is None:
-            # Generate single random bot
-            bot_generator = BotGenerator(
+        if params['bot_source'] == 'id':
+            # TODO: Load bot from saved results by ID
+            log_warning("Bot loading by ID not yet implemented, generating random bot instead")
+            params['bot_source'] = 'new'
+        
+        if params['bot_source'] == 'new':
+            # Generate single random bot with default params
+            bot_generator = CompactBotGenerator(
                 population_size=1,
                 min_indicators=3,
                 max_indicators=8,
                 min_risk_strategies=2,
                 max_risk_strategies=5,
-                leverage=params['leverage'],
+                min_leverage=1,
+                max_leverage=10,
                 random_seed=42,
                 gpu_context=gpu_context,
                 gpu_queue=gpu_queue
@@ -547,8 +606,7 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         # Step 4: Run backtest
         log_info("\nStep 4/4: Running backtest...")
         
-        from src.backtester.simulator import GPUBacktester
-        backtester = GPUBacktester(
+        backtester = CompactBacktester(
             gpu_context=gpu_context,
             gpu_queue=gpu_queue,
             initial_balance=params['initial_balance']
@@ -557,8 +615,7 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         results = backtester.backtest_bots(
             bots=[bot],
             ohlcv_data=ohlcv_data,
-            cycle_starts=np.array([cycle_ranges[0][0]], dtype=np.int32),
-            cycle_ends=np.array([cycle_ranges[0][1]], dtype=np.int32)
+            cycles=cycle_ranges
         )
         
         result = results[0]
@@ -580,16 +637,13 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         
         # Display bot configuration
         print("BOT CONFIGURATION:")
-        print(f"  Indicators ({len(bot.indicators)}):")
-        for i, ind in enumerate(bot.indicators, 1):
-            print(f"    {i}. {ind.indicator_type.value}: {ind.params}")
+        print(f"  Indicators: {bot.num_indicators} indicators")
+        for i in range(bot.num_indicators):
+            print(f"    {i+1}. Indicator {bot.indicator_indices[i]} with params {bot.indicator_params[i]}")
         
-        print(f"\n  Risk Strategies ({len(bot.risk_strategies)}):")
-        for i, risk in enumerate(bot.risk_strategies, 1):
-            print(f"    {i}. {risk.strategy_type.value}: {risk.params}")
-        
-        print(f"\n  Take Profit: {bot.take_profit_pct:.2f}%")
-        print(f"  Stop Loss: {bot.stop_loss_pct:.2f}%")
+        print(f"\n  Risk Strategy Bitmap: {bin(bot.risk_strategy_bitmap)}")
+        print(f"  TP Multiplier: {bot.tp_multiplier:.2f}")
+        print(f"  SL Multiplier: {bot.sl_multiplier:.2f}")
         print(f"  Leverage: {bot.leverage}x")
         
         print("\n" + "="*60)

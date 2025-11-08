@@ -216,45 +216,47 @@ class DataLoader:
         # Each cycle needs: lookback_buffer + bars_per_cycle
         cycle_total_bars = lookback_buffer + bars_per_cycle
         
-        # Generate non-overlapping ranges
+        # Generate non-overlapping ranges by placing them sequentially
         self.cycle_ranges = []
-        used_indices = set()
         
         max_start_idx = available_bars - cycle_total_bars
-        possible_starts = list(range(0, max_start_idx + 1, bars_per_cycle))
+        if max_start_idx < 0:
+            raise ValueError(f"Data too short for even one cycle. Need at least {cycle_total_bars} bars, have {available_bars}")
         
-        # Shuffle for randomness
-        np.random.shuffle(possible_starts)
+        # Place cycles sequentially with no gaps between them
+        current_start = 0
         
-        for start_idx in possible_starts:
-            if len(self.cycle_ranges) >= num_cycles:
+        for i in range(num_cycles):
+            if current_start > max_start_idx:
+                break
+                
+            # Start of actual backtest data (after lookback)
+            backtest_start = current_start + lookback_buffer
+            backtest_end = backtest_start + bars_per_cycle
+            
+            # Ensure we don't go beyond available data
+            if backtest_end >= available_bars:
                 break
             
-            # Check if this range overlaps with any used indices
-            range_indices = set(range(start_idx, start_idx + cycle_total_bars))
+            self.cycle_ranges.append((backtest_start, backtest_end))
             
-            if not range_indices.intersection(used_indices):
-                # This range doesn't overlap, use it
-                # Start of actual backtest data (after lookback)
-                backtest_start = start_idx + lookback_buffer
-                backtest_end = backtest_start + bars_per_cycle
-                
-                self.cycle_ranges.append((backtest_start, backtest_end))
-                used_indices.update(range_indices)
-                
-                log_debug(
-                    f"Cycle {len(self.cycle_ranges)}: "
-                    f"indices [{backtest_start}:{backtest_end}] "
-                    f"(lookback from {start_idx})"
-                )
+            log_debug(
+                f"Cycle {len(self.cycle_ranges)}: "
+                f"indices [{backtest_start}:{backtest_end}] "
+                f"(lookback from {current_start})"
+            )
+            
+            # Move to next non-overlapping position
+            current_start += bars_per_cycle
         
         if len(self.cycle_ranges) < num_cycles:
             raise ValueError(
                 f"Could only generate {len(self.cycle_ranges)} non-overlapping cycles, "
-                f"requested {num_cycles}. Data may be insufficient or too fragmented."
+                f"requested {num_cycles}. This suggests data gaps are preventing proper cycle placement. "
+                f"Try reducing the number of cycles or backtest days per cycle."
             )
         
-        log_info(f"Successfully generated {len(self.cycle_ranges)} cycle ranges")
+        log_info(f"Successfully generated {len(self.cycle_ranges)} non-overlapping cycle ranges")
         return self.cycle_ranges
     
     def _estimate_bars_per_day(self) -> float:

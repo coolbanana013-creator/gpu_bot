@@ -189,8 +189,8 @@ MIN_DATA_POINTS_PER_DAY = {
 # Supported quote currencies
 SUPPORTED_QUOTE_CURRENCIES = ['USDT', 'BUSD', 'USD']
 
-# Default trading pair
-DEFAULT_TRADING_PAIR = 'BTC/USDT'
+# Default trading pair (KuCoin Futures perpetual swap - XBTUSDTM)
+DEFAULT_TRADING_PAIR = 'XBTUSDTM'
 
 # ============================================================================
 # BALANCE CONFIGURATION
@@ -234,11 +234,11 @@ MAX_API_RETRIES = 3
 # ============================================================================
 
 AVAILABLE_MODES = [1, 2, 3, 4]
-IMPLEMENTED_MODES = [1]  # Only Mode 1 is implemented
+IMPLEMENTED_MODES = [1, 4]  # Mode 1 (GA) and Mode 4 (Single Bot) are implemented
 
 MODE_DESCRIPTIONS = {
     1: "Genetic Algorithm Mode - Evolve trading bots over multiple generations",
     2: "Not Implemented",
     3: "Not Implemented",
-    4: "Single Bot Backtest Mode - Test one bot on historical data"
+    4: "Single Bot Backtest Mode - Test individual bots on historical data (supports loading saved bots)"
 }

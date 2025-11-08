@@ -1,0 +1,13 @@
+Integration Test Summary
+================================================================================
+
+Test Results:
+  bot_generation: [PASS]
+  indicator_precomputation: [PASS]
+  backtest_execution: [PASS]
+  ga_evolution: [FAIL]
+  memory_usage: [PASS]
+  no_errors: [PASS]
+  meaningful_results: [FAIL]
+
+[OK] No errors encountered
