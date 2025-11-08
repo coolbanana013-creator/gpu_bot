@@ -71,14 +71,7 @@ class GPULoggingProcessor:
     ) -> None:
         """
         GPU-accelerated logging of generation bot data to CSV.
-
-        Args:
-            generation: Current generation number
-            bots: List of bot configurations
-            results: List of backtest results
-            initial_balance: Initial balance for percentage calculations
-            num_cycles: Number of cycles per generation
-            output_dir: Output directory for CSV files
+        Hybrid approach: GPU prepares data, CPU formats CSV for reliability.
         """
         start_time = time.time()
 
@@ -91,22 +84,12 @@ class GPULoggingProcessor:
             os.makedirs(output_dir, exist_ok=True)
             csv_file = os.path.join(output_dir, f"generation_{generation}.csv")
 
-            # Prepare data arrays
-            data_arrays = self._prepare_data_arrays(bots, results, num_cycles)
-
-            # Calculate output buffer size and offsets
-            output_info = self._calculate_output_requirements(data_arrays, num_cycles)
-
-            # Generate CSV data on GPU
-            csv_data = self._generate_csv_data_gpu(
-                data_arrays, output_info, generation, initial_balance, num_cycles
-            )
-
-            # Write to file asynchronously
-            self._write_csv_async(csv_file, csv_data)
+            # Use CPU fallback for now - GPU string formatting has issues
+            # TODO: Fix GPU CSV formatting kernel
+            self._cpu_fallback_logging(generation, bots, results, initial_balance, num_cycles, output_dir)
 
             elapsed = time.time() - start_time
-            log_info(".3f")
+            log_debug(f"Logging completed in {elapsed:.3f}s (CPU fallback)")
 
         except Exception as e:
             elapsed = time.time() - start_time

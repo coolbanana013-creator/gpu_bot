@@ -749,6 +749,7 @@ class GeneticAlgorithmEvolver:
                 self.gpu_logger.log_generation_bots_gpu(
                     gen, bots, results, initial_balance, num_cycles
                 )
+                log_debug(f"GPU logging completed for generation {gen}")
                 return
             except Exception as e:
                 log_warning(f"GPU logging failed: {e}")

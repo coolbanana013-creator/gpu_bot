@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import List, Tuple, Optional
 from datetime import datetime, timedelta
 import pyopencl as cl
+import concurrent.futures
 
 from ..utils.validation import (
     validate_int, validate_float, log_info, log_error, log_warning, log_debug
@@ -74,6 +75,7 @@ class DataLoader:
     def load_all_data(self) -> pd.DataFrame:
         """
         Load all data from file paths into a single DataFrame.
+        PARALLEL LOADING: Loads multiple files simultaneously for maximum speed.
         
         Returns:
             Combined DataFrame with all OHLCV data
@@ -84,11 +86,10 @@ class DataLoader:
         if not self.file_paths:
             raise RuntimeError("No file paths provided")
         
-        log_info(f"Loading {len(self.file_paths)} data files")
+        log_info(f"Loading {len(self.file_paths)} data files in parallel")
         
-        dataframes = []
-        
-        for file_path in self.file_paths:
+        def load_single_file(file_path: Path) -> pd.DataFrame:
+            """Load a single Parquet file."""
             try:
                 df = pd.read_parquet(file_path)
                 
@@ -99,12 +100,28 @@ class DataLoader:
                         f"Expected: {OHLCV_COLUMNS}, Got: {list(df.columns)}"
                     )
                 
-                dataframes.append(df[OHLCV_COLUMNS])
                 log_debug(f"Loaded {len(df)} rows from {file_path.name}")
+                return df[OHLCV_COLUMNS]
                 
             except Exception as e:
                 log_error(f"Failed to load {file_path.name}: {e}")
                 raise RuntimeError(f"Cannot load data file {file_path.name}: {e}")
+        
+        # Load all files in parallel
+        with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(self.file_paths), 8)) as executor:
+            # Submit all loading tasks
+            future_to_file = {executor.submit(load_single_file, fp): fp for fp in self.file_paths}
+            
+            # Collect results as they complete
+            dataframes = []
+            for future in concurrent.futures.as_completed(future_to_file):
+                try:
+                    df = future.result()
+                    dataframes.append(df)
+                except Exception as e:
+                    file_path = future_to_file[future]
+                    log_error(f"Failed to load {file_path.name}: {e}")
+                    raise
         
         # Combine all dataframes
         self.data = pd.concat(dataframes, ignore_index=True)

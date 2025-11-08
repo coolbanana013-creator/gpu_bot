@@ -20,8 +20,6 @@ from typing import List, Tuple, Dict
 from dataclasses import dataclass
 from pathlib import Path
 import time
-from tqdm import tqdm
-import time
 import threading
 import concurrent.futures
 
@@ -332,24 +330,20 @@ class CompactBacktester:
         max_parallel_workloads = len(preloaded_chunks)  # Process ALL chunks in parallel
         log_info(f"Processing ALL {max_parallel_workloads} chunks simultaneously for maximum GPU utilization")
 
-        with tqdm(total=len(preloaded_chunks), desc="Parallel GPU processing", unit="chunk") as pbar:
+        start_time = time.time()
 
-            # Process ALL chunks simultaneously for maximum parallelism
-            # No batching - all workloads run at once
-            batch_chunks = preloaded_chunks  # All chunks in one batch
-            
-            # Process this batch with multiple parallel workloads
-            batch_results = self._process_parallel_workloads_all_at_once(bots, batch_chunks, pbar)
+        # Process ALL chunks simultaneously for maximum parallelism
+        # No batching - all workloads run at once
+        batch_chunks = preloaded_chunks  # All chunks in one batch
 
-            # Collect results from this batch
-            all_chunk_results.extend(batch_results)
+        # Process this batch with multiple parallel workloads
+        batch_results = self._process_parallel_workloads_all_at_once(bots, batch_chunks)
 
-            # Update final progress
-            pbar.set_postfix({
-                'chunks': f"{len(preloaded_chunks)}/{len(preloaded_chunks)}",
-                'workloads': len(preloaded_chunks),
-                'utilization': 'maximum'
-            })
+        # Collect results from this batch
+        all_chunk_results.extend(batch_results)
+
+        elapsed = time.time() - start_time
+        log_info(f"Parallel GPU processing: {len(preloaded_chunks)} chunks completed in {elapsed:.3f}s")
 
         # Cleanup all preloaded indicator buffers
         for chunk in preloaded_chunks:
@@ -417,14 +411,12 @@ class CompactBacktester:
     def _process_parallel_workloads_all_at_once(
         self,
         bots: List[CompactBotConfig],
-        batch_chunks: List[Dict],
-        progress_bar: tqdm
+        batch_chunks: List[Dict]
     ) -> List[BacktestResult]:
         """
         Process ALL chunks simultaneously for maximum GPU utilization.
         
-        Updates progress bar as each chunk completes, showing overall progress.
-        Collects all results at the end to avoid interruptions.
+        No progress bar - optimized for speed.
         """
         batch_results = []
         
@@ -433,11 +425,8 @@ class CompactBacktester:
         
         log_debug(f"Running {max_concurrent} simultaneous workloads for maximum GPU utilization")
         
-        completed_count = 0
-        
         def process_single_workload(chunk):
             """Process one chunk as an independent workload."""
-            nonlocal completed_count
             
             chunk_id = chunk['id']
             chunk_data = chunk['data']
@@ -451,16 +440,6 @@ class CompactBacktester:
             for result in chunk_results:
                 result.chunk_id = chunk_id
                 result.chunk_bars = len(chunk_data)
-            
-            # Update progress bar immediately when this chunk completes
-            completed_count += 1
-            progress_bar.update(1)
-            progress_bar.set_postfix({
-                'chunks': f"{completed_count}/{len(batch_chunks)}",
-                'workloads': max_concurrent,
-                'utilization': 'maximum',
-                'completed': f"{chunk_id + 1}"
-            })
             
             return chunk_results
         
