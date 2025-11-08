@@ -409,7 +409,7 @@ class GeneticAlgorithmEvolver:
             )
             
             # Log individual bot performance
-            self.log_generation_bots(gen, self.population, self.population_results, initial_balance)
+            self.log_generation_bots(gen, self.population, self.population_results, initial_balance, len(cycles))
             
             # Select survivors
             survivors, survivor_results = self.select_survivors(
@@ -438,7 +438,7 @@ class GeneticAlgorithmEvolver:
         )
         
         # Log final generation
-        self.log_generation_bots(num_generations, self.population, self.population_results, initial_balance)
+        self.log_generation_bots(num_generations, self.population, self.population_results, initial_balance, len(cycles))
         
         log_info(f"\nEvolution complete!\n")
     
@@ -467,30 +467,49 @@ class GeneticAlgorithmEvolver:
               f"{avg_trades:.0f} trades, {avg_sharpe:.2f} Sharpe | "
               f"Best: ${max_pnl:.2f}")
     
-    def log_generation_bots(self, gen: int, bots: List[CompactBotConfig], results: List[BacktestResult], initial_balance: float = 100.0):
-        """Log individual bot performance for this generation to a file."""
+    def log_generation_bots(self, gen: int, bots: List[CompactBotConfig], results: List[BacktestResult], initial_balance: float = 100.0, num_cycles: int = 10):
+        """Log individual bot performance for this generation to a CSV file."""
         import os
+        import csv
         
         # Create logs directory if it doesn't exist
         log_dir = "logs"
         os.makedirs(log_dir, exist_ok=True)
         
-        # Log file for this generation
-        log_file = os.path.join(log_dir, f"generation_{gen}.log")
+        # CSV file for this generation
+        csv_file = os.path.join(log_dir, f"generation_{gen}.csv")
         
-        with open(log_file, 'w') as f:
-            f.write(f"Generation {gen} - Individual Bot Performance\n")
-            f.write(f"{'='*50}\n")
-            f.write(f"Format: BotID | Profit% | WinRate | Trades | FinalBalance | Fitness | Sharpe | MaxDD | SurvivedGens\n")
-            f.write(f"{'='*50}\n\n")
+        with open(csv_file, 'w', newline='') as f:
+            writer = csv.writer(f, delimiter=';')  # Use semicolon as delimiter
             
+            # Write header
+            writer.writerow([
+                'Generation', 'BotID', 'ProfitPct', 'WinRate', 'TotalTrades', 'FinalBalance', 
+                'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
+                'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles'
+            ])
+            
+            # Write data rows
             for bot, result in zip(bots, results):
                 profit_pct = (result.final_balance - initial_balance) / initial_balance * 100
-                f.write(f"{bot.bot_id:6d} | {profit_pct:+7.2f}% | {result.win_rate:7.2%} | {result.total_trades:6d} | "
-                       f"${result.final_balance:10.2f} | {result.fitness_score:7.2f} | {result.sharpe_ratio:6.2f} | "
-                       f"{result.max_drawdown:6.2%} | {bot.survival_generations:3d}\n")
+                writer.writerow([
+                    gen,
+                    bot.bot_id,
+                    f"{profit_pct:.2f}".replace('.', ','),
+                    f"{result.win_rate:.4f}".replace('.', ','),
+                    result.total_trades,
+                    f"{result.final_balance:.2f}".replace('.', ','),
+                    f"{result.fitness_score:.2f}".replace('.', ','),
+                    f"{result.sharpe_ratio:.2f}".replace('.', ','),
+                    f"{result.max_drawdown:.4f}".replace('.', ','),
+                    bot.survival_generations,
+                    bot.num_indicators,
+                    bot.leverage,
+                    f"{result.total_pnl:.2f}".replace('.', ','),
+                    num_cycles
+                ])
         
-        log_info(f"Logged {len(bots)} bots to {log_file}")
+        log_info(f"Logged {len(bots)} bots to {csv_file}")
     
     def get_top_bots(self, count: int = 10) -> List[Tuple[CompactBotConfig, BacktestResult]]:
         """

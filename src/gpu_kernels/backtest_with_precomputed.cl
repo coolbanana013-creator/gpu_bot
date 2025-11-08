@@ -590,6 +590,7 @@ __kernel void backtest_with_signals(
         
         // Reset for new cycle
         balance = initial_balance;
+        peak_balance = initial_balance;  // Reset peak for each cycle
         for (int i = 0; i < MAX_POSITIONS; i++) {
             positions[i].is_active = 0;
         }
@@ -713,7 +714,7 @@ __kernel void backtest_with_signals(
     result.total_trades = total_trades;
     result.winning_trades = winning_trades;
     result.losing_trades = losing_trades;
-    result.total_pnl = total_pnl;
+    result.total_pnl = balance - initial_balance;  // Net P&L including all fees
     result.max_drawdown = max_drawdown;
     
     // Prevent NaN in final balance (check before assignment)
