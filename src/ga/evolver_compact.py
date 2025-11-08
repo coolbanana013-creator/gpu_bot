@@ -380,7 +380,8 @@ class GeneticAlgorithmEvolver:
         self,
         num_generations: int,
         ohlcv_data: np.ndarray,
-        cycles: List[Tuple[int, int]]
+        cycles: List[Tuple[int, int]],
+        initial_balance: float = 100.0
     ) -> None:
         """
         Run complete evolution process.
@@ -407,6 +408,9 @@ class GeneticAlgorithmEvolver:
                 cycles
             )
             
+            # Log individual bot performance
+            self.log_generation_bots(gen, self.population, self.population_results, initial_balance)
+            
             # Select survivors
             survivors, survivor_results = self.select_survivors(
                 self.population,
@@ -415,7 +419,7 @@ class GeneticAlgorithmEvolver:
             )
             
             # Print generation summary
-            self._print_generation_summary(gen, survivor_results)
+            self._print_generation_summary(gen, survivor_results, initial_balance)
             
             # Release combinations from dead bots
             dead_bots = [bot for bot in self.population if bot not in survivors]
@@ -433,9 +437,12 @@ class GeneticAlgorithmEvolver:
             cycles
         )
         
+        # Log final generation
+        self.log_generation_bots(num_generations, self.population, self.population_results, initial_balance)
+        
         log_info(f"\nEvolution complete!\n")
     
-    def _print_generation_summary(self, gen: int, results: List[BacktestResult]):
+    def _print_generation_summary(self, gen: int, results: List[BacktestResult], initial_balance: float = 100.0):
         """Print concise generation summary with key metrics."""
         if not results:
             return
@@ -448,7 +455,7 @@ class GeneticAlgorithmEvolver:
         
         # Calculate averages across profitable bots
         avg_pnl = np.mean([r.total_pnl for r in profitable])
-        avg_pnl_pct = (avg_pnl / 100.0) * 100  # Assuming $100 initial balance
+        avg_pnl_pct = (avg_pnl / initial_balance) * 100  # Use actual initial balance
         avg_winrate = np.mean([r.win_rate for r in profitable])
         avg_trades = np.mean([r.total_trades for r in profitable])
         avg_sharpe = np.mean([r.sharpe_ratio for r in profitable])
@@ -459,6 +466,31 @@ class GeneticAlgorithmEvolver:
               f"Avg: {avg_pnl_pct:+.1f}% profit, {avg_winrate:.1%} WR, "
               f"{avg_trades:.0f} trades, {avg_sharpe:.2f} Sharpe | "
               f"Best: ${max_pnl:.2f}")
+    
+    def log_generation_bots(self, gen: int, bots: List[CompactBotConfig], results: List[BacktestResult], initial_balance: float = 100.0):
+        """Log individual bot performance for this generation to a file."""
+        import os
+        
+        # Create logs directory if it doesn't exist
+        log_dir = "logs"
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # Log file for this generation
+        log_file = os.path.join(log_dir, f"generation_{gen}.log")
+        
+        with open(log_file, 'w') as f:
+            f.write(f"Generation {gen} - Individual Bot Performance\n")
+            f.write(f"{'='*50}\n")
+            f.write(f"Format: BotID | Profit% | WinRate | Trades | FinalBalance | Fitness | Sharpe | MaxDD | SurvivedGens\n")
+            f.write(f"{'='*50}\n\n")
+            
+            for bot, result in zip(bots, results):
+                profit_pct = (result.final_balance - initial_balance) / initial_balance * 100
+                f.write(f"{bot.bot_id:6d} | {profit_pct:+7.2f}% | {result.win_rate:7.2%} | {result.total_trades:6d} | "
+                       f"${result.final_balance:10.2f} | {result.fitness_score:7.2f} | {result.sharpe_ratio:6.2f} | "
+                       f"{result.max_drawdown:6.2%} | {bot.survival_generations:3d}\n")
+        
+        log_info(f"Logged {len(bots)} bots to {log_file}")
     
     def get_top_bots(self, count: int = 10) -> List[Tuple[CompactBotConfig, BacktestResult]]:
         """
@@ -540,7 +572,7 @@ class GeneticAlgorithmEvolver:
         
         log_info(f"\nSaved top {len(top_bots)} bots to {filepath} and individual files")
     
-    def print_top_bots(self, count: int = 10):
+    def print_top_bots(self, count: int = 10, initial_balance: float = 10000.0):
         """Print top bots to console."""
         top_bots = self.get_top_bots(count)
         
@@ -553,10 +585,38 @@ class GeneticAlgorithmEvolver:
         log_info(f"{'='*80}\n")
         
         for rank, (bot, result) in enumerate(top_bots, 1):
+            profit_pct = (result.final_balance - initial_balance) / initial_balance * 100
             log_info(f"Rank #{rank}")
             log_info(f"  Bot ID: {bot.bot_id}")
             log_info(f"  Fitness Score: {result.fitness_score:.2f}")
             log_info(f"  Total PnL: ${result.total_pnl:.2f}")
+            log_info(f"  Profit %: {profit_pct:+.2f}%")
+            log_info(f"  Final Balance: ${result.final_balance:.2f}")
+            log_info(f"  Win Rate: {result.win_rate:.2%}")
+            log_info(f"  Total Trades: {result.total_trades}")
+            log_info(f"  Sharpe Ratio: {result.sharpe_ratio:.2f}")
+            log_info(f"  Max Drawdown: {result.max_drawdown:.2%}")
+            log_info(f"  Indicators: {bot.num_indicators}")
+            log_info(f"  Leverage: {bot.leverage}x")
+            log_info("")
+    
+    def print_current_generation(self, initial_balance: float = 10000.0):
+        """Print all bots from the current generation with their results."""
+        if not self.population or not self.population_results:
+            log_info("No current generation data to display")
+            return
+        
+        log_info(f"\n{'='*80}")
+        log_info(f"CURRENT GENERATION #{self.current_generation} - ALL {len(self.population)} BOTS")
+        log_info(f"{'='*80}\n")
+        
+        for i, (bot, result) in enumerate(zip(self.population, self.population_results)):
+            profit_pct = (result.final_balance - initial_balance) / initial_balance * 100
+            log_info(f"Bot #{i+1} (ID: {bot.bot_id})")
+            log_info(f"  Fitness Score: {result.fitness_score:.2f}")
+            log_info(f"  Total PnL: ${result.total_pnl:.2f}")
+            log_info(f"  Profit %: {profit_pct:+.2f}%")
+            log_info(f"  Final Balance: ${result.final_balance:.2f}")
             log_info(f"  Win Rate: {result.win_rate:.2%}")
             log_info(f"  Total Trades: {result.total_trades}")
             log_info(f"  Sharpe Ratio: {result.sharpe_ratio:.2f}")

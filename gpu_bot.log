@@ -2870,3 +2870,1312 @@ Starting Evolution: 10 generations, 10 cycles
 2025-11-08 01:20:09,370 - src.utils.validation - ERROR - 
 
 Fatal error: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:23:06,099 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:23:06,185 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:23:06,185 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:23:06,185 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:23:06,186 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:23:06,186 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:23:06,186 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:23:06,187 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:23:06,187 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:23:06,188 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:23:06,188 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:23:06,188 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:23:10,593 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:23:10,594 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:23:10,757 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:23:10,757 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:23:10,757 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:23:10,924 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:23:10,924 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:23:10,932 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:23:10,937 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:23:10,945 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:23:10,945 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:23:10,954 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:23:10,954 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:23:10,954 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:23:10,955 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:23:10,956 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:23:10,956 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:23:11,225 - src.utils.validation - ERROR - Precompute kernel compilation failed: clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE
+
+Build on <pyopencl.Device 'Intel(R) UHD Graphics' on 'Intel(R) OpenCL Graphics' at 0x2cc870bc850>:
+
+1:916:14: error: duplicate case value '0'
+        case 0: compute_sma(ohlcv, num_bars, 5, &indicators_out[0 * num_bars]); break;
+             ^
+1:901:14: note: previous case defined here
+        case 0: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[0 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 5); break;
+             ^
+1:917:14: error: duplicate case value '1'
+        case 1: compute_sma(ohlcv, num_bars, 10, &indicators_out[1 * num_bars]); break;
+             ^
+1:902:14: note: previous case defined here
+        case 1: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[1 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 10); break;
+             ^
+1:918:14: error: duplicate case value '2'
+        case 2: compute_sma(ohlcv, num_bars, 20, &indicators_out[2 * num_bars]); break;
+             ^
+1:903:14: note: previous case defined here
+        case 2: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[2 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 20); break;
+             ^
+1:919:14: error: duplicate case value '3'
+        case 3: compute_sma(ohlcv, num_bars, 50, &indicators_out[3 * num_bars]); break;
+             ^
+1:904:14: note: previous case defined here
+        case 3: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[3 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 50); break;
+             ^
+1:920:14: error: duplicate case value '4'
+        case 4: compute_sma(ohlcv, num_bars, 100, &indicators_out[4 * num_bars]); break;
+             ^
+1:905:14: note: previous case defined here
+        case 4: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[4 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 100); break;
+             ^
+1:921:14: error: duplicate case value '5'
+        case 5: compute_sma(ohlcv, num_bars, 200, &indicators_out[5 * num_bars]); break;
+             ^
+1:906:14: note: previous case defined here
+        case 5: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[5 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 200); break;
+             ^
+1:922:14: error: duplicate case value '6'
+        case 6: compute_ema(ohlcv, num_bars, 5, &indicators_out[6 * num_bars]); break;
+             ^
+1:909:14: note: previous case defined here
+        case 6: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 5, &indicators_out[6 * num_bars]); break;
+             ^
+1:923:14: error: duplicate case value '7'
+        case 7: compute_ema(ohlcv, num_bars, 10, &indicators_out[7 * num_bars]); break;
+             ^
+1:910:14: note: previous case defined here
+        case 7: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 10, &indicators_out[7 * num_bars]); break;
+             ^
+1:924:14: error: duplicate case value '8'
+        case 8: compute_ema(ohlcv, num_bars, 20, &indicators_out[8 * num_bars]); break;
+             ^
+1:911:14: note: previous case defined here
+        case 8: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 20, &indicators_out[8 * num_bars]); break;
+             ^
+1:925:14: error: duplicate case value '9'
+        case 9: compute_ema(ohlcv, num_bars, 50, &indicators_out[9 * num_bars]); break;
+             ^
+1:912:14: note: previous case defined here
+        case 9: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 50, &indicators_out[9 * num_bars]); break;
+             ^
+1:926:14: error: duplicate case value '10'
+        case 10: compute_ema(ohlcv, num_bars, 100, &indicators_out[10 * num_bars]); break;
+             ^
+1:913:14: note: previous case defined here
+        case 10: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 100, &indicators_out[10 * num_bars]); break;
+             ^
+1:927:14: error: duplicate case value '11'
+        case 11: compute_ema(ohlcv, num_bars, 200, &indicators_out[11 * num_bars]); break;
+             ^
+1:914:14: note: previous case defined here
+        case 11: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 200, &indicators_out[11 * num_bars]); break;
+             ^
+
+(options: -I C:\Users\Standard\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyopencl\cl)
+(source saved as C:\Users\Standard\AppData\Local\Temp\tmp2m_6w3yv.cl)
+2025-11-08 01:23:11,225 - src.utils.validation - ERROR - 
+
+Fatal error: clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE
+
+Build on <pyopencl.Device 'Intel(R) UHD Graphics' on 'Intel(R) OpenCL Graphics' at 0x2cc870bc850>:
+
+1:916:14: error: duplicate case value '0'
+        case 0: compute_sma(ohlcv, num_bars, 5, &indicators_out[0 * num_bars]); break;
+             ^
+1:901:14: note: previous case defined here
+        case 0: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[0 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 5); break;
+             ^
+1:917:14: error: duplicate case value '1'
+        case 1: compute_sma(ohlcv, num_bars, 10, &indicators_out[1 * num_bars]); break;
+             ^
+1:902:14: note: previous case defined here
+        case 1: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[1 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 10); break;
+             ^
+1:918:14: error: duplicate case value '2'
+        case 2: compute_sma(ohlcv, num_bars, 20, &indicators_out[2 * num_bars]); break;
+             ^
+1:903:14: note: previous case defined here
+        case 2: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[2 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 20); break;
+             ^
+1:919:14: error: duplicate case value '3'
+        case 3: compute_sma(ohlcv, num_bars, 50, &indicators_out[3 * num_bars]); break;
+             ^
+1:904:14: note: previous case defined here
+        case 3: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[3 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 50); break;
+             ^
+1:920:14: error: duplicate case value '4'
+        case 4: compute_sma(ohlcv, num_bars, 100, &indicators_out[4 * num_bars]); break;
+             ^
+1:905:14: note: previous case defined here
+        case 4: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[4 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 100); break;
+             ^
+1:921:14: error: duplicate case value '5'
+        case 5: compute_sma(ohlcv, num_bars, 200, &indicators_out[5 * num_bars]); break;
+             ^
+1:906:14: note: previous case defined here
+        case 5: for (int bar = start_bar; bar < end_bar; bar++) indicators_out[5 * num_bars + bar] = compute_sma_helper(ohlcv, bar, 200); break;
+             ^
+1:922:14: error: duplicate case value '6'
+        case 6: compute_ema(ohlcv, num_bars, 5, &indicators_out[6 * num_bars]); break;
+             ^
+1:909:14: note: previous case defined here
+        case 6: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 5, &indicators_out[6 * num_bars]); break;
+             ^
+1:923:14: error: duplicate case value '7'
+        case 7: compute_ema(ohlcv, num_bars, 10, &indicators_out[7 * num_bars]); break;
+             ^
+1:910:14: note: previous case defined here
+        case 7: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 10, &indicators_out[7 * num_bars]); break;
+             ^
+1:924:14: error: duplicate case value '8'
+        case 8: compute_ema(ohlcv, num_bars, 20, &indicators_out[8 * num_bars]); break;
+             ^
+1:911:14: note: previous case defined here
+        case 8: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 20, &indicators_out[8 * num_bars]); break;
+             ^
+1:925:14: error: duplicate case value '9'
+        case 9: compute_ema(ohlcv, num_bars, 50, &indicators_out[9 * num_bars]); break;
+             ^
+1:912:14: note: previous case defined here
+        case 9: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 50, &indicators_out[9 * num_bars]); break;
+             ^
+1:926:14: error: duplicate case value '10'
+        case 10: compute_ema(ohlcv, num_bars, 100, &indicators_out[10 * num_bars]); break;
+             ^
+1:913:14: note: previous case defined here
+        case 10: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 100, &indicators_out[10 * num_bars]); break;
+             ^
+1:927:14: error: duplicate case value '11'
+        case 11: compute_ema(ohlcv, num_bars, 200, &indicators_out[11 * num_bars]); break;
+             ^
+1:914:14: note: previous case defined here
+        case 11: if (work_item_id == 0) compute_ema(ohlcv, num_bars, 200, &indicators_out[11 * num_bars]); break;
+             ^
+
+(options: -I C:\Users\Standard\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyopencl\cl)
+(source saved as C:\Users\Standard\AppData\Local\Temp\tmp2m_6w3yv.cl)
+2025-11-08 01:23:36,094 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:23:36,188 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:23:36,189 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:23:36,190 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:23:36,191 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:23:36,192 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:23:36,192 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:23:36,193 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:23:36,193 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:23:36,193 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:23:36,194 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:23:36,194 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:23:38,885 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:23:38,886 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:23:39,053 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:23:39,054 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:23:39,054 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:23:39,222 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:23:39,222 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:23:39,228 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:23:39,232 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:23:39,239 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:23:39,239 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:23:39,247 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:23:39,247 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:23:39,248 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:23:39,248 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:23:39,248 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:23:39,248 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:23:40,680 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:23:40,683 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:23:40,683 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:23:40,683 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:23:40,684 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:23:40,684 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:23:40,684 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:23:40,684 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:23:40,684 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:23:40,684 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:23:40,685 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:23:40,728 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:23:40,737 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:23:40,737 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:23:40,740 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:23:40,740 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:23:40,740 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:23:40,741 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:23:40,741 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:23:40,741 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:23:40,741 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:23:40,742 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:23:40,742 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:23:40,742 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:23:45,685 - src.utils.validation - ERROR - Backtest kernel execution failed: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:23:45,685 - src.utils.validation - ERROR - 
+
+Fatal error: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:25:24,584 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:25:24,677 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:25:24,678 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:25:24,679 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:25:24,679 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:25:24,679 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:25:24,679 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:25:24,681 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:25:24,681 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:25:24,682 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:25:24,682 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:25:24,682 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:25:33,748 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:25:33,749 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:25:33,926 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:25:33,927 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:25:33,927 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:25:34,090 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:25:34,090 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:25:34,097 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:25:34,102 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:25:34,108 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:25:34,109 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:25:34,117 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:25:34,118 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:25:34,118 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:25:34,118 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:25:34,118 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:25:34,119 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:25:34,183 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:25:35,488 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:25:35,488 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:25:35,488 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:25:35,489 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:25:35,489 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:25:35,489 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:25:35,490 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:25:35,490 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:25:35,490 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:25:35,490 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:25:35,533 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:25:35,544 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:25:35,545 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:25:35,546 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:25:35,547 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:25:35,547 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:25:35,547 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:25:35,548 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:25:35,548 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:25:35,548 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:25:35,548 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:25:35,548 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:25:35,548 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:25:39,478 - src.utils.validation - ERROR - Backtest kernel execution failed: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:25:39,479 - src.utils.validation - ERROR - 
+
+Fatal error: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:26:12,712 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:26:12,809 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:26:12,810 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:26:12,811 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:26:12,812 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:26:12,812 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:26:12,813 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:26:12,813 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:26:12,814 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:26:12,814 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:26:12,815 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:26:12,815 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:26:18,552 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:26:18,553 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:26:18,716 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:26:18,717 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:26:18,717 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:26:18,884 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:26:18,884 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:26:18,891 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:26:18,895 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:26:18,900 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:26:18,901 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:26:18,910 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:26:18,910 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:26:18,911 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:26:18,911 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:26:18,911 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:26:18,911 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:26:18,916 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:26:20,613 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:26:20,613 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:26:20,613 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:26:20,613 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:26:20,613 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:26:20,614 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:26:20,614 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:26:20,614 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:26:20,614 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:26:20,614 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:26:20,654 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:26:20,664 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:26:20,665 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:26:20,667 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:26:20,667 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:26:20,667 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:26:20,667 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:26:20,668 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:26:20,668 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:26:20,668 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:26:20,668 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:26:20,669 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:26:20,669 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:26:24,592 - src.utils.validation - ERROR - Backtest kernel execution failed: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:26:24,593 - src.utils.validation - ERROR - 
+
+Fatal error: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:26:57,512 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:26:57,513 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:26:57,513 - src.utils.validation - INFO -   Population: 100 bots
+2025-11-08 01:26:57,513 - src.utils.validation - INFO -   Indicators: 3-8 per bot (50 available)
+2025-11-08 01:26:57,514 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-08 01:26:57,514 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-08 01:26:57,514 - src.utils.validation - INFO - Generating 100 compact bots on GPU...
+2025-11-08 01:26:57,522 - src.utils.validation - INFO - [OK] Generated 100 compact bots (128 bytes each)
+2025-11-08 01:26:57,528 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:26:58,879 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:26:58,880 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:26:58,880 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:26:58,880 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:26:58,881 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:26:58,881 - src.utils.validation - INFO -   - OHLCV buffer: 0.0 MB (1000 bars × 5 floats × 4 bytes)
+2025-11-08 01:26:58,881 - src.utils.validation - INFO -   - Indicators buffer: 0.2 MB (50 indicators × 1000 bars × 4 bytes)
+2025-11-08 01:26:58,881 - src.utils.validation - INFO -   - Total global memory: 0.2 MB
+2025-11-08 01:26:58,882 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:26:58,882 - src.utils.validation - INFO -   - Operations per work item: ~3 bars (distributed among 256 work items per indicator)
+2025-11-08 01:26:58,882 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:26:58,882 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:26:58,882 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:26:58,884 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:27:52,386 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:27:52,486 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:27:52,487 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:27:52,487 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:27:52,488 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:27:52,488 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:27:52,489 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:27:52,489 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:27:52,490 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:27:52,490 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:27:52,490 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:27:52,491 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:27:54,980 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:27:54,981 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:27:55,150 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:27:55,151 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:27:55,151 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:27:55,317 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:27:55,318 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:27:55,323 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:27:55,328 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:27:55,334 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:27:55,334 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:27:55,344 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:27:55,344 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:27:55,344 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:27:55,344 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:27:55,344 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:27:55,344 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:27:55,350 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:27:55,386 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:27:55,386 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:27:55,386 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:27:55,387 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:27:55,387 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:27:55,387 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:27:55,387 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:27:55,388 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:27:55,388 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:27:55,388 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:27:55,429 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:27:55,440 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:27:55,441 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:27:55,443 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:27:55,443 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:27:55,443 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:27:55,443 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:27:55,444 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:27:55,444 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:27:55,444 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:27:55,444 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:27:55,444 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:27:55,444 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:27:55,832 - src.utils.validation - INFO - Processing 10000 bots in batches of 100 to avoid OUT_OF_RESOURCES
+2025-11-08 01:27:59,335 - src.utils.validation - ERROR - Backtest kernel execution failed for batch starting at bot 0: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:27:59,336 - src.utils.validation - ERROR - 
+
+Fatal error: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:28:06,827 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:28:06,920 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:28:06,921 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:28:06,922 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:28:06,922 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:28:06,923 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:28:06,923 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:28:06,924 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:28:06,924 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:28:06,925 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:28:06,925 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:28:06,926 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:28:09,178 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:28:09,179 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:28:09,351 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:28:09,351 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:28:09,352 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:28:09,517 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:28:09,518 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:28:09,524 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:28:09,528 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:28:09,535 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:28:09,535 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:28:09,543 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:28:09,544 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:28:09,544 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:28:09,544 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:28:09,544 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:28:09,544 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:28:09,549 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:28:09,554 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:28:09,555 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:28:09,555 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:28:09,555 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:28:09,555 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:28:09,555 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:28:09,555 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:28:09,556 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:28:09,556 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:28:09,556 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:28:09,597 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:28:09,607 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:28:09,608 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:28:09,610 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:28:09,611 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:28:09,611 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:28:09,611 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:28:09,611 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:28:09,611 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:28:09,612 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:28:09,612 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:28:09,612 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:28:09,612 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:28:10,001 - src.utils.validation - INFO - Processing 10000 bots in batches of 20 to avoid OUT_OF_RESOURCES
+2025-11-08 01:28:13,503 - src.utils.validation - ERROR - Backtest kernel execution failed for batch starting at bot 0: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:28:13,504 - src.utils.validation - ERROR - 
+
+Fatal error: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:28:21,244 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:28:21,338 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:28:21,339 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:28:21,339 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:28:21,340 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:28:21,340 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:28:21,341 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:28:21,341 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:28:21,342 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:28:21,342 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:28:21,342 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:28:21,343 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:28:25,412 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:28:25,413 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:28:25,627 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:28:25,628 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:28:25,628 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:28:25,833 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:28:25,834 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:28:25,843 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:28:25,846 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:28:25,855 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:28:25,857 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:28:25,864 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:28:25,865 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:28:25,865 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:28:25,865 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:28:25,865 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:28:25,865 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:28:25,875 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:28:25,877 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:28:25,877 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:28:25,878 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:28:25,878 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:28:25,878 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:28:25,878 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:28:25,878 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:28:25,879 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:28:25,879 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:28:25,879 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:28:25,928 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:28:25,940 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:28:25,940 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:28:25,942 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:28:25,943 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:28:25,943 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:28:25,943 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:28:25,943 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:28:25,943 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:28:25,944 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:28:25,944 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:28:25,944 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:28:25,944 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:28:26,336 - src.utils.validation - INFO - Processing 10000 bots in batches of 5 to avoid OUT_OF_RESOURCES
+2025-11-08 01:28:29,839 - src.utils.validation - ERROR - Backtest kernel execution failed for batch starting at bot 0: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:28:29,840 - src.utils.validation - ERROR - 
+
+Fatal error: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:29:39,871 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:29:39,961 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:29:39,962 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:29:39,963 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:29:39,964 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:29:39,965 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:29:39,966 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:29:39,967 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:29:39,967 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:29:39,968 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:29:39,968 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:29:39,969 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:29:45,807 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:29:45,809 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:29:45,972 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:29:45,972 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:29:45,972 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:29:46,140 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:29:46,140 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:29:46,146 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:29:46,152 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:29:46,158 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:29:46,158 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:29:46,168 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:29:46,168 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:29:46,169 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:29:46,169 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:29:46,169 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:29:46,169 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:29:46,174 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:29:46,176 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:29:46,177 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:29:46,177 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:29:46,177 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:29:46,177 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:29:46,177 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:29:46,177 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:29:46,177 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:29:46,178 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:29:46,178 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:29:46,222 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:29:46,234 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:29:46,234 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:29:46,236 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:29:46,236 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:29:46,237 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:29:46,237 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:29:46,237 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:29:46,237 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:29:46,237 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:29:46,237 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:29:46,237 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:29:46,238 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:29:46,628 - src.utils.validation - INFO - Attempting GPU backtesting...
+2025-11-08 01:29:46,629 - src.utils.validation - INFO - Processing 10000 bots in GPU batches of 5 to avoid OUT_OF_RESOURCES
+2025-11-08 01:29:46,629 - src.utils.validation - ERROR - GPU backtesting failed: 'CompactBacktester' object has no attribute '_run_backtest_batch'
+2025-11-08 01:29:46,629 - src.utils.validation - INFO - Falling back to CPU backtesting...
+2025-11-08 01:29:46,629 - src.utils.validation - INFO - Running CPU backtesting for 10000 bots...
+2025-11-08 01:32:22,619 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:32:22,619 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:32:22,619 - src.utils.validation - INFO -   Population: 1 bots
+2025-11-08 01:32:22,619 - src.utils.validation - INFO -   Indicators: 3-8 per bot (50 available)
+2025-11-08 01:32:22,620 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-08 01:32:22,620 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-08 01:32:22,620 - src.utils.validation - INFO - Generating 1 compact bots on GPU...
+2025-11-08 01:32:22,625 - src.utils.validation - INFO - [OK] Generated 1 compact bots (128 bytes each)
+2025-11-08 01:32:22,629 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:32:23,267 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:32:23,267 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:32:23,268 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:32:23,268 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:32:23,268 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:32:23,268 - src.utils.validation - INFO -   - OHLCV buffer: 0.0 MB (1000 bars × 5 floats × 4 bytes)
+2025-11-08 01:32:23,268 - src.utils.validation - INFO -   - Indicators buffer: 0.2 MB (50 indicators × 1000 bars × 4 bytes)
+2025-11-08 01:32:23,268 - src.utils.validation - INFO -   - Total global memory: 0.2 MB
+2025-11-08 01:32:23,268 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:32:23,269 - src.utils.validation - INFO -   - Operations per work item: ~3 bars (distributed among 256 work items per indicator)
+2025-11-08 01:32:23,269 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:32:23,269 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:32:23,269 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:32:23,269 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:32:23,272 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:32:23,273 - src.utils.validation - INFO - Testing GPU backtesting with 1 bot at a time...
+2025-11-08 01:33:09,275 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:33:09,275 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:33:09,276 - src.utils.validation - INFO -   Population: 1 bots
+2025-11-08 01:33:09,276 - src.utils.validation - INFO -   Indicators: 3-8 per bot (50 available)
+2025-11-08 01:33:09,276 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-08 01:33:09,276 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-08 01:33:09,277 - src.utils.validation - INFO - Generating 1 compact bots on GPU...
+2025-11-08 01:33:09,283 - src.utils.validation - INFO - [OK] Generated 1 compact bots (128 bytes each)
+2025-11-08 01:33:09,287 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:33:09,311 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:33:09,312 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:33:09,313 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:33:09,313 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:33:09,314 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:33:09,314 - src.utils.validation - INFO -   - OHLCV buffer: 0.0 MB (1000 bars × 5 floats × 4 bytes)
+2025-11-08 01:33:09,315 - src.utils.validation - INFO -   - Indicators buffer: 0.2 MB (50 indicators × 1000 bars × 4 bytes)
+2025-11-08 01:33:09,315 - src.utils.validation - INFO -   - Total global memory: 0.2 MB
+2025-11-08 01:33:09,315 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:33:09,316 - src.utils.validation - INFO -   - Operations per work item: ~3 bars (distributed among 256 work items per indicator)
+2025-11-08 01:33:09,316 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:33:09,316 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:33:09,316 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:33:09,316 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:33:09,320 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:33:09,320 - src.utils.validation - INFO - Testing GPU backtesting with 1 bot at a time...
+2025-11-08 01:33:09,322 - src.utils.validation - INFO - Completed minimal GPU backtesting: 1 bots processed
+2025-11-08 01:33:09,322 - src.utils.validation - INFO - GPU backtesting successful: 1 bots processed
+2025-11-08 01:33:19,025 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:33:19,025 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:33:19,026 - src.utils.validation - INFO -   Population: 10 bots
+2025-11-08 01:33:19,026 - src.utils.validation - INFO -   Indicators: 3-8 per bot (50 available)
+2025-11-08 01:33:19,026 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-08 01:33:19,026 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-08 01:33:19,027 - src.utils.validation - INFO - Generating 10 compact bots on GPU...
+2025-11-08 01:33:19,033 - src.utils.validation - INFO - [OK] Generated 10 compact bots (128 bytes each)
+2025-11-08 01:33:19,037 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:33:19,536 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:33:19,536 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:33:19,536 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:33:19,536 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:33:19,537 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:33:19,537 - src.utils.validation - INFO -   - OHLCV buffer: 0.0 MB (1000 bars × 5 floats × 4 bytes)
+2025-11-08 01:33:19,537 - src.utils.validation - INFO -   - Indicators buffer: 0.2 MB (50 indicators × 1000 bars × 4 bytes)
+2025-11-08 01:33:19,537 - src.utils.validation - INFO -   - Total global memory: 0.2 MB
+2025-11-08 01:33:19,537 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:33:19,538 - src.utils.validation - INFO -   - Operations per work item: ~3 bars (distributed among 256 work items per indicator)
+2025-11-08 01:33:19,538 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:33:19,538 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:33:19,538 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:33:19,538 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:33:19,541 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:33:19,541 - src.utils.validation - INFO - Testing GPU backtesting with 1 bot at a time...
+2025-11-08 01:33:19,557 - src.utils.validation - INFO - Completed minimal GPU backtesting: 10 bots processed
+2025-11-08 01:33:19,557 - src.utils.validation - INFO - GPU backtesting successful: 10 bots processed
+2025-11-08 01:33:42,463 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:33:42,549 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:33:42,549 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:33:42,550 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:33:42,550 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:33:42,551 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:33:42,551 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:33:42,551 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:33:42,551 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:33:42,551 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:33:42,552 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:33:42,552 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:33:45,627 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:33:45,627 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:33:45,796 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:33:45,797 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:33:45,797 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:33:45,966 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:33:45,967 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:33:45,973 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:33:45,977 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:33:45,984 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:33:45,985 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:33:45,996 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:33:45,996 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:33:45,996 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:33:45,997 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:33:45,997 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:33:45,997 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:33:46,005 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:33:46,031 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:33:46,031 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:33:46,031 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:33:46,032 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:33:46,032 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:33:46,032 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:33:46,032 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:33:46,032 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:33:46,032 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:33:46,033 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:33:46,075 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:33:46,085 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:33:46,086 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:33:46,087 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:33:46,087 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:33:46,088 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:33:46,088 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:33:46,088 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:33:46,088 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:33:46,088 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:33:46,088 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:33:46,088 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:33:46,088 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:33:46,478 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:33:46,478 - src.utils.validation - INFO - Testing GPU backtesting with adaptive batching (starting with 50 bots per batch)...
+2025-11-08 01:38:34,463 - src.utils.validation - INFO - Completed adaptive GPU backtesting: 10000 bots processed
+2025-11-08 01:38:34,464 - src.utils.validation - INFO - GPU backtesting successful: 10000 bots processed
+2025-11-08 01:38:50,240 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:38:50,241 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:38:50,241 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:38:50,241 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:38:50,241 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:38:50,241 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:38:50,241 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:38:50,242 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:38:50,242 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:38:50,242 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:38:50,629 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:38:50,629 - src.utils.validation - INFO - Testing GPU backtesting with adaptive batching (starting with 50 bots per batch)...
+2025-11-08 01:41:57,598 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:41:57,598 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:41:57,598 - src.utils.validation - INFO -   Population: 100 bots
+2025-11-08 01:41:57,599 - src.utils.validation - INFO -   Indicators: 3-8 per bot (50 available)
+2025-11-08 01:41:57,599 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-08 01:41:57,599 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-08 01:41:57,599 - src.utils.validation - INFO - Generating 100 compact bots on GPU...
+2025-11-08 01:41:57,606 - src.utils.validation - INFO - [OK] Generated 100 compact bots (128 bytes each)
+2025-11-08 01:41:57,609 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:41:57,645 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:41:57,647 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:41:57,647 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:41:57,647 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:41:57,648 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:41:57,648 - src.utils.validation - INFO -   - OHLCV buffer: 0.0 MB (1000 bars × 5 floats × 4 bytes)
+2025-11-08 01:41:57,649 - src.utils.validation - INFO -   - Indicators buffer: 0.2 MB (50 indicators × 1000 bars × 4 bytes)
+2025-11-08 01:41:57,649 - src.utils.validation - INFO -   - Total global memory: 0.2 MB
+2025-11-08 01:41:57,649 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:41:57,649 - src.utils.validation - INFO -   - Operations per work item: ~3 bars (distributed among 256 work items per indicator)
+2025-11-08 01:41:57,649 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:41:57,650 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:41:57,650 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:41:57,650 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:41:57,654 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:43:41,951 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:43:41,952 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:43:41,952 - src.utils.validation - INFO -   Population: 50 bots
+2025-11-08 01:43:41,952 - src.utils.validation - INFO -   Indicators: 3-8 per bot (50 available)
+2025-11-08 01:43:41,952 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-08 01:43:41,953 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-08 01:43:41,953 - src.utils.validation - INFO - Generating 50 compact bots on GPU...
+2025-11-08 01:43:41,963 - src.utils.validation - INFO - [OK] Generated 50 compact bots (128 bytes each)
+2025-11-08 01:43:41,971 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:43:41,976 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:43:41,976 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:43:41,976 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:43:41,977 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:43:41,979 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:43:41,979 - src.utils.validation - INFO -   - OHLCV buffer: 0.0 MB (1000 bars × 5 floats × 4 bytes)
+2025-11-08 01:43:41,979 - src.utils.validation - INFO -   - Indicators buffer: 0.2 MB (50 indicators × 1000 bars × 4 bytes)
+2025-11-08 01:43:41,980 - src.utils.validation - INFO -   - Total global memory: 0.2 MB
+2025-11-08 01:43:41,980 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:43:41,980 - src.utils.validation - INFO -   - Operations per work item: ~3 bars (distributed among 256 work items per indicator)
+2025-11-08 01:43:41,980 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:43:41,981 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:43:41,981 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:43:41,981 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:43:41,985 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:43:42,004 - src.utils.validation - INFO - Optimal batch size found: 50 bots
+2025-11-08 01:43:42,005 - src.utils.validation - INFO - Using optimal batch size of 50 bots for GPU backtesting
+2025-11-08 01:43:42,012 - src.utils.validation - INFO - Completed GPU backtesting: 50 bots processed in 1 batches
+2025-11-08 01:43:42,013 - src.utils.validation - INFO - GPU backtesting successful: 50 bots processed
+2025-11-08 01:43:57,020 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:43:57,121 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:43:57,123 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:43:57,124 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:43:57,124 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:43:57,125 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:43:57,125 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:43:57,126 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:43:57,126 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:43:57,127 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:43:57,127 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:43:57,128 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:44:02,039 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:44:02,040 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:44:02,455 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:44:02,456 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:44:02,457 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:44:02,759 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:44:02,759 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:44:02,767 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:44:02,772 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:44:02,778 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:44:02,779 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:44:02,788 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:44:02,788 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:44:02,788 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:44:02,789 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:44:02,789 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:44:02,790 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:44:02,795 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:44:02,798 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:44:02,798 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:44:02,798 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:44:02,798 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:44:02,798 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:44:02,799 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:44:02,799 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:44:02,799 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:44:02,799 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:44:02,800 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:44:02,844 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:44:02,855 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:44:02,855 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:44:02,857 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:44:02,857 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:44:02,858 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:44:02,858 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:44:02,858 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:44:02,858 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:44:02,858 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:44:02,858 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:44:02,858 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:44:02,858 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:44:03,252 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:44:14,763 - src.utils.validation - INFO - Optimal batch size found: 500 bots
+2025-11-08 01:44:14,763 - src.utils.validation - INFO - Using optimal batch size of 500 bots for GPU backtesting
+2025-11-08 01:45:46,226 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:45:46,226 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:45:46,227 - src.utils.validation - INFO -   Population: 100 bots
+2025-11-08 01:45:46,227 - src.utils.validation - INFO -   Indicators: 3-8 per bot (50 available)
+2025-11-08 01:45:46,228 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-08 01:45:46,228 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-08 01:45:46,228 - src.utils.validation - INFO - Generating 100 compact bots on GPU...
+2025-11-08 01:45:46,236 - src.utils.validation - INFO - [OK] Generated 100 compact bots (128 bytes each)
+2025-11-08 01:45:46,240 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:45:46,243 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:45:46,243 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:45:46,244 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:45:46,244 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:45:46,245 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:45:46,245 - src.utils.validation - INFO -   - OHLCV buffer: 0.0 MB (1000 bars × 5 floats × 4 bytes)
+2025-11-08 01:45:46,246 - src.utils.validation - INFO -   - Indicators buffer: 0.2 MB (50 indicators × 1000 bars × 4 bytes)
+2025-11-08 01:45:46,246 - src.utils.validation - INFO -   - Total global memory: 0.2 MB
+2025-11-08 01:45:46,247 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:45:46,248 - src.utils.validation - INFO -   - Operations per work item: ~3 bars (distributed among 256 work items per indicator)
+2025-11-08 01:45:46,249 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:45:46,249 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:45:46,249 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:45:46,249 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:45:46,253 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:45:46,304 - src.utils.validation - INFO - Optimal batch size found: 100 bots
+2025-11-08 01:45:46,305 - src.utils.validation - INFO - Using optimal batch size of 100 bots for GPU backtesting
+2025-11-08 01:45:46,305 - src.utils.validation - INFO - Processing 100 bots in batches of 100
+2025-11-08 01:45:46,313 - src.utils.validation - INFO - Completed GPU backtesting: 100 bots processed in 1 batches
+2025-11-08 01:45:46,313 - src.utils.validation - INFO - GPU backtesting successful: 100 bots processed
+2025-11-08 01:45:56,801 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:45:56,885 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:45:56,885 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:45:56,887 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:45:56,887 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:45:56,888 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:45:56,888 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:45:56,889 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:45:56,889 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:45:56,889 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:45:56,890 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:45:56,890 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:46:01,954 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:46:01,955 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:46:02,125 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:46:02,125 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:46:02,125 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:46:02,309 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:46:02,309 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:46:02,320 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:46:02,326 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:46:02,335 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:46:02,336 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:46:02,348 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:46:02,348 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:46:02,349 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:46:02,349 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:46:02,349 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:46:02,349 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:46:02,355 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:46:02,358 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:46:02,359 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:46:02,359 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:46:02,359 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:46:02,359 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:46:02,359 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:46:02,360 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:46:02,360 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:46:02,360 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:46:02,360 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:46:02,401 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:46:02,413 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:46:02,414 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:46:02,416 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:46:02,417 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:46:02,417 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:46:02,417 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:46:02,417 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:46:02,417 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:46:02,417 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:46:02,417 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:46:02,418 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:46:02,418 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:46:02,808 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:46:14,319 - src.utils.validation - INFO - Optimal batch size found: 500 bots
+2025-11-08 01:46:14,319 - src.utils.validation - INFO - Using optimal batch size of 500 bots for GPU backtesting
+2025-11-08 01:46:14,319 - src.utils.validation - INFO - Processing 10000 bots in batches of 500
+2025-11-08 01:46:54,358 - src.utils.validation - INFO - Completed GPU backtesting: 10000 bots processed in 20 batches
+2025-11-08 01:46:54,358 - src.utils.validation - INFO - GPU backtesting successful: 10000 bots processed
+2025-11-08 01:47:10,387 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:47:10,387 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:47:10,387 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:47:10,387 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:47:10,387 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:47:10,388 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:47:10,388 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:47:10,388 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:47:10,388 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:47:10,388 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:47:10,797 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:47:17,968 - src.utils.validation - INFO - Optimal batch size found: 500 bots
+2025-11-08 01:47:17,968 - src.utils.validation - INFO - Using optimal batch size of 500 bots for GPU backtesting
+2025-11-08 01:47:17,968 - src.utils.validation - INFO - Processing 10000 bots in batches of 500
+2025-11-08 01:47:56,961 - src.utils.validation - INFO - Completed GPU backtesting: 10000 bots processed in 20 batches
+2025-11-08 01:47:56,962 - src.utils.validation - INFO - GPU backtesting successful: 10000 bots processed
+2025-11-08 01:51:05,773 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:51:05,862 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:51:05,863 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:51:05,863 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:51:05,863 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:51:05,863 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:51:05,863 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:51:05,864 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:51:05,864 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:51:05,864 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:51:05,864 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:51:05,864 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:51:11,782 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:51:11,783 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:51:11,960 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:51:11,960 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:51:11,960 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:51:12,133 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:51:12,133 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:51:12,139 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:51:12,145 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:51:12,152 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:51:12,153 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:51:12,162 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:51:12,162 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:51:12,163 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:51:12,163 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:51:12,163 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:51:12,163 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:51:12,170 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:51:12,172 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:51:12,172 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:51:12,172 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:51:12,173 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:51:12,173 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:51:12,173 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:51:12,173 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:51:12,173 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:51:12,173 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:51:12,173 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:51:12,219 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:51:12,232 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:51:12,232 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:51:12,234 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:51:12,234 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:51:12,234 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:51:12,234 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:51:12,235 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:51:12,235 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:51:12,235 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:51:12,235 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:51:12,235 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:51:12,236 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:51:12,625 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:51:35,660 - src.utils.validation - INFO - Optimal batch size found: 10000 bots
+2025-11-08 01:51:35,660 - src.utils.validation - INFO - Using optimal batch size of 10000 bots for GPU backtesting
+2025-11-08 01:51:35,661 - src.utils.validation - INFO - Processing 10000 bots in batches of 10000
+2025-11-08 01:51:39,197 - src.utils.validation - ERROR - Backtest kernel execution failed for batch of 10000 bots: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:51:39,197 - src.utils.validation - ERROR - GPU backtesting failed with OUT_OF_RESOURCES even with minimal kernel: clFinish failed: OUT_OF_RESOURCES
+2025-11-08 01:51:39,197 - src.utils.validation - ERROR - The backtest kernel is too complex for Intel UHD Graphics GPU
+2025-11-08 01:51:39,197 - src.utils.validation - ERROR - Root causes:
+2025-11-08 01:51:39,197 - src.utils.validation - ERROR -   1. Position array (5 × 32 bytes = 160 bytes per work item)
+2025-11-08 01:51:39,203 - src.utils.validation - ERROR -   3. Complex signal generation with many conditionals
+2025-11-08 01:51:39,204 - src.utils.validation - ERROR -   4. Limited registers per compute unit on Intel UHD Graphics
+2025-11-08 01:51:39,204 - src.utils.validation - ERROR - 
+
+Fatal error: GPU backtest kernel too complex for available hardware
+2025-11-08 01:53:40,731 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:53:40,831 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:53:40,832 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:53:43,620 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:53:43,621 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:53:43,801 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:53:43,802 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:53:43,802 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:53:43,979 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:53:43,980 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:53:43,986 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:53:43,991 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:53:43,997 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:53:43,998 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:53:44,007 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:53:44,007 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:53:44,008 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:53:44,008 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:53:44,008 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:53:44,009 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:53:44,015 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:53:44,532 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:53:44,533 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:53:44,533 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:53:44,533 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:53:44,534 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:53:44,534 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:53:44,534 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:53:44,534 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:53:44,534 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:53:44,534 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:53:44,576 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:53:44,587 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:53:44,588 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:53:44,593 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:53:44,593 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:53:44,594 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:53:44,594 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:53:44,595 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:53:44,595 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:53:44,595 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:53:44,595 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:53:44,595 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:53:44,595 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:53:44,985 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:53:56,756 - src.utils.validation - INFO - Optimal batch size found: 500 bots
+2025-11-08 01:53:56,756 - src.utils.validation - INFO - Using optimal batch size of 500 bots for GPU backtesting
+2025-11-08 01:53:56,757 - src.utils.validation - INFO - Processing 10000 bots in batches of 500
+2025-11-08 01:54:36,827 - src.utils.validation - INFO - Completed GPU backtesting: 10000 bots processed in 20 batches
+2025-11-08 01:54:36,827 - src.utils.validation - INFO - GPU backtesting successful: 10000 bots processed
+2025-11-08 01:54:53,831 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:54:53,831 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:54:53,831 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:54:53,832 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:54:53,832 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:54:53,832 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:54:53,832 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:54:53,832 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:54:53,832 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:54:53,833 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:54:54,221 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:55:01,728 - src.utils.validation - INFO - Optimal batch size found: 500 bots
+2025-11-08 01:55:01,728 - src.utils.validation - INFO - Using optimal batch size of 500 bots for GPU backtesting
+2025-11-08 01:55:01,728 - src.utils.validation - INFO - Processing 10000 bots in batches of 500
+2025-11-08 01:56:29,457 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 01:56:29,541 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:56:29,542 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 01:56:29,543 - src.utils.validation - INFO - ============================================================
+2025-11-08 01:56:29,543 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 01:56:29,544 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 01:56:29,544 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 01:56:29,545 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 01:56:29,546 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 01:56:29,546 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 01:56:29,547 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 01:56:29,547 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 01:56:39,794 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 01:56:39,796 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 01:56:40,131 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 01:56:40,132 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 01:56:40,132 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 01:56:40,407 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 01:56:40,408 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 01:56:40,416 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 01:56:40,424 - src.utils.validation - INFO - Data validation passed
+2025-11-08 01:56:40,436 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 01:56:40,437 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 01:56:40,450 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 01:56:40,450 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 01:56:40,450 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 01:56:40,451 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 01:56:40,451 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 01:56:40,451 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 01:56:40,463 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 01:56:40,521 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 01:56:40,522 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 01:56:40,522 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 01:56:40,522 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 01:56:40,523 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 01:56:40,523 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 01:56:40,523 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 01:56:40,523 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 01:56:40,524 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 01:56:40,524 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 01:56:40,574 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 01:56:40,587 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 01:56:40,589 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 01:56:40,592 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:56:40,593 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:56:40,593 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:56:40,593 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:56:40,594 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:56:40,594 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:56:40,594 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:56:40,594 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:56:40,594 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:56:40,594 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:56:41,011 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:56:54,028 - src.utils.validation - INFO - Optimal batch size found: 1000 bots
+2025-11-08 01:56:54,029 - src.utils.validation - INFO - Using optimal batch size of 1000 bots for GPU backtesting
+2025-11-08 01:56:54,029 - src.utils.validation - INFO - Processing 10000 bots in batches of 1000
+2025-11-08 01:57:14,353 - src.utils.validation - INFO - Completed GPU backtesting: 10000 bots processed in 10 batches
+2025-11-08 01:57:14,353 - src.utils.validation - INFO - GPU backtesting successful: 10000 bots processed
+2025-11-08 01:57:30,348 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 01:57:30,348 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 01:57:30,348 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 01:57:30,348 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 01:57:30,349 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 01:57:30,349 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 01:57:30,349 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 01:57:30,349 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 01:57:30,349 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 01:57:30,349 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 01:57:30,757 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 01:57:40,325 - src.utils.validation - INFO - Optimal batch size found: 1000 bots
+2025-11-08 01:57:40,326 - src.utils.validation - INFO - Using optimal batch size of 1000 bots for GPU backtesting
+2025-11-08 01:57:40,326 - src.utils.validation - INFO - Processing 10000 bots in batches of 1000
+2025-11-08 02:00:55,438 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 02:00:55,526 - src.utils.validation - INFO - ============================================================
+2025-11-08 02:00:55,526 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 02:00:55,527 - src.utils.validation - INFO - ============================================================
+2025-11-08 02:00:55,527 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 02:00:55,527 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 02:00:55,528 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 02:00:55,528 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 02:00:55,528 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 02:00:55,528 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 02:00:55,528 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 02:00:55,528 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 02:01:56,664 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-08 02:01:56,755 - src.utils.validation - INFO - ============================================================
+2025-11-08 02:01:56,755 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-08 02:01:56,756 - src.utils.validation - INFO - ============================================================
+2025-11-08 02:01:56,756 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-08 02:01:56,756 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-08 02:01:56,756 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-08 02:01:56,756 - src.utils.validation - INFO - Compute Units: 80
+2025-11-08 02:01:56,756 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-08 02:01:56,756 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-08 02:01:56,758 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-08 02:01:56,758 - src.utils.validation - INFO - ============================================================
+
+2025-11-08 02:02:02,663 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-08 02:02:02,663 - src.utils.validation - INFO - Fetching 84 days of XBTUSDTM 1m data ending 2025-11-08
+2025-11-08 02:02:02,834 - src.utils.validation - INFO - Total 84 data files available
+2025-11-08 02:02:02,834 - src.utils.validation - INFO - Set random seed to 42
+2025-11-08 02:02:02,835 - src.utils.validation - INFO - Loading 84 data files
+2025-11-08 02:02:03,001 - src.utils.validation - INFO - Loaded total of 120206 candles
+2025-11-08 02:02:03,002 - src.utils.validation - INFO - Validating data integrity
+2025-11-08 02:02:03,008 - src.utils.validation - WARNING - Found 729 gaps in data (0.61% of intervals). Max gap: 7.0x expected interval
+2025-11-08 02:02:03,012 - src.utils.validation - INFO - Data validation passed
+2025-11-08 02:02:03,020 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-08 02:02:03,021 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-08 02:02:03,030 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-08 02:02:03,030 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-08 02:02:03,030 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-08 02:02:03,031 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-08 02:02:03,032 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-08 02:02:03,032 - src.utils.validation - INFO -   Leverage: 1-10x
+2025-11-08 02:02:03,038 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-08 02:02:03,041 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic)
+2025-11-08 02:02:03,041 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-08 02:02:03,041 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-08 02:02:03,041 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-08 02:02:03,042 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-08 02:02:03,042 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-08 02:02:03,042 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-08 02:02:03,042 - src.utils.validation - INFO - 
+Starting Evolution: 10 generations, 10 cycles
+2025-11-08 02:02:03,042 - src.utils.validation - INFO - Generating initial population...
+2025-11-08 02:02:03,042 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-08 02:02:03,087 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-08 02:02:03,097 - src.utils.validation - INFO - Initial population: 10000 bots
+2025-11-08 02:02:03,098 - src.utils.validation - INFO - Unique indicator combinations: 6930
+2025-11-08 02:02:03,101 - src.utils.validation - INFO - Precompute kernel memory analysis:
+2025-11-08 02:02:03,102 - src.utils.validation - INFO -   - OHLCV buffer: 2.8 MB (120206 bars × 5 floats × 4 bytes)
+2025-11-08 02:02:03,102 - src.utils.validation - INFO -   - Indicators buffer: 22.9 MB (50 indicators × 120206 bars × 4 bytes)
+2025-11-08 02:02:03,102 - src.utils.validation - INFO -   - Total global memory: 25.7 MB
+2025-11-08 02:02:03,102 - src.utils.validation - INFO -   - Work items: 12800 total (50 indicators × 256 work items each)
+2025-11-08 02:02:03,102 - src.utils.validation - INFO -   - Operations per work item: ~469 bars (distributed among 256 work items per indicator)
+2025-11-08 02:02:03,103 - src.utils.validation - INFO -   - Stateful indicators: Computed by 1 work item per indicator (maintains state)
+2025-11-08 02:02:03,103 - src.utils.validation - INFO -   - Stateless indicators: Distributed across all 256 work items per indicator
+2025-11-08 02:02:03,103 - src.utils.validation - INFO -   - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit
+2025-11-08 02:02:03,103 - src.utils.validation - INFO -   - SOLUTION: Better work distribution reduces per-work-item resource pressure
+2025-11-08 02:02:03,493 - src.utils.validation - INFO - Attempting GPU backtesting with minimal batch size...
+2025-11-08 02:02:17,305 - src.utils.validation - INFO - Optimal batch size found: 1000 bots
+2025-11-08 02:02:17,305 - src.utils.validation - INFO - Using optimal batch size of 1000 bots for GPU backtesting
+2025-11-08 02:02:17,306 - src.utils.validation - INFO - Processing 10000 bots in batches of 1000
+2025-11-08 02:02:37,608 - src.utils.validation - INFO - Completed GPU backtesting: 10000 bots processed in 10 batches
+2025-11-08 02:02:37,608 - src.utils.validation - INFO - GPU backtesting successful: 10000 bots processed
+2025-11-08 02:02:37,646 - src.utils.validation - INFO - Logged 10000 bots to logs\generation_0.log
+2025-11-08 02:02:43,855 - src.utils.validation - WARNING - 
+
+Execution interrupted by user

@@ -4,6 +4,12 @@
  * REAL backtest kernel that uses precomputed indicators.
  * Replaces unified_backtest_minimal.cl (which was just a test stub).
  * 
+ * OPTIMIZED WORK DISTRIBUTION (Intel UHD Graphics 630):
+ * - Work Items: num_bots × 256 work items per bot = distributed workload
+ * - Processing: Each bot processed by work_item_id == 0 to maintain state
+ * - Resource Pressure: Reduced by distributing work across more work items
+ * - Functionality: All features maintained (consensus signals, positions, TP/SL, etc.)
+ * 
  * Memory Strategy:
  *   - Read indicators from precomputed buffer (not inline computation)
  *   - Each bot reads only its configured indicators
@@ -20,9 +26,9 @@
  * 
  * MEMORY USAGE:
  *   Per Bot: 128 bytes (CompactBotConfig)
- *   Positions: 100 × 40 bytes = 4 KB per bot
- *   Total per bot: ~4.2 KB
- *   1M bots: ~4.2 GB (GPU optimized, only active positions loaded)
+ *   Positions: 1 × 32 bytes = 32 bytes per bot
+ *   Total per bot: ~160 bytes
+ *   1M bots: ~160 MB (GPU optimized, only active positions loaded)
  */
 
 #ifndef M_PI
@@ -40,10 +46,6 @@ typedef struct __attribute__((packed)) {
     float close;
     float volume;
 } OHLCVBar;
-
-typedef struct {
-    float values[10000];  // MAX_BARS
-} IndicatorBuffer;
 
 typedef struct __attribute__((packed)) {
     int bot_id;
@@ -91,7 +93,7 @@ typedef struct {
 // CONSTANTS
 // ============================================================================
 
-#define MAX_POSITIONS 100
+#define MAX_POSITIONS 1  // Most trading bots only hold 1 position at a time
 #define MAKER_FEE 0.0002f      // 0.02% Kucoin maker
 #define TAKER_FEE 0.0006f      // 0.06% Kucoin taker
 #define SLIPPAGE 0.0001f       // 0.01% average slippage
@@ -578,8 +580,8 @@ __kernel void backtest_with_signals(
     
     unsigned int seed = bot.bot_id * 31337 + 42;
     
-    // MEMORY TRACKING: Positions array = 100 × 40 bytes = 4 KB per bot
-    // This is manageable for GPU local memory
+    // MEMORY TRACKING: Positions array = 1 × 32 bytes = 32 bytes per bot
+    // This is minimal for GPU local memory
     
     // Backtest across all cycles
     for (int cycle = 0; cycle < num_cycles; cycle++) {

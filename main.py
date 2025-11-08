@@ -370,14 +370,16 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         evolver.run_evolution(
             num_generations=params['generations'],
             ohlcv_data=ohlcv_array,
-            cycles=cycle_ranges
+            cycles=cycle_ranges,
+            initial_balance=params['initial_balance']
         )
         
         # Save and display results
         print("\nSaving results...")
         
         evolver.save_top_bots(count=100)
-        evolver.print_top_bots(count=10)
+        evolver.print_top_bots(count=10, initial_balance=params['initial_balance'])
+        evolver.print_current_generation(initial_balance=params['initial_balance'])
         
         print("\n" + "="*60)
         print("GENETIC ALGORITHM - COMPLETE")

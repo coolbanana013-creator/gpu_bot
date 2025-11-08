@@ -20,6 +20,8 @@ from typing import List, Tuple, Dict
 from dataclasses import dataclass
 from pathlib import Path
 import time
+from tqdm import tqdm
+import time
 
 from ..bot_generator.compact_generator import CompactBotConfig, COMPACT_BOT_SIZE
 from ..utils.validation import log_info, log_error, log_debug
@@ -242,21 +244,26 @@ class CompactBacktester:
         log_info(f"  - OHLCV buffer: {ohlcv_bytes / (1024*1024):.1f} MB ({num_bars} bars × 5 floats × 4 bytes)")
         log_info(f"  - Indicators buffer: {indicator_bytes / (1024*1024):.1f} MB (50 indicators × {num_bars} bars × 4 bytes)")
         log_info(f"  - Total global memory: {(ohlcv_bytes + indicator_bytes) / (1024*1024):.1f} MB")
-        log_info(f"  - Work items: {self.NUM_INDICATORS} (one per indicator)")
-        log_info(f"  - Operations per work item: {num_bars} bars × complex indicator calculations")
+        log_info(f"  - Work items: {self.NUM_INDICATORS * 256} total ({self.NUM_INDICATORS} indicators × 256 work items each)")
+        log_info(f"  - Operations per work item: ~{num_bars // 256} bars (distributed among 256 work items per indicator)")
+        log_info(f"  - Stateful indicators: Computed by 1 work item per indicator (maintains state)")
+        log_info(f"  - Stateless indicators: Distributed across all 256 work items per indicator")
         log_info(f"  - GPU limits: 80 compute units, 64 KB local memory, ~128-256 registers per compute unit")
-        log_info(f"  - ISSUE: Per-work-item resource exhaustion, not global memory limits")
+        log_info(f"  - SOLUTION: Better work distribution reduces per-work-item resource pressure")
         
         # Execute precompute kernel
-        # One work item per indicator (50 work items total)
+        # 50 indicators × 256 work items per indicator = 12,800 total work items
+        # Each work item processes ~470 bars (120,206 / 256)
+        # Stateful indicators use only work_item_id == 0, stateless ones distribute work
         kernel = self._precompute_kernel
-        global_size = (self.NUM_INDICATORS,)
+        global_size = (self.NUM_INDICATORS, 256)  # 2D: (indicators, work_items_per_indicator)
+        local_size = (1, 256)  # Work group size
         
         try:
             kernel(
                 self.queue,
                 global_size,
-                None,
+                local_size,
                 ohlcv_buf,               # Input: OHLCV data
                 np.int32(num_bars),      # Number of bars
                 indicators_buf           # Output: Indicator values
@@ -297,8 +304,144 @@ class CompactBacktester:
         num_bars = len(ohlcv_data)
         num_cycles = len(cycles)
         
-        # Serialize bot configs
-        bot_configs_raw = self._serialize_bots(bots)
+        # Try GPU backtesting with reduced batch size
+        try:
+            log_info("Attempting GPU backtesting with minimal batch size...")
+            results = self._run_backtest_gpu_minimal(bots, ohlcv_data, indicators_buffer, cycles)
+            log_info(f"GPU backtesting successful: {len(results)} bots processed")
+            return results
+        except cl.RuntimeError as e:
+            if "OUT_OF_RESOURCES" in str(e):
+                log_error(f"GPU backtesting failed with OUT_OF_RESOURCES even with minimal kernel: {e}")
+                log_error("The backtest kernel is too complex for Intel UHD Graphics GPU")
+                log_error("Root causes:")
+                log_error("  1. Position array (1 × 32 bytes = 32 bytes per work item)")
+                log_error("  2. Deep nested loops (cycles → bars → position management)")
+                log_error("  3. Complex signal generation with many conditionals")
+                log_error("  4. Limited registers per compute unit on Intel UHD Graphics")
+                raise RuntimeError("GPU backtest kernel too complex for available hardware")
+            else:
+                raise
+    
+    def _run_backtest_gpu_minimal(
+        self,
+        bots: List[CompactBotConfig],
+        ohlcv_data: np.ndarray,
+        indicators_buffer: cl.Buffer,
+        cycles: List[Tuple[int, int]]
+    ) -> List[BacktestResult]:
+        """
+        Run backtest with adaptive batch sizing based on GPU capabilities.
+        Start small, increase batch size until failure, then use optimal size.
+        """
+        num_bots = len(bots)
+        all_results = []
+        
+        # Find optimal batch size by testing progressively larger batches
+        optimal_batch_size = self._find_optimal_batch_size(bots, ohlcv_data, indicators_buffer, cycles)
+        
+        log_info(f"Using optimal batch size of {optimal_batch_size} bots for GPU backtesting")
+        
+        # Process all bots using the optimal batch size
+        log_info(f"Processing {num_bots} bots in batches of {optimal_batch_size}")
+        
+        # Calculate total batches for progress bar
+        total_batches = (num_bots + optimal_batch_size - 1) // optimal_batch_size
+        
+        with tqdm(total=num_bots, desc="Backtesting bots", unit="bot") as pbar:
+            for batch_start in range(0, num_bots, optimal_batch_size):
+                batch_end = min(batch_start + optimal_batch_size, num_bots)
+                batch_bots = bots[batch_start:batch_end]
+                
+                batch_results = self._run_backtest_batch_adaptive(
+                    batch_bots,
+                    ohlcv_data,
+                    indicators_buffer,
+                    cycles,
+                    batch_start
+                )
+                all_results.extend(batch_results)
+                
+                # Update progress bar
+                pbar.update(len(batch_results))
+        
+        log_info(f"Completed GPU backtesting: {len(all_results)} bots processed in {total_batches} batches")
+        return all_results
+    
+    def _find_optimal_batch_size(
+        self,
+        bots: List[CompactBotConfig],
+        ohlcv_data: np.ndarray,
+        indicators_buffer: cl.Buffer,
+        cycles: List[Tuple[int, int]]
+    ) -> int:
+        """
+        Find the optimal batch size by testing progressively larger batches.
+        Uses a more efficient approach with fewer test points.
+        """
+        # Test sizes that are conservative for Intel UHD Graphics
+        test_sizes = [1, 2, 5, 10, 25, 50, 100, 250, 500, 1000]
+        
+        # Don't test sizes larger than total bots
+        test_sizes = [s for s in test_sizes if s <= len(bots)]
+        
+        if not test_sizes:
+            return 1
+            
+        optimal_size = 1
+        
+        log_debug(f"Testing batch sizes: {test_sizes}")
+        
+        with tqdm(total=len(test_sizes), desc="Finding optimal batch size", unit="test") as pbar:
+            for test_size in test_sizes:
+                test_bots = bots[:test_size]
+                try:
+                    log_debug(f"Testing batch size {test_size}...")
+                    start_time = time.time()
+                    
+                    self._run_backtest_batch_adaptive(
+                        test_bots,
+                        ohlcv_data,
+                        indicators_buffer,
+                        cycles,
+                        0  # Test batch
+                    )
+                    
+                    elapsed = time.time() - start_time
+                    optimal_size = test_size
+                    log_debug(f"Batch size {test_size} works! ({elapsed:.2f}s)")
+                    
+                except cl.RuntimeError as e:
+                    if "OUT_OF_RESOURCES" in str(e):
+                        log_debug(f"Batch size {test_size} failed with OUT_OF_RESOURCES")
+                        pbar.update(1)
+                        break  # Stop at first failure
+                    else:
+                        pbar.update(1)
+                        raise  # Re-raise non-resource errors
+                
+                pbar.update(1)
+        
+        log_info(f"Optimal batch size found: {optimal_size} bots")
+        return optimal_size
+    
+    def _run_backtest_batch_adaptive(
+        self,
+        batch_bots: List[CompactBotConfig],
+        ohlcv_data: np.ndarray,
+        indicators_buffer: cl.Buffer,
+        cycles: List[Tuple[int, int]],
+        bot_id_offset: int
+    ) -> List[BacktestResult]:
+        """
+        Run backtest kernel for a batch of bots with adaptive sizing.
+        """
+        num_bots = len(batch_bots)
+        num_bars = len(ohlcv_data)
+        num_cycles = len(cycles)
+        
+        # Serialize bot configs for this batch
+        bot_configs_raw = self._serialize_bots(batch_bots)
         
         bots_buf = cl.Buffer(
             self.ctx,
@@ -306,9 +449,7 @@ class CompactBacktester:
             hostbuf=bot_configs_raw
         )
         
-        self.memory_usage['bots_mb'] = bot_configs_raw.nbytes / (1024 * 1024)
-        
-        # OHLCV buffer (needed for price data during backtest)
+        # OHLCV buffer
         ohlcv_flat = ohlcv_data.astype(np.float32)
         
         ohlcv_buf = cl.Buffer(
@@ -333,8 +474,6 @@ class CompactBacktester:
             hostbuf=cycle_ends
         )
         
-        self.memory_usage['cycles_mb'] = (cycle_starts.nbytes + cycle_ends.nbytes) / (1024 * 1024)
-        
         # Results buffer (64 bytes per bot)
         RESULT_SIZE = 64
         results_bytes = RESULT_SIZE * num_bots
@@ -345,35 +484,16 @@ class CompactBacktester:
             size=results_bytes
         )
         
-        self.memory_usage['results_mb'] = results_bytes / (1024 * 1024)
-        
-        # Calculate total memory
-        total_mb = (
-            self.memory_usage.get('ohlcv_mb', 0) +
-            self.memory_usage.get('indicators_mb', 0) +
-            self.memory_usage.get('bots_mb', 0) +
-            self.memory_usage.get('cycles_mb', 0) +
-            self.memory_usage.get('results_mb', 0)
-        )
-        self.memory_usage['total_mb'] = total_mb
-        
-        log_debug(f"Memory breakdown:")
-        log_debug(f"  OHLCV: {self.memory_usage.get('ohlcv_mb', 0):.2f} MB")
-        log_debug(f"  Indicators (precomputed): {self.memory_usage.get('indicators_mb', 0):.2f} MB")
-        log_debug(f"  Bots: {self.memory_usage.get('bots_mb', 0):.2f} MB")
-        log_debug(f"  Cycles: {self.memory_usage.get('cycles_mb', 0):.2f} MB")
-        log_debug(f"  Results: {self.memory_usage.get('results_mb', 0):.2f} MB")
-        log_debug(f"  TOTAL: {total_mb:.2f} MB")
-        
-        # Execute backtest kernel
+        # Execute backtest kernel for this batch
         kernel = self._backtest_kernel
         global_size = (num_bots,)
+        local_size = None  # Let OpenCL choose optimal work group size
         
         try:
             kernel(
                 self.queue,
                 global_size,
-                None,
+                local_size,
                 bots_buf,                          # Bot configs
                 ohlcv_buf,                         # OHLCV data
                 indicators_buffer,                 # Precomputed indicators
@@ -388,32 +508,34 @@ class CompactBacktester:
             self.queue.finish()
             
         except cl.RuntimeError as e:
-            log_error(f"Backtest kernel execution failed: {e}")
+            log_error(f"Backtest kernel execution failed for batch of {num_bots} bots: {e}")
             # Cleanup on error
             bots_buf.release()
             ohlcv_buf.release()
             cycle_starts_buf.release()
             cycle_ends_buf.release()
             results_buf.release()
-            indicators_buffer.release()
             raise
         except Exception as e:
-            log_error(f"Unexpected error in backtest kernel: {e}")
+            log_error(f"Unexpected error in backtest kernel for batch of {num_bots} bots: {e}")
             # Cleanup on error
             bots_buf.release()
             ohlcv_buf.release()
             cycle_starts_buf.release()
             cycle_ends_buf.release()
             results_buf.release()
-            indicators_buffer.release()
             raise
         
         # Read results
         results_raw = np.empty(results_bytes, dtype=np.uint8)
         cl.enqueue_copy(self.queue, results_raw, results_buf)
         
-        # Parse results
+        # Parse results and adjust bot IDs
         results = self._parse_results(results_raw, num_bots)
+        
+        # Adjust bot IDs to account for batch offset
+        for i, result in enumerate(results):
+            result.bot_id = batch_bots[i].bot_id
         
         # Clean up buffers
         bots_buf.release()
@@ -421,7 +543,6 @@ class CompactBacktester:
         cycle_starts_buf.release()
         cycle_ends_buf.release()
         results_buf.release()
-        indicators_buffer.release()
         
         return results
     
