@@ -1,2220 +1,2422 @@
 {
-  "total_generations": 2,
+  "total_generations": 10,
   "total_bots_evaluated": 100,
   "top_bots": [
     {
       "rank": 1,
-      "bot_id": 743,
-      "fitness_score": 16921.73828125,
-      "total_pnl": -543.4232788085938,
-      "win_rate": 0.7199999690055847,
-      "total_trades": 200,
-      "sharpe_ratio": -0.1594139039516449,
-      "max_drawdown": 6.272978782653809,
+      "bot_id": 1188,
+      "fitness_score": 436376.1875,
+      "total_pnl": -87.9259033203125,
+      "win_rate": 0.23897291719913483,
+      "total_trades": 14215,
+      "sharpe_ratio": -0.9758177399635315,
+      "max_drawdown": 0.9010483622550964,
+      "survival_generations": 1,
       "config": {
         "num_indicators": 1,
         "indicator_indices": [
-          14
+          22
         ],
-        "risk_strategy_bitmap": 320,
-        "tp_multiplier": 0.1615457981824875,
-        "sl_multiplier": 0.06208571419119835,
-        "leverage": 8
+        "risk_strategy_bitmap": 1217,
+        "tp_multiplier": 0.08873593807220459,
+        "sl_multiplier": 0.003952096216380596,
+        "leverage": 4
       }
     },
     {
       "rank": 2,
-      "bot_id": 743,
-      "fitness_score": 16921.73828125,
-      "total_pnl": -543.4232788085938,
-      "win_rate": 0.7199999690055847,
-      "total_trades": 200,
-      "sharpe_ratio": -0.1594139039516449,
-      "max_drawdown": 6.272978782653809,
+      "bot_id": 1188,
+      "fitness_score": 436376.1875,
+      "total_pnl": -87.9259033203125,
+      "win_rate": 0.23897291719913483,
+      "total_trades": 14215,
+      "sharpe_ratio": -0.9758177399635315,
+      "max_drawdown": 0.9010483622550964,
+      "survival_generations": 2,
       "config": {
         "num_indicators": 1,
         "indicator_indices": [
-          14
+          22
         ],
-        "risk_strategy_bitmap": 320,
-        "tp_multiplier": 0.1615457981824875,
-        "sl_multiplier": 0.06208571419119835,
-        "leverage": 8
+        "risk_strategy_bitmap": 1217,
+        "tp_multiplier": 0.08873593807220459,
+        "sl_multiplier": 0.003952096216380596,
+        "leverage": 4
       }
     },
     {
       "rank": 3,
-      "bot_id": 437,
-      "fitness_score": 13815.6005859375,
-      "total_pnl": 3898.3408203125,
-      "win_rate": 0.7104377150535583,
-      "total_trades": 297,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.11460135877132416,
+      "bot_id": 1188,
+      "fitness_score": 436376.1875,
+      "total_pnl": -87.9259033203125,
+      "win_rate": 0.23897291719913483,
+      "total_trades": 14215,
+      "sharpe_ratio": -0.9758177399635315,
+      "max_drawdown": 0.9010483622550964,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 1,
         "indicator_indices": [
-          35,
-          30,
-          29,
-          16
+          22
         ],
-        "risk_strategy_bitmap": 1,
-        "tp_multiplier": 0.23700588941574097,
-        "sl_multiplier": 0.06557059288024902,
-        "leverage": 9
+        "risk_strategy_bitmap": 1217,
+        "tp_multiplier": 0.08873593807220459,
+        "sl_multiplier": 0.003952096216380596,
+        "leverage": 4
       }
     },
     {
       "rank": 4,
-      "bot_id": 437,
-      "fitness_score": 13815.6005859375,
-      "total_pnl": 3898.3408203125,
-      "win_rate": 0.7104377150535583,
-      "total_trades": 297,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.11460135877132416,
+      "bot_id": 1188,
+      "fitness_score": 436376.1875,
+      "total_pnl": -87.9259033203125,
+      "win_rate": 0.23897291719913483,
+      "total_trades": 14215,
+      "sharpe_ratio": -0.9758177399635315,
+      "max_drawdown": 0.9010483622550964,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 1,
         "indicator_indices": [
-          35,
-          30,
-          29,
-          16
+          22
         ],
-        "risk_strategy_bitmap": 1,
-        "tp_multiplier": 0.23700588941574097,
-        "sl_multiplier": 0.06557059288024902,
-        "leverage": 9
+        "risk_strategy_bitmap": 1217,
+        "tp_multiplier": 0.08873593807220459,
+        "sl_multiplier": 0.003952096216380596,
+        "leverage": 4
       }
     },
     {
       "rank": 5,
-      "bot_id": 1043,
-      "fitness_score": 11475.7138671875,
-      "total_pnl": 1502.3695068359375,
-      "win_rate": 0.8823529481887817,
-      "total_trades": 153,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.0843099057674408,
+      "bot_id": 1188,
+      "fitness_score": 436376.1875,
+      "total_pnl": -87.9259033203125,
+      "win_rate": 0.23897291719913483,
+      "total_trades": 14215,
+      "sharpe_ratio": -0.9758177399635315,
+      "max_drawdown": 0.9010483622550964,
+      "survival_generations": 5,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 1,
         "indicator_indices": [
-          33,
-          15,
-          35
+          22
         ],
-        "risk_strategy_bitmap": 2182,
-        "tp_multiplier": 0.13292036950588226,
-        "sl_multiplier": 0.06484793871641159,
-        "leverage": 9
+        "risk_strategy_bitmap": 1217,
+        "tp_multiplier": 0.08873593807220459,
+        "sl_multiplier": 0.003952096216380596,
+        "leverage": 4
       }
     },
     {
       "rank": 6,
-      "bot_id": 952,
-      "fitness_score": 10969.2958984375,
-      "total_pnl": 1041.945068359375,
-      "win_rate": 0.35062238574028015,
-      "total_trades": 482,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.3522643744945526,
+      "bot_id": 43068,
+      "fitness_score": 184388.375,
+      "total_pnl": 1.5110321044921875,
+      "win_rate": 0.19285713136196136,
+      "total_trades": 140,
+      "sharpe_ratio": 0.07725111395120621,
+      "max_drawdown": 0.19560004770755768,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 5,
         "indicator_indices": [
-          14
+          43,
+          36,
+          9,
+          42,
+          48
         ],
-        "risk_strategy_bitmap": 4428,
-        "tp_multiplier": 0.22720810770988464,
-        "sl_multiplier": 0.023762675002217293,
+        "risk_strategy_bitmap": 265,
+        "tp_multiplier": 0.18146774172782898,
+        "sl_multiplier": 0.009471123106777668,
         "leverage": 7
       }
     },
     {
       "rank": 7,
-      "bot_id": 952,
-      "fitness_score": 10969.2958984375,
-      "total_pnl": 1041.945068359375,
-      "win_rate": 0.35062238574028015,
-      "total_trades": 482,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.3522643744945526,
+      "bot_id": 43068,
+      "fitness_score": 184388.375,
+      "total_pnl": 1.5110321044921875,
+      "win_rate": 0.19285713136196136,
+      "total_trades": 140,
+      "sharpe_ratio": 0.07725111395120621,
+      "max_drawdown": 0.19560004770755768,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 5,
         "indicator_indices": [
-          14
+          43,
+          36,
+          9,
+          42,
+          48
         ],
-        "risk_strategy_bitmap": 4428,
-        "tp_multiplier": 0.22720810770988464,
-        "sl_multiplier": 0.023762675002217293,
+        "risk_strategy_bitmap": 265,
+        "tp_multiplier": 0.18146774172782898,
+        "sl_multiplier": 0.009471123106777668,
         "leverage": 7
       }
     },
     {
       "rank": 8,
-      "bot_id": 688,
-      "fitness_score": 10960.93359375,
-      "total_pnl": 976.9442749023438,
-      "win_rate": 0.8089886903762817,
-      "total_trades": 89,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.09949386119842529,
+      "bot_id": 43068,
+      "fitness_score": 184388.375,
+      "total_pnl": 1.5110321044921875,
+      "win_rate": 0.19285713136196136,
+      "total_trades": 140,
+      "sharpe_ratio": 0.07725111395120621,
+      "max_drawdown": 0.19560004770755768,
+      "survival_generations": 3,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          28,
-          25,
-          11,
-          33,
-          36
+          43,
+          36,
+          9,
+          42,
+          48
         ],
-        "risk_strategy_bitmap": 7,
-        "tp_multiplier": 0.09773193299770355,
-        "sl_multiplier": 0.025406645610928535,
-        "leverage": 10
+        "risk_strategy_bitmap": 265,
+        "tp_multiplier": 0.18146774172782898,
+        "sl_multiplier": 0.009471123106777668,
+        "leverage": 7
       }
     },
     {
       "rank": 9,
-      "bot_id": 688,
-      "fitness_score": 10960.93359375,
-      "total_pnl": 976.9442749023438,
-      "win_rate": 0.8089886903762817,
-      "total_trades": 89,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.09949386119842529,
+      "bot_id": 28029,
+      "fitness_score": 99635.328125,
+      "total_pnl": 0.12078857421875,
+      "win_rate": 0.3203125,
+      "total_trades": 128,
+      "sharpe_ratio": 0.022751539945602417,
+      "max_drawdown": 0.05309028550982475,
+      "survival_generations": 1,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          28,
-          25,
-          11,
-          33,
-          36
+          4,
+          19,
+          15,
+          9,
+          12
         ],
-        "risk_strategy_bitmap": 7,
-        "tp_multiplier": 0.09773193299770355,
-        "sl_multiplier": 0.025406645610928535,
-        "leverage": 10
+        "risk_strategy_bitmap": 4,
+        "tp_multiplier": 0.15699978172779083,
+        "sl_multiplier": 0.020282171666622162,
+        "leverage": 4
       }
     },
     {
       "rank": 10,
-      "bot_id": 1395,
-      "fitness_score": 10957.7041015625,
-      "total_pnl": 981.0416870117188,
-      "win_rate": 0.6471962332725525,
-      "total_trades": 428,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.12578213214874268,
+      "bot_id": 28029,
+      "fitness_score": 99635.328125,
+      "total_pnl": 0.12078857421875,
+      "win_rate": 0.3203125,
+      "total_trades": 128,
+      "sharpe_ratio": 0.022751539945602417,
+      "max_drawdown": 0.05309028550982475,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 5,
         "indicator_indices": [
+          4,
+          19,
           15,
-          34
+          9,
+          12
         ],
-        "risk_strategy_bitmap": 12624,
-        "tp_multiplier": 0.22328506410121918,
-        "sl_multiplier": 0.0454593226313591,
-        "leverage": 5
+        "risk_strategy_bitmap": 4,
+        "tp_multiplier": 0.15699978172779083,
+        "sl_multiplier": 0.020282171666622162,
+        "leverage": 4
       }
     },
     {
       "rank": 11,
-      "bot_id": 807,
-      "fitness_score": 10893.630859375,
-      "total_pnl": 1030.4342041015625,
-      "win_rate": 0.5796459913253784,
-      "total_trades": 452,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.4594939351081848,
+      "bot_id": 28029,
+      "fitness_score": 99635.328125,
+      "total_pnl": 0.12078857421875,
+      "win_rate": 0.3203125,
+      "total_trades": 128,
+      "sharpe_ratio": 0.022751539945602417,
+      "max_drawdown": 0.05309028550982475,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          27,
-          30,
-          34
+          4,
+          19,
+          15,
+          9,
+          12
         ],
         "risk_strategy_bitmap": 4,
-        "tp_multiplier": 0.22318734228610992,
-        "sl_multiplier": 0.09750903397798538,
-        "leverage": 8
+        "tp_multiplier": 0.15699978172779083,
+        "sl_multiplier": 0.020282171666622162,
+        "leverage": 4
       }
     },
     {
       "rank": 12,
-      "bot_id": 807,
-      "fitness_score": 10893.630859375,
-      "total_pnl": 1030.4342041015625,
-      "win_rate": 0.5796459913253784,
-      "total_trades": 452,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.4594939351081848,
+      "bot_id": 28029,
+      "fitness_score": 99635.328125,
+      "total_pnl": 0.12078857421875,
+      "win_rate": 0.3203125,
+      "total_trades": 128,
+      "sharpe_ratio": 0.022751539945602417,
+      "max_drawdown": 0.05309028550982475,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          27,
-          30,
-          34
+          4,
+          19,
+          15,
+          9,
+          12
         ],
         "risk_strategy_bitmap": 4,
-        "tp_multiplier": 0.22318734228610992,
-        "sl_multiplier": 0.09750903397798538,
-        "leverage": 8
+        "tp_multiplier": 0.15699978172779083,
+        "sl_multiplier": 0.020282171666622162,
+        "leverage": 4
       }
     },
     {
       "rank": 13,
-      "bot_id": 340,
-      "fitness_score": 10845.369140625,
-      "total_pnl": 1345.878662109375,
-      "win_rate": 0.5547885894775391,
-      "total_trades": 1159,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.48585689067840576,
+      "bot_id": 28029,
+      "fitness_score": 99635.328125,
+      "total_pnl": 0.12078857421875,
+      "win_rate": 0.3203125,
+      "total_trades": 128,
+      "sharpe_ratio": 0.022751539945602417,
+      "max_drawdown": 0.05309028550982475,
+      "survival_generations": 5,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 5,
         "indicator_indices": [
-          27
+          4,
+          19,
+          15,
+          9,
+          12
         ],
-        "risk_strategy_bitmap": 8710,
-        "tp_multiplier": 0.19615885615348816,
-        "sl_multiplier": 0.07834189385175705,
-        "leverage": 9
+        "risk_strategy_bitmap": 4,
+        "tp_multiplier": 0.15699978172779083,
+        "sl_multiplier": 0.020282171666622162,
+        "leverage": 4
       }
     },
     {
       "rank": 14,
-      "bot_id": 340,
-      "fitness_score": 10845.369140625,
-      "total_pnl": 1345.878662109375,
-      "win_rate": 0.5547885894775391,
-      "total_trades": 1159,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.48585689067840576,
+      "bot_id": 28029,
+      "fitness_score": 99635.328125,
+      "total_pnl": 0.12078857421875,
+      "win_rate": 0.3203125,
+      "total_trades": 128,
+      "sharpe_ratio": 0.022751539945602417,
+      "max_drawdown": 0.05309028550982475,
+      "survival_generations": 6,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 5,
         "indicator_indices": [
-          27
+          4,
+          19,
+          15,
+          9,
+          12
         ],
-        "risk_strategy_bitmap": 8710,
-        "tp_multiplier": 0.19615885615348816,
-        "sl_multiplier": 0.07834189385175705,
-        "leverage": 9
+        "risk_strategy_bitmap": 4,
+        "tp_multiplier": 0.15699978172779083,
+        "sl_multiplier": 0.020282171666622162,
+        "leverage": 4
       }
     },
     {
       "rank": 15,
-      "bot_id": 1074,
-      "fitness_score": 10779.4736328125,
-      "total_pnl": 795.6495361328125,
-      "win_rate": 0.949999988079071,
-      "total_trades": 100,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.183421328663826,
+      "bot_id": 20858,
+      "fitness_score": 53870.48828125,
+      "total_pnl": 2.8057861328125,
+      "win_rate": 0.5263157486915588,
+      "total_trades": 133,
+      "sharpe_ratio": 0.24256813526153564,
+      "max_drawdown": 0.11567001789808273,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 4,
         "indicator_indices": [
-          30,
-          25
+          0,
+          32,
+          29,
+          4
         ],
-        "risk_strategy_bitmap": 19969,
-        "tp_multiplier": 0.0810970738530159,
-        "sl_multiplier": 0.08067314326763153,
-        "leverage": 7
+        "risk_strategy_bitmap": 260,
+        "tp_multiplier": 0.06827514618635178,
+        "sl_multiplier": 0.04311255365610123,
+        "leverage": 6
       }
     },
     {
       "rank": 16,
-      "bot_id": 93,
-      "fitness_score": 10654.0068359375,
-      "total_pnl": 663.1073608398438,
-      "win_rate": 0.8267716765403748,
-      "total_trades": 127,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.09380228817462921,
+      "bot_id": 20858,
+      "fitness_score": 53870.48828125,
+      "total_pnl": 2.8057861328125,
+      "win_rate": 0.5263157486915588,
+      "total_trades": 133,
+      "sharpe_ratio": 0.24256813526153564,
+      "max_drawdown": 0.11567001789808273,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 4,
         "indicator_indices": [
-          35,
-          15,
-          13
+          0,
+          32,
+          29,
+          4
         ],
-        "risk_strategy_bitmap": 2,
-        "tp_multiplier": 0.17631584405899048,
-        "sl_multiplier": 0.019384348765015602,
-        "leverage": 4
+        "risk_strategy_bitmap": 260,
+        "tp_multiplier": 0.06827514618635178,
+        "sl_multiplier": 0.04311255365610123,
+        "leverage": 6
       }
     },
     {
       "rank": 17,
-      "bot_id": 93,
-      "fitness_score": 10654.0068359375,
-      "total_pnl": 663.1073608398438,
-      "win_rate": 0.8267716765403748,
-      "total_trades": 127,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.09380228817462921,
+      "bot_id": 20858,
+      "fitness_score": 53870.48828125,
+      "total_pnl": 2.8057861328125,
+      "win_rate": 0.5263157486915588,
+      "total_trades": 133,
+      "sharpe_ratio": 0.24256813526153564,
+      "max_drawdown": 0.11567001789808273,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 4,
         "indicator_indices": [
-          35,
-          15,
-          13
+          0,
+          32,
+          29,
+          4
         ],
-        "risk_strategy_bitmap": 2,
-        "tp_multiplier": 0.17631584405899048,
-        "sl_multiplier": 0.019384348765015602,
-        "leverage": 4
+        "risk_strategy_bitmap": 260,
+        "tp_multiplier": 0.06827514618635178,
+        "sl_multiplier": 0.04311255365610123,
+        "leverage": 6
       }
     },
     {
       "rank": 18,
-      "bot_id": 1076,
-      "fitness_score": 10593.32421875,
-      "total_pnl": 597.421142578125,
-      "win_rate": 0.9899999499320984,
-      "total_trades": 100,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.05487975850701332,
+      "bot_id": 20858,
+      "fitness_score": 53870.48828125,
+      "total_pnl": 2.8057861328125,
+      "win_rate": 0.5263157486915588,
+      "total_trades": 133,
+      "sharpe_ratio": 0.24256813526153564,
+      "max_drawdown": 0.11567001789808273,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 5,
+        "num_indicators": 4,
         "indicator_indices": [
-          42,
-          9,
-          25,
-          5,
-          36
+          0,
+          32,
+          29,
+          4
         ],
-        "risk_strategy_bitmap": 10242,
-        "tp_multiplier": 0.07831081748008728,
-        "sl_multiplier": 0.03327358886599541,
-        "leverage": 8
+        "risk_strategy_bitmap": 260,
+        "tp_multiplier": 0.06827514618635178,
+        "sl_multiplier": 0.04311255365610123,
+        "leverage": 6
       }
     },
     {
       "rank": 19,
-      "bot_id": 219,
-      "fitness_score": 10480.2099609375,
-      "total_pnl": 585.2218627929688,
-      "win_rate": 0.00975081231445074,
-      "total_trades": 923,
-      "sharpe_ratio": 6.002780914306641,
-      "max_drawdown": 0.8995726108551025,
+      "bot_id": 20858,
+      "fitness_score": 53870.48828125,
+      "total_pnl": 2.8057861328125,
+      "win_rate": 0.5263157486915588,
+      "total_trades": 133,
+      "sharpe_ratio": 0.24256813526153564,
+      "max_drawdown": 0.11567001789808273,
+      "survival_generations": 5,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          35
+          0,
+          32,
+          29,
+          4
         ],
-        "risk_strategy_bitmap": 16896,
-        "tp_multiplier": 0.03923241049051285,
-        "sl_multiplier": 0.009127494879066944,
-        "leverage": 7
+        "risk_strategy_bitmap": 260,
+        "tp_multiplier": 0.06827514618635178,
+        "sl_multiplier": 0.04311255365610123,
+        "leverage": 6
       }
     },
     {
       "rank": 20,
-      "bot_id": 219,
-      "fitness_score": 10480.2099609375,
-      "total_pnl": 585.2218627929688,
-      "win_rate": 0.00975081231445074,
-      "total_trades": 923,
-      "sharpe_ratio": 6.002780914306641,
-      "max_drawdown": 0.8995726108551025,
+      "bot_id": 20858,
+      "fitness_score": 53870.48828125,
+      "total_pnl": 2.8057861328125,
+      "win_rate": 0.5263157486915588,
+      "total_trades": 133,
+      "sharpe_ratio": 0.24256813526153564,
+      "max_drawdown": 0.11567001789808273,
+      "survival_generations": 6,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          35
+          0,
+          32,
+          29,
+          4
         ],
-        "risk_strategy_bitmap": 16896,
-        "tp_multiplier": 0.03923241049051285,
-        "sl_multiplier": 0.009127494879066944,
-        "leverage": 7
+        "risk_strategy_bitmap": 260,
+        "tp_multiplier": 0.06827514618635178,
+        "sl_multiplier": 0.04311255365610123,
+        "leverage": 6
       }
     },
     {
       "rank": 21,
-      "bot_id": 132,
-      "fitness_score": 10477.0517578125,
-      "total_pnl": 599.9268798828125,
-      "win_rate": 0.5547885894775391,
-      "total_trades": 1159,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.19547779858112335,
+      "bot_id": 20858,
+      "fitness_score": 53870.48828125,
+      "total_pnl": 2.8057861328125,
+      "win_rate": 0.5263157486915588,
+      "total_trades": 133,
+      "sharpe_ratio": 0.24256813526153564,
+      "max_drawdown": 0.11567001789808273,
+      "survival_generations": 7,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          27
+          0,
+          32,
+          29,
+          4
         ],
-        "risk_strategy_bitmap": 1092,
-        "tp_multiplier": 0.10507752001285553,
-        "sl_multiplier": 0.029287446290254593,
+        "risk_strategy_bitmap": 260,
+        "tp_multiplier": 0.06827514618635178,
+        "sl_multiplier": 0.04311255365610123,
         "leverage": 6
       }
     },
     {
       "rank": 22,
-      "bot_id": 132,
-      "fitness_score": 10477.0517578125,
-      "total_pnl": 599.9268798828125,
-      "win_rate": 0.5547885894775391,
-      "total_trades": 1159,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.19547779858112335,
+      "bot_id": 39229,
+      "fitness_score": 49748.34765625,
+      "total_pnl": 24.871658325195312,
+      "win_rate": 0.5714285373687744,
+      "total_trades": 203,
+      "sharpe_ratio": 0.18288961052894592,
+      "max_drawdown": 1.3599272966384888,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          27
+          42,
+          0,
+          29,
+          24
         ],
-        "risk_strategy_bitmap": 1092,
-        "tp_multiplier": 0.10507752001285553,
-        "sl_multiplier": 0.029287446290254593,
-        "leverage": 6
+        "risk_strategy_bitmap": 2049,
+        "tp_multiplier": 0.15837690234184265,
+        "sl_multiplier": 0.02743452973663807,
+        "leverage": 7
       }
     },
     {
       "rank": 23,
-      "bot_id": 955,
-      "fitness_score": 10455.6552734375,
-      "total_pnl": 477.8828125,
-      "win_rate": 0.5503355860710144,
-      "total_trades": 1192,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.03136773034930229,
+      "bot_id": 39229,
+      "fitness_score": 49748.34765625,
+      "total_pnl": 24.871658325195312,
+      "win_rate": 0.5714285373687744,
+      "total_trades": 203,
+      "sharpe_ratio": 0.18288961052894592,
+      "max_drawdown": 1.3599272966384888,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          27
+          42,
+          0,
+          29,
+          24
         ],
-        "risk_strategy_bitmap": 664,
-        "tp_multiplier": 0.24050968885421753,
-        "sl_multiplier": 0.007365466561168432,
-        "leverage": 2
+        "risk_strategy_bitmap": 2049,
+        "tp_multiplier": 0.15837690234184265,
+        "sl_multiplier": 0.02743452973663807,
+        "leverage": 7
       }
     },
     {
       "rank": 24,
-      "bot_id": 955,
-      "fitness_score": 10455.6552734375,
-      "total_pnl": 477.8828125,
-      "win_rate": 0.5503355860710144,
-      "total_trades": 1192,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.03136773034930229,
+      "bot_id": 39229,
+      "fitness_score": 49748.34765625,
+      "total_pnl": 24.871658325195312,
+      "win_rate": 0.5714285373687744,
+      "total_trades": 203,
+      "sharpe_ratio": 0.18288961052894592,
+      "max_drawdown": 1.3599272966384888,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          27
+          42,
+          0,
+          29,
+          24
         ],
-        "risk_strategy_bitmap": 664,
-        "tp_multiplier": 0.24050968885421753,
-        "sl_multiplier": 0.007365466561168432,
-        "leverage": 2
+        "risk_strategy_bitmap": 2049,
+        "tp_multiplier": 0.15837690234184265,
+        "sl_multiplier": 0.02743452973663807,
+        "leverage": 7
       }
     },
     {
       "rank": 25,
-      "bot_id": 732,
-      "fitness_score": 10396.1533203125,
-      "total_pnl": 407.47998046875,
-      "win_rate": 0.9130434393882751,
-      "total_trades": 115,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.10722712427377701,
+      "bot_id": 39229,
+      "fitness_score": 49748.34765625,
+      "total_pnl": 24.871658325195312,
+      "win_rate": 0.5714285373687744,
+      "total_trades": 203,
+      "sharpe_ratio": 0.18288961052894592,
+      "max_drawdown": 1.3599272966384888,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          25
+          42,
+          0,
+          29,
+          24
         ],
-        "risk_strategy_bitmap": 290,
-        "tp_multiplier": 0.05159065127372742,
-        "sl_multiplier": 0.017810581251978874,
-        "leverage": 9
+        "risk_strategy_bitmap": 2049,
+        "tp_multiplier": 0.15837690234184265,
+        "sl_multiplier": 0.02743452973663807,
+        "leverage": 7
       }
     },
     {
       "rank": 26,
-      "bot_id": 732,
-      "fitness_score": 10396.1533203125,
-      "total_pnl": 407.47998046875,
-      "win_rate": 0.9130434393882751,
-      "total_trades": 115,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.10722712427377701,
+      "bot_id": 7792,
+      "fitness_score": 47781.234375,
+      "total_pnl": -9.312187194824219,
+      "win_rate": 0.36936938762664795,
+      "total_trades": 222,
+      "sharpe_ratio": -0.48766639828681946,
+      "max_drawdown": 0.1909540444612503,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 5,
         "indicator_indices": [
-          25
+          43,
+          10,
+          31,
+          15,
+          16
         ],
-        "risk_strategy_bitmap": 290,
-        "tp_multiplier": 0.05159065127372742,
-        "sl_multiplier": 0.017810581251978874,
-        "leverage": 9
+        "risk_strategy_bitmap": 16673,
+        "tp_multiplier": 0.059119485318660736,
+        "sl_multiplier": 0.023640595376491547,
+        "leverage": 4
       }
     },
     {
       "rank": 27,
-      "bot_id": 305,
-      "fitness_score": 10329.3935546875,
-      "total_pnl": 331.23193359375,
-      "win_rate": 0.9629629850387573,
-      "total_trades": 108,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.039757005870342255,
+      "bot_id": 7792,
+      "fitness_score": 47781.234375,
+      "total_pnl": -9.312187194824219,
+      "win_rate": 0.36936938762664795,
+      "total_trades": 222,
+      "sharpe_ratio": -0.48766639828681946,
+      "max_drawdown": 0.1909540444612503,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
-          28,
-          11,
-          25,
-          24
+          43,
+          10,
+          31,
+          15,
+          16
         ],
-        "risk_strategy_bitmap": 24576,
-        "tp_multiplier": 0.0697866827249527,
-        "sl_multiplier": 0.037721261382102966,
-        "leverage": 5
+        "risk_strategy_bitmap": 16673,
+        "tp_multiplier": 0.059119485318660736,
+        "sl_multiplier": 0.023640595376491547,
+        "leverage": 4
       }
     },
     {
       "rank": 28,
-      "bot_id": 305,
-      "fitness_score": 10329.3935546875,
-      "total_pnl": 331.23193359375,
-      "win_rate": 0.9629629850387573,
-      "total_trades": 108,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.039757005870342255,
+      "bot_id": 7792,
+      "fitness_score": 47781.234375,
+      "total_pnl": -9.312187194824219,
+      "win_rate": 0.36936938762664795,
+      "total_trades": 222,
+      "sharpe_ratio": -0.48766639828681946,
+      "max_drawdown": 0.1909540444612503,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
-          28,
-          11,
-          25,
-          24
+          43,
+          10,
+          31,
+          15,
+          16
         ],
-        "risk_strategy_bitmap": 24576,
-        "tp_multiplier": 0.0697866827249527,
-        "sl_multiplier": 0.037721261382102966,
-        "leverage": 5
+        "risk_strategy_bitmap": 16673,
+        "tp_multiplier": 0.059119485318660736,
+        "sl_multiplier": 0.023640595376491547,
+        "leverage": 4
       }
     },
     {
       "rank": 29,
-      "bot_id": 800,
-      "fitness_score": 10304.8408203125,
-      "total_pnl": 332.543701171875,
-      "win_rate": 0.8515625,
-      "total_trades": 128,
-      "sharpe_ratio": 8.149273872375488,
-      "max_drawdown": 0.3958675265312195,
+      "bot_id": 7792,
+      "fitness_score": 47781.234375,
+      "total_pnl": -9.312187194824219,
+      "win_rate": 0.36936938762664795,
+      "total_trades": 222,
+      "sharpe_ratio": -0.48766639828681946,
+      "max_drawdown": 0.1909540444612503,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
+          43,
+          10,
           31,
-          23,
-          6,
-          7
+          15,
+          16
         ],
-        "risk_strategy_bitmap": 4256,
-        "tp_multiplier": 0.07527296990156174,
-        "sl_multiplier": 0.0570446215569973,
-        "leverage": 8
+        "risk_strategy_bitmap": 16673,
+        "tp_multiplier": 0.059119485318660736,
+        "sl_multiplier": 0.023640595376491547,
+        "leverage": 4
       }
     },
     {
       "rank": 30,
-      "bot_id": 800,
-      "fitness_score": 10304.8408203125,
-      "total_pnl": 332.543701171875,
-      "win_rate": 0.8515625,
-      "total_trades": 128,
-      "sharpe_ratio": 8.149273872375488,
-      "max_drawdown": 0.3958675265312195,
+      "bot_id": 7792,
+      "fitness_score": 47781.234375,
+      "total_pnl": -9.312187194824219,
+      "win_rate": 0.36936938762664795,
+      "total_trades": 222,
+      "sharpe_ratio": -0.48766639828681946,
+      "max_drawdown": 0.1909540444612503,
+      "survival_generations": 5,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
+          43,
+          10,
           31,
-          23,
-          6,
-          7
+          15,
+          16
         ],
-        "risk_strategy_bitmap": 4256,
-        "tp_multiplier": 0.07527296990156174,
-        "sl_multiplier": 0.0570446215569973,
-        "leverage": 8
+        "risk_strategy_bitmap": 16673,
+        "tp_multiplier": 0.059119485318660736,
+        "sl_multiplier": 0.023640595376491547,
+        "leverage": 4
       }
     },
     {
       "rank": 31,
-      "bot_id": 264,
-      "fitness_score": 10301.853515625,
-      "total_pnl": 428.5640563964844,
-      "win_rate": 0.5547885894775391,
-      "total_trades": 1159,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.24438787996768951,
+      "bot_id": 19186,
+      "fitness_score": 32896.91796875,
+      "total_pnl": -152.53067016601562,
+      "win_rate": 0.26365187764167786,
+      "total_trades": 3516,
+      "sharpe_ratio": -0.5823470950126648,
+      "max_drawdown": 1.7171889543533325,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          27
+          7,
+          20,
+          31,
+          38
         ],
-        "risk_strategy_bitmap": 20996,
-        "tp_multiplier": 0.05614597722887993,
-        "sl_multiplier": 0.03121262602508068,
-        "leverage": 8
+        "risk_strategy_bitmap": 18465,
+        "tp_multiplier": 0.1778460144996643,
+        "sl_multiplier": 0.074824757874012,
+        "leverage": 10
       }
     },
     {
       "rank": 32,
-      "bot_id": 264,
-      "fitness_score": 10301.853515625,
-      "total_pnl": 428.5640563964844,
-      "win_rate": 0.5547885894775391,
-      "total_trades": 1159,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.24438787996768951,
+      "bot_id": 19186,
+      "fitness_score": 32896.91796875,
+      "total_pnl": -152.53067016601562,
+      "win_rate": 0.26365187764167786,
+      "total_trades": 3516,
+      "sharpe_ratio": -0.5823470950126648,
+      "max_drawdown": 1.7171889543533325,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          27
+          7,
+          20,
+          31,
+          38
         ],
-        "risk_strategy_bitmap": 20996,
-        "tp_multiplier": 0.05614597722887993,
-        "sl_multiplier": 0.03121262602508068,
-        "leverage": 8
+        "risk_strategy_bitmap": 18465,
+        "tp_multiplier": 0.1778460144996643,
+        "sl_multiplier": 0.074824757874012,
+        "leverage": 10
       }
     },
     {
       "rank": 33,
-      "bot_id": 1032,
-      "fitness_score": 10253.03125,
-      "total_pnl": 266.314453125,
-      "win_rate": 0.8913043141365051,
-      "total_trades": 92,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.21148799359798431,
+      "bot_id": 19186,
+      "fitness_score": 32896.91796875,
+      "total_pnl": -152.53067016601562,
+      "win_rate": 0.26365187764167786,
+      "total_trades": 3516,
+      "sharpe_ratio": -0.5823470950126648,
+      "max_drawdown": 1.7171889543533325,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 5,
+        "num_indicators": 4,
         "indicator_indices": [
-          9,
-          40,
-          34,
-          25,
-          49
+          7,
+          20,
+          31,
+          38
         ],
-        "risk_strategy_bitmap": 4131,
-        "tp_multiplier": 0.06451672315597534,
-        "sl_multiplier": 0.06172819435596466,
-        "leverage": 4
+        "risk_strategy_bitmap": 18465,
+        "tp_multiplier": 0.1778460144996643,
+        "sl_multiplier": 0.074824757874012,
+        "leverage": 10
       }
     },
     {
       "rank": 34,
-      "bot_id": 1201,
-      "fitness_score": 10244.916015625,
-      "total_pnl": 246.30343627929688,
-      "win_rate": 0.849056601524353,
-      "total_trades": 106,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.02100372314453125,
+      "bot_id": 20807,
+      "fitness_score": 19011.55078125,
+      "total_pnl": -88.4145278930664,
+      "win_rate": 0.25602439045906067,
+      "total_trades": 9835,
+      "sharpe_ratio": -0.9738960266113281,
+      "max_drawdown": 0.9078435301780701,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 4,
         "indicator_indices": [
-          25,
-          21
+          26,
+          48,
+          47,
+          42
         ],
-        "risk_strategy_bitmap": 256,
-        "tp_multiplier": 0.09650606662034988,
-        "sl_multiplier": 0.02904318831861019,
-        "leverage": 3
+        "risk_strategy_bitmap": 16384,
+        "tp_multiplier": 0.11498579382896423,
+        "sl_multiplier": 0.06575022637844086,
+        "leverage": 5
       }
     },
     {
       "rank": 35,
-      "bot_id": 226,
-      "fitness_score": 10218.7197265625,
-      "total_pnl": 221.5612030029297,
-      "win_rate": 0.7471264600753784,
-      "total_trades": 348,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.0070037841796875,
+      "bot_id": 20807,
+      "fitness_score": 19011.55078125,
+      "total_pnl": -88.4145278930664,
+      "win_rate": 0.25602439045906067,
+      "total_trades": 9835,
+      "sharpe_ratio": -0.9738960266113281,
+      "max_drawdown": 0.9078435301780701,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 4,
         "indicator_indices": [
-          12,
-          35
+          26,
+          48,
+          47,
+          42
         ],
-        "risk_strategy_bitmap": 16944,
-        "tp_multiplier": 0.20666322112083435,
-        "sl_multiplier": 0.07652875036001205,
-        "leverage": 1
+        "risk_strategy_bitmap": 16384,
+        "tp_multiplier": 0.11498579382896423,
+        "sl_multiplier": 0.06575022637844086,
+        "leverage": 5
       }
     },
     {
       "rank": 36,
-      "bot_id": 226,
-      "fitness_score": 10218.7197265625,
-      "total_pnl": 221.5612030029297,
-      "win_rate": 0.7471264600753784,
-      "total_trades": 348,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.0070037841796875,
+      "bot_id": 9728,
+      "fitness_score": 18992.537109375,
+      "total_pnl": -7.355903625488281,
+      "win_rate": 0.4375,
+      "total_trades": 16,
+      "sharpe_ratio": -0.5970885753631592,
+      "max_drawdown": 0.12319617718458176,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 3,
         "indicator_indices": [
-          12,
-          35
+          29,
+          9,
+          19
         ],
-        "risk_strategy_bitmap": 16944,
-        "tp_multiplier": 0.20666322112083435,
-        "sl_multiplier": 0.07652875036001205,
-        "leverage": 1
+        "risk_strategy_bitmap": 1024,
+        "tp_multiplier": 0.2362179160118103,
+        "sl_multiplier": 0.0598062202334404,
+        "leverage": 10
       }
     },
     {
       "rank": 37,
-      "bot_id": 830,
-      "fitness_score": 10215.037109375,
-      "total_pnl": 218.06240844726562,
-      "win_rate": 0.9130434393882751,
-      "total_trades": 115,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.05614890903234482,
+      "bot_id": 9728,
+      "fitness_score": 18992.537109375,
+      "total_pnl": -7.355903625488281,
+      "win_rate": 0.4375,
+      "total_trades": 16,
+      "sharpe_ratio": -0.5970885753631592,
+      "max_drawdown": 0.12319617718458176,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 3,
         "indicator_indices": [
-          25
+          29,
+          9,
+          19
         ],
         "risk_strategy_bitmap": 1024,
-        "tp_multiplier": 0.05913698673248291,
-        "sl_multiplier": 0.02676645666360855,
-        "leverage": 4
+        "tp_multiplier": 0.2362179160118103,
+        "sl_multiplier": 0.0598062202334404,
+        "leverage": 10
       }
     },
     {
       "rank": 38,
-      "bot_id": 830,
-      "fitness_score": 10215.037109375,
-      "total_pnl": 218.06240844726562,
-      "win_rate": 0.9130434393882751,
-      "total_trades": 115,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.05614890903234482,
+      "bot_id": 9728,
+      "fitness_score": 18992.537109375,
+      "total_pnl": -7.355903625488281,
+      "win_rate": 0.4375,
+      "total_trades": 16,
+      "sharpe_ratio": -0.5970885753631592,
+      "max_drawdown": 0.12319617718458176,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 3,
         "indicator_indices": [
-          25
+          29,
+          9,
+          19
         ],
         "risk_strategy_bitmap": 1024,
-        "tp_multiplier": 0.05913698673248291,
-        "sl_multiplier": 0.02676645666360855,
-        "leverage": 4
+        "tp_multiplier": 0.2362179160118103,
+        "sl_multiplier": 0.0598062202334404,
+        "leverage": 10
       }
     },
     {
       "rank": 39,
-      "bot_id": 120,
-      "fitness_score": 10203.43359375,
-      "total_pnl": 205.13856506347656,
-      "win_rate": 0.9130434393882751,
-      "total_trades": 115,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.04755694419145584,
+      "bot_id": 9728,
+      "fitness_score": 18992.537109375,
+      "total_pnl": -7.355903625488281,
+      "win_rate": 0.4375,
+      "total_trades": 16,
+      "sharpe_ratio": -0.5970885753631592,
+      "max_drawdown": 0.12319617718458176,
+      "survival_generations": 4,
       "config": {
         "num_indicators": 3,
         "indicator_indices": [
-          25,
-          4,
-          8
+          29,
+          9,
+          19
         ],
-        "risk_strategy_bitmap": 5696,
-        "tp_multiplier": 0.07336875051259995,
-        "sl_multiplier": 0.030377097427845,
-        "leverage": 3
+        "risk_strategy_bitmap": 1024,
+        "tp_multiplier": 0.2362179160118103,
+        "sl_multiplier": 0.0598062202334404,
+        "leverage": 10
       }
     },
     {
       "rank": 40,
-      "bot_id": 120,
-      "fitness_score": 10203.43359375,
-      "total_pnl": 205.13856506347656,
-      "win_rate": 0.9130434393882751,
-      "total_trades": 115,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.04755694419145584,
+      "bot_id": 9728,
+      "fitness_score": 18992.537109375,
+      "total_pnl": -7.355903625488281,
+      "win_rate": 0.4375,
+      "total_trades": 16,
+      "sharpe_ratio": -0.5970885753631592,
+      "max_drawdown": 0.12319617718458176,
+      "survival_generations": 5,
       "config": {
         "num_indicators": 3,
         "indicator_indices": [
-          25,
-          4,
-          8
+          29,
+          9,
+          19
         ],
-        "risk_strategy_bitmap": 5696,
-        "tp_multiplier": 0.07336875051259995,
-        "sl_multiplier": 0.030377097427845,
-        "leverage": 3
+        "risk_strategy_bitmap": 1024,
+        "tp_multiplier": 0.2362179160118103,
+        "sl_multiplier": 0.0598062202334404,
+        "leverage": 10
       }
     },
     {
       "rank": 41,
-      "bot_id": 791,
-      "fitness_score": 10192.025390625,
-      "total_pnl": 208.77432250976562,
-      "win_rate": 0.8648648262023926,
-      "total_trades": 74,
-      "sharpe_ratio": 7.146943092346191,
-      "max_drawdown": 0.28543591499328613,
+      "bot_id": 43563,
+      "fitness_score": 15452.10546875,
+      "total_pnl": 5.881660461425781,
+      "win_rate": 0.40740740299224854,
+      "total_trades": 27,
+      "sharpe_ratio": 0.84241783618927,
+      "max_drawdown": 0.06981880217790604,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          33,
-          40,
-          25
+          19,
+          4,
+          23,
+          15,
+          35
         ],
-        "risk_strategy_bitmap": 66,
-        "tp_multiplier": 0.06958697736263275,
-        "sl_multiplier": 0.07714138925075531,
-        "leverage": 8
+        "risk_strategy_bitmap": 196,
+        "tp_multiplier": 0.13481849431991577,
+        "sl_multiplier": 0.037128910422325134,
+        "leverage": 6
       }
     },
     {
       "rank": 42,
-      "bot_id": 791,
-      "fitness_score": 10192.025390625,
-      "total_pnl": 208.77432250976562,
-      "win_rate": 0.8648648262023926,
-      "total_trades": 74,
-      "sharpe_ratio": 7.146943092346191,
-      "max_drawdown": 0.28543591499328613,
+      "bot_id": 43563,
+      "fitness_score": 15452.10546875,
+      "total_pnl": 5.881660461425781,
+      "win_rate": 0.40740740299224854,
+      "total_trades": 27,
+      "sharpe_ratio": 0.84241783618927,
+      "max_drawdown": 0.06981880217790604,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          33,
-          40,
-          25
+          19,
+          4,
+          23,
+          15,
+          35
         ],
-        "risk_strategy_bitmap": 66,
-        "tp_multiplier": 0.06958697736263275,
-        "sl_multiplier": 0.07714138925075531,
-        "leverage": 8
+        "risk_strategy_bitmap": 196,
+        "tp_multiplier": 0.13481849431991577,
+        "sl_multiplier": 0.037128910422325134,
+        "leverage": 6
       }
     },
     {
       "rank": 43,
-      "bot_id": 553,
-      "fitness_score": 10188.5830078125,
-      "total_pnl": 192.42701721191406,
-      "win_rate": 0.8727272748947144,
-      "total_trades": 55,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.08491476625204086,
+      "bot_id": 43563,
+      "fitness_score": 15452.10546875,
+      "total_pnl": 5.881660461425781,
+      "win_rate": 0.40740740299224854,
+      "total_trades": 27,
+      "sharpe_ratio": 0.84241783618927,
+      "max_drawdown": 0.06981880217790604,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          30,
-          31,
+          19,
+          4,
+          23,
+          15,
           35
         ],
-        "risk_strategy_bitmap": 16384,
-        "tp_multiplier": 0.095356285572052,
-        "sl_multiplier": 0.06737641990184784,
-        "leverage": 5
+        "risk_strategy_bitmap": 196,
+        "tp_multiplier": 0.13481849431991577,
+        "sl_multiplier": 0.037128910422325134,
+        "leverage": 6
       }
     },
     {
       "rank": 44,
-      "bot_id": 553,
-      "fitness_score": 10188.5830078125,
-      "total_pnl": 192.42701721191406,
-      "win_rate": 0.8727272748947144,
-      "total_trades": 55,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.08491476625204086,
+      "bot_id": 14888,
+      "fitness_score": 13758.935546875,
+      "total_pnl": -87.01457977294922,
+      "win_rate": 0.19606700539588928,
+      "total_trades": 6865,
+      "sharpe_ratio": -0.9559593200683594,
+      "max_drawdown": 0.9102330803871155,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 4,
         "indicator_indices": [
-          30,
-          31,
-          35
+          38,
+          45,
+          7,
+          48
         ],
-        "risk_strategy_bitmap": 16384,
-        "tp_multiplier": 0.095356285572052,
-        "sl_multiplier": 0.06737641990184784,
-        "leverage": 5
+        "risk_strategy_bitmap": 4682,
+        "tp_multiplier": 0.1609162986278534,
+        "sl_multiplier": 0.02216683328151703,
+        "leverage": 7
       }
     },
     {
       "rank": 45,
-      "bot_id": 1255,
-      "fitness_score": 10180.4423828125,
-      "total_pnl": 193.15367126464844,
-      "win_rate": 0.7735849022865295,
-      "total_trades": 106,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.18889784812927246,
+      "bot_id": 14888,
+      "fitness_score": 13758.935546875,
+      "total_pnl": -87.01457977294922,
+      "win_rate": 0.19606700539588928,
+      "total_trades": 6865,
+      "sharpe_ratio": -0.9559593200683594,
+      "max_drawdown": 0.9102330803871155,
+      "survival_generations": 2,
       "config": {
         "num_indicators": 4,
         "indicator_indices": [
-          48,
-          31,
-          19,
-          17
+          38,
+          45,
+          7,
+          48
         ],
-        "risk_strategy_bitmap": 16452,
-        "tp_multiplier": 0.0532916784286499,
-        "sl_multiplier": 0.01467915903776884,
-        "leverage": 5
+        "risk_strategy_bitmap": 4682,
+        "tp_multiplier": 0.1609162986278534,
+        "sl_multiplier": 0.02216683328151703,
+        "leverage": 7
       }
     },
     {
       "rank": 46,
-      "bot_id": 1487,
-      "fitness_score": 10165.2666015625,
-      "total_pnl": 184.57810974121094,
-      "win_rate": 0.8504672646522522,
-      "total_trades": 107,
-      "sharpe_ratio": 5.776425361633301,
-      "max_drawdown": 0.3094094395637512,
+      "bot_id": 14888,
+      "fitness_score": 13758.935546875,
+      "total_pnl": -87.01457977294922,
+      "win_rate": 0.19606700539588928,
+      "total_trades": 6865,
+      "sharpe_ratio": -0.9559593200683594,
+      "max_drawdown": 0.9102330803871155,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 5,
+        "num_indicators": 4,
         "indicator_indices": [
-          2,
-          4,
-          23,
-          27,
-          25
+          38,
+          45,
+          7,
+          48
         ],
-        "risk_strategy_bitmap": 8337,
-        "tp_multiplier": 0.053188007324934006,
-        "sl_multiplier": 0.07394152134656906,
-        "leverage": 4
+        "risk_strategy_bitmap": 4682,
+        "tp_multiplier": 0.1609162986278534,
+        "sl_multiplier": 0.02216683328151703,
+        "leverage": 7
       }
     },
     {
       "rank": 47,
-      "bot_id": 89,
-      "fitness_score": 10160.71484375,
-      "total_pnl": 173.00521850585938,
-      "win_rate": 0.8629031777381897,
-      "total_trades": 124,
-      "sharpe_ratio": 8.586238861083984,
-      "max_drawdown": 0.19595803320407867,
+      "bot_id": 14888,
+      "fitness_score": 13758.935546875,
+      "total_pnl": -87.01457977294922,
+      "win_rate": 0.19606700539588928,
+      "total_trades": 6865,
+      "sharpe_ratio": -0.9559593200683594,
+      "max_drawdown": 0.9102330803871155,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          31
+          38,
+          45,
+          7,
+          48
         ],
-        "risk_strategy_bitmap": 8192,
-        "tp_multiplier": 0.04746651276946068,
-        "sl_multiplier": 0.04777447506785393,
-        "leverage": 5
+        "risk_strategy_bitmap": 4682,
+        "tp_multiplier": 0.1609162986278534,
+        "sl_multiplier": 0.02216683328151703,
+        "leverage": 7
       }
     },
     {
       "rank": 48,
-      "bot_id": 89,
-      "fitness_score": 10160.71484375,
-      "total_pnl": 173.00521850585938,
-      "win_rate": 0.8629031777381897,
-      "total_trades": 124,
-      "sharpe_ratio": 8.586238861083984,
-      "max_drawdown": 0.19595803320407867,
+      "bot_id": 54771,
+      "fitness_score": 10911.751953125,
+      "total_pnl": 1.995513916015625,
+      "win_rate": 0.4117647111415863,
+      "total_trades": 17,
+      "sharpe_ratio": 0.06033052131533623,
+      "max_drawdown": 0.3307636082172394,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 4,
         "indicator_indices": [
-          31
+          23,
+          49,
+          37,
+          48
         ],
-        "risk_strategy_bitmap": 8192,
-        "tp_multiplier": 0.04746651276946068,
-        "sl_multiplier": 0.04777447506785393,
-        "leverage": 5
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.05418039858341217,
+        "sl_multiplier": 0.08924531191587448,
+        "leverage": 2
       }
     },
     {
       "rank": 49,
-      "bot_id": 843,
-      "fitness_score": 10149.19921875,
-      "total_pnl": 275.396728515625,
-      "win_rate": 0.49183303117752075,
-      "total_trades": 551,
-      "sharpe_ratio": 3.408092498779297,
-      "max_drawdown": 0.5308051109313965,
+      "bot_id": 7937,
+      "fitness_score": 10495.1865234375,
+      "total_pnl": -6.731758117675781,
+      "win_rate": 0.05882352963089943,
+      "total_trades": 68,
+      "sharpe_ratio": -0.9253837466239929,
+      "max_drawdown": 0.07274559140205383,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
-          36,
-          42,
-          21,
-          39
+          46,
+          47,
+          35,
+          13,
+          24
         ],
-        "risk_strategy_bitmap": 1,
-        "tp_multiplier": 0.13964113593101501,
-        "sl_multiplier": 0.03428729623556137,
-        "leverage": 9
+        "risk_strategy_bitmap": 10241,
+        "tp_multiplier": 0.21013355255126953,
+        "sl_multiplier": 0.003489541122689843,
+        "leverage": 8
       }
     },
     {
       "rank": 50,
-      "bot_id": 843,
-      "fitness_score": 10149.19921875,
-      "total_pnl": 275.396728515625,
-      "win_rate": 0.49183303117752075,
-      "total_trades": 551,
-      "sharpe_ratio": 3.408092498779297,
-      "max_drawdown": 0.5308051109313965,
+      "bot_id": 7937,
+      "fitness_score": 10495.1865234375,
+      "total_pnl": -6.731758117675781,
+      "win_rate": 0.05882352963089943,
+      "total_trades": 68,
+      "sharpe_ratio": -0.9253837466239929,
+      "max_drawdown": 0.07274559140205383,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
-          36,
-          42,
-          21,
-          39
+          46,
+          47,
+          35,
+          13,
+          24
         ],
-        "risk_strategy_bitmap": 1,
-        "tp_multiplier": 0.13964113593101501,
-        "sl_multiplier": 0.03428729623556137,
-        "leverage": 9
+        "risk_strategy_bitmap": 10241,
+        "tp_multiplier": 0.21013355255126953,
+        "sl_multiplier": 0.003489541122689843,
+        "leverage": 8
       }
     },
     {
       "rank": 51,
-      "bot_id": 163,
-      "fitness_score": 10132.470703125,
-      "total_pnl": 245.0240936279297,
-      "win_rate": 0.5547885894775391,
-      "total_trades": 1159,
-      "sharpe_ratio": 4.391910076141357,
-      "max_drawdown": 0.35040634870529175,
+      "bot_id": 7937,
+      "fitness_score": 10495.1865234375,
+      "total_pnl": -6.731758117675781,
+      "win_rate": 0.05882352963089943,
+      "total_trades": 68,
+      "sharpe_ratio": -0.9253837466239929,
+      "max_drawdown": 0.07274559140205383,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 5,
         "indicator_indices": [
-          27
+          46,
+          47,
+          35,
+          13,
+          24
         ],
-        "risk_strategy_bitmap": 8260,
-        "tp_multiplier": 0.032229211181402206,
-        "sl_multiplier": 0.04505395144224167,
-        "leverage": 9
+        "risk_strategy_bitmap": 10241,
+        "tp_multiplier": 0.21013355255126953,
+        "sl_multiplier": 0.003489541122689843,
+        "leverage": 8
       }
     },
     {
       "rank": 52,
-      "bot_id": 163,
-      "fitness_score": 10132.470703125,
-      "total_pnl": 245.0240936279297,
-      "win_rate": 0.5547885894775391,
-      "total_trades": 1159,
-      "sharpe_ratio": 4.391910076141357,
-      "max_drawdown": 0.35040634870529175,
+      "bot_id": 7937,
+      "fitness_score": 10495.1865234375,
+      "total_pnl": -6.731758117675781,
+      "win_rate": 0.05882352963089943,
+      "total_trades": 68,
+      "sharpe_ratio": -0.9253837466239929,
+      "max_drawdown": 0.07274559140205383,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 1,
+        "num_indicators": 5,
         "indicator_indices": [
-          27
+          46,
+          47,
+          35,
+          13,
+          24
         ],
-        "risk_strategy_bitmap": 8260,
-        "tp_multiplier": 0.032229211181402206,
-        "sl_multiplier": 0.04505395144224167,
-        "leverage": 9
+        "risk_strategy_bitmap": 10241,
+        "tp_multiplier": 0.21013355255126953,
+        "sl_multiplier": 0.003489541122689843,
+        "leverage": 8
       }
     },
     {
       "rank": 53,
-      "bot_id": 874,
-      "fitness_score": 10124.4765625,
-      "total_pnl": 121.43711853027344,
-      "win_rate": 1.0,
-      "total_trades": 27,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.012740936130285263,
+      "bot_id": 7937,
+      "fitness_score": 10495.1865234375,
+      "total_pnl": -6.731758117675781,
+      "win_rate": 0.05882352963089943,
+      "total_trades": 68,
+      "sharpe_ratio": -0.9253837466239929,
+      "max_drawdown": 0.07274559140205383,
+      "survival_generations": 5,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 5,
         "indicator_indices": [
-          7,
-          29
+          46,
+          47,
+          35,
+          13,
+          24
         ],
-        "risk_strategy_bitmap": 4208,
-        "tp_multiplier": 0.1684633493423462,
-        "sl_multiplier": 0.05932577699422836,
-        "leverage": 7
+        "risk_strategy_bitmap": 10241,
+        "tp_multiplier": 0.21013355255126953,
+        "sl_multiplier": 0.003489541122689843,
+        "leverage": 8
       }
     },
     {
       "rank": 54,
-      "bot_id": 874,
-      "fitness_score": 10124.4765625,
-      "total_pnl": 121.43711853027344,
-      "win_rate": 1.0,
+      "bot_id": 16802,
+      "fitness_score": 10031.1591796875,
+      "total_pnl": 44.03150939941406,
+      "win_rate": 0.6296296119689941,
       "total_trades": 27,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.012740936130285263,
+      "sharpe_ratio": 2.1037795543670654,
+      "max_drawdown": 0.20929718017578125,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 5,
         "indicator_indices": [
-          7,
-          29
+          6,
+          16,
+          14,
+          33,
+          37
         ],
-        "risk_strategy_bitmap": 4208,
-        "tp_multiplier": 0.1684633493423462,
-        "sl_multiplier": 0.05932577699422836,
-        "leverage": 7
+        "risk_strategy_bitmap": 3105,
+        "tp_multiplier": 0.11070676147937775,
+        "sl_multiplier": 0.0506121963262558,
+        "leverage": 8
       }
     },
     {
       "rank": 55,
-      "bot_id": 988,
-      "fitness_score": 10123.529296875,
-      "total_pnl": 136.29385375976562,
-      "win_rate": 0.8085106015205383,
-      "total_trades": 94,
-      "sharpe_ratio": 7.886739253997803,
-      "max_drawdown": 0.16564717888832092,
+      "bot_id": 16802,
+      "fitness_score": 10031.1591796875,
+      "total_pnl": 44.03150939941406,
+      "win_rate": 0.6296296119689941,
+      "total_trades": 27,
+      "sharpe_ratio": 2.1037795543670654,
+      "max_drawdown": 0.20929718017578125,
+      "survival_generations": 2,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          23,
-          25,
-          8,
-          34,
-          1
+          6,
+          16,
+          14,
+          33,
+          37
         ],
-        "risk_strategy_bitmap": 8192,
-        "tp_multiplier": 0.03352613002061844,
-        "sl_multiplier": 0.022369742393493652,
+        "risk_strategy_bitmap": 3105,
+        "tp_multiplier": 0.11070676147937775,
+        "sl_multiplier": 0.0506121963262558,
         "leverage": 8
       }
     },
     {
       "rank": 56,
-      "bot_id": 988,
-      "fitness_score": 10123.529296875,
-      "total_pnl": 136.29385375976562,
-      "win_rate": 0.8085106015205383,
-      "total_trades": 94,
-      "sharpe_ratio": 7.886739253997803,
-      "max_drawdown": 0.16564717888832092,
+      "bot_id": 16802,
+      "fitness_score": 10031.1591796875,
+      "total_pnl": 44.03150939941406,
+      "win_rate": 0.6296296119689941,
+      "total_trades": 27,
+      "sharpe_ratio": 2.1037795543670654,
+      "max_drawdown": 0.20929718017578125,
+      "survival_generations": 3,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          23,
-          25,
-          8,
-          34,
-          1
+          6,
+          16,
+          14,
+          33,
+          37
         ],
-        "risk_strategy_bitmap": 8192,
-        "tp_multiplier": 0.03352613002061844,
-        "sl_multiplier": 0.022369742393493652,
+        "risk_strategy_bitmap": 3105,
+        "tp_multiplier": 0.11070676147937775,
+        "sl_multiplier": 0.0506121963262558,
         "leverage": 8
       }
     },
     {
       "rank": 57,
-      "bot_id": 1153,
-      "fitness_score": 10117.2587890625,
-      "total_pnl": 115.34528350830078,
-      "win_rate": 0.9418604373931885,
-      "total_trades": 86,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.014795505441725254,
+      "bot_id": 16802,
+      "fitness_score": 10031.1591796875,
+      "total_pnl": 44.03150939941406,
+      "win_rate": 0.6296296119689941,
+      "total_trades": 27,
+      "sharpe_ratio": 2.1037795543670654,
+      "max_drawdown": 0.20929718017578125,
+      "survival_generations": 4,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          34,
-          29,
-          3,
-          25,
-          21
+          6,
+          16,
+          14,
+          33,
+          37
         ],
-        "risk_strategy_bitmap": 5,
-        "tp_multiplier": 0.09599371254444122,
-        "sl_multiplier": 0.025218429043889046,
-        "leverage": 1
+        "risk_strategy_bitmap": 3105,
+        "tp_multiplier": 0.11070676147937775,
+        "sl_multiplier": 0.0506121963262558,
+        "leverage": 8
       }
     },
     {
       "rank": 58,
-      "bot_id": 1195,
-      "fitness_score": 10116.888671875,
-      "total_pnl": 116.39359283447266,
-      "win_rate": 0.9278350472450256,
-      "total_trades": 97,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.03949524834752083,
+      "bot_id": 16802,
+      "fitness_score": 10031.1591796875,
+      "total_pnl": 44.03150939941406,
+      "win_rate": 0.6296296119689941,
+      "total_trades": 27,
+      "sharpe_ratio": 2.1037795543670654,
+      "max_drawdown": 0.20929718017578125,
+      "survival_generations": 5,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
-          31,
-          10,
-          38,
-          44
+          6,
+          16,
+          14,
+          33,
+          37
         ],
-        "risk_strategy_bitmap": 13,
-        "tp_multiplier": 0.09481548517942429,
-        "sl_multiplier": 0.06069304049015045,
-        "leverage": 1
+        "risk_strategy_bitmap": 3105,
+        "tp_multiplier": 0.11070676147937775,
+        "sl_multiplier": 0.0506121963262558,
+        "leverage": 8
       }
     },
     {
       "rank": 59,
-      "bot_id": 397,
-      "fitness_score": 10112.11328125,
-      "total_pnl": 122.71788024902344,
-      "win_rate": 0.8842974901199341,
-      "total_trades": 121,
-      "sharpe_ratio": 8.937471389770508,
-      "max_drawdown": 0.12969189882278442,
+      "bot_id": 16802,
+      "fitness_score": 10031.1591796875,
+      "total_pnl": 44.03150939941406,
+      "win_rate": 0.6296296119689941,
+      "total_trades": 27,
+      "sharpe_ratio": 2.1037795543670654,
+      "max_drawdown": 0.20929718017578125,
+      "survival_generations": 7,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
-          27,
-          18,
-          31,
-          41
+          6,
+          16,
+          14,
+          33,
+          37
         ],
-        "risk_strategy_bitmap": 8964,
-        "tp_multiplier": 0.01933366060256958,
-        "sl_multiplier": 0.02592485398054123,
+        "risk_strategy_bitmap": 3105,
+        "tp_multiplier": 0.11070676147937775,
+        "sl_multiplier": 0.0506121963262558,
         "leverage": 8
       }
     },
     {
       "rank": 60,
-      "bot_id": 397,
-      "fitness_score": 10112.11328125,
-      "total_pnl": 122.71788024902344,
-      "win_rate": 0.8842974901199341,
-      "total_trades": 121,
-      "sharpe_ratio": 8.937471389770508,
-      "max_drawdown": 0.12969189882278442,
+      "bot_id": 16802,
+      "fitness_score": 10031.1591796875,
+      "total_pnl": 44.03150939941406,
+      "win_rate": 0.6296296119689941,
+      "total_trades": 27,
+      "sharpe_ratio": 2.1037795543670654,
+      "max_drawdown": 0.20929718017578125,
+      "survival_generations": 8,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
-          27,
-          18,
-          31,
-          41
+          6,
+          16,
+          14,
+          33,
+          37
         ],
-        "risk_strategy_bitmap": 8964,
-        "tp_multiplier": 0.01933366060256958,
-        "sl_multiplier": 0.02592485398054123,
+        "risk_strategy_bitmap": 3105,
+        "tp_multiplier": 0.11070676147937775,
+        "sl_multiplier": 0.0506121963262558,
         "leverage": 8
       }
     },
     {
       "rank": 61,
-      "bot_id": 1468,
-      "fitness_score": 10104.4267578125,
-      "total_pnl": 111.95252227783203,
-      "win_rate": 0.8823529481887817,
-      "total_trades": 85,
-      "sharpe_ratio": 7.079627990722656,
-      "max_drawdown": 0.15468841791152954,
+      "bot_id": 38061,
+      "fitness_score": 10028.791015625,
+      "total_pnl": 43.43846130371094,
+      "win_rate": 0.3214285373687744,
+      "total_trades": 28,
+      "sharpe_ratio": 3.5745668411254883,
+      "max_drawdown": 0.12152091413736343,
+      "survival_generations": 1,
       "config": {
         "num_indicators": 3,
         "indicator_indices": [
-          0,
-          1,
-          25
+          32,
+          35,
+          19
         ],
-        "risk_strategy_bitmap": 2304,
-        "tp_multiplier": 0.053608525544404984,
-        "sl_multiplier": 0.07894765585660934,
-        "leverage": 4
+        "risk_strategy_bitmap": 21121,
+        "tp_multiplier": 0.15110105276107788,
+        "sl_multiplier": 0.0151820695027709,
+        "leverage": 8
       }
     },
     {
       "rank": 62,
-      "bot_id": 1427,
-      "fitness_score": 10090.71484375,
-      "total_pnl": 97.91748809814453,
-      "win_rate": 0.615384578704834,
-      "total_trades": 13,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.07330700755119324,
+      "bot_id": 38061,
+      "fitness_score": 10028.791015625,
+      "total_pnl": 43.43846130371094,
+      "win_rate": 0.3214285373687744,
+      "total_trades": 28,
+      "sharpe_ratio": 3.5745668411254883,
+      "max_drawdown": 0.12152091413736343,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 3,
         "indicator_indices": [
-          30,
-          27,
-          37,
-          41
+          32,
+          35,
+          19
         ],
-        "risk_strategy_bitmap": 258,
-        "tp_multiplier": 0.20181748270988464,
-        "sl_multiplier": 0.047462206333875656,
+        "risk_strategy_bitmap": 21121,
+        "tp_multiplier": 0.15110105276107788,
+        "sl_multiplier": 0.0151820695027709,
         "leverage": 8
       }
     },
     {
       "rank": 63,
-      "bot_id": 182,
-      "fitness_score": 10078.443359375,
-      "total_pnl": 77.24491882324219,
-      "win_rate": 0.9411764740943909,
-      "total_trades": 34,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.023263806477189064,
+      "bot_id": 38061,
+      "fitness_score": 10028.791015625,
+      "total_pnl": 43.43846130371094,
+      "win_rate": 0.3214285373687744,
+      "total_trades": 28,
+      "sharpe_ratio": 3.5745668411254883,
+      "max_drawdown": 0.12152091413736343,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 3,
         "indicator_indices": [
-          31,
-          16,
-          0,
-          39
+          32,
+          35,
+          19
         ],
-        "risk_strategy_bitmap": 1,
-        "tp_multiplier": 0.04475737735629082,
-        "sl_multiplier": 0.017847426235675812,
-        "leverage": 3
-      }
-    },
-    {
-      "rank": 64,
-      "bot_id": 182,
-      "fitness_score": 10078.443359375,
-      "total_pnl": 77.24491882324219,
-      "win_rate": 0.9411764740943909,
-      "total_trades": 34,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.023263806477189064,
-      "config": {
-        "num_indicators": 4,
-        "indicator_indices": [
-          31,
-          16,
-          0,
-          39
-        ],
-        "risk_strategy_bitmap": 1,
-        "tp_multiplier": 0.04475737735629082,
-        "sl_multiplier": 0.017847426235675812,
-        "leverage": 3
-      }
-    },
-    {
-      "rank": 65,
-      "bot_id": 1344,
-      "fitness_score": 10071.232421875,
-      "total_pnl": 72.28660583496094,
-      "win_rate": 0.8947368264198303,
-      "total_trades": 19,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.060353755950927734,
-      "config": {
-        "num_indicators": 5,
-        "indicator_indices": [
-          33,
-          25,
-          37,
-          39,
-          2
-        ],
-        "risk_strategy_bitmap": 1536,
-        "tp_multiplier": 0.07439100742340088,
-        "sl_multiplier": 0.07685980200767517,
-        "leverage": 7
-      }
-    },
-    {
-      "rank": 66,
-      "bot_id": 1014,
-      "fitness_score": 10069.294921875,
-      "total_pnl": 85.25260925292969,
-      "win_rate": 0.8333333134651184,
-      "total_trades": 18,
-      "sharpe_ratio": 2.7100253105163574,
-      "max_drawdown": 0.3060057759284973,
-      "config": {
-        "num_indicators": 4,
-        "indicator_indices": [
-          10,
-          47,
-          1,
-          24
-        ],
-        "risk_strategy_bitmap": 20481,
-        "tp_multiplier": 0.08346357196569443,
-        "sl_multiplier": 0.09062911570072174,
+        "risk_strategy_bitmap": 21121,
+        "tp_multiplier": 0.15110105276107788,
+        "sl_multiplier": 0.0151820695027709,
         "leverage": 8
       }
     },
     {
-      "rank": 67,
-      "bot_id": 1208,
-      "fitness_score": 10063.6953125,
-      "total_pnl": 96.54964447021484,
-      "win_rate": 0.5384615659713745,
-      "total_trades": 429,
-      "sharpe_ratio": 4.973504543304443,
-      "max_drawdown": 0.15184013545513153,
+      "rank": 64,
+      "bot_id": 38061,
+      "fitness_score": 10028.791015625,
+      "total_pnl": 43.43846130371094,
+      "win_rate": 0.3214285373687744,
+      "total_trades": 28,
+      "sharpe_ratio": 3.5745668411254883,
+      "max_drawdown": 0.12152091413736343,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 3,
         "indicator_indices": [
-          29,
-          27,
-          28,
-          8
+          32,
+          35,
+          19
         ],
-        "risk_strategy_bitmap": 8192,
-        "tp_multiplier": 0.08650071918964386,
-        "sl_multiplier": 0.017408717423677444,
-        "leverage": 7
+        "risk_strategy_bitmap": 21121,
+        "tp_multiplier": 0.15110105276107788,
+        "sl_multiplier": 0.0151820695027709,
+        "leverage": 8
+      }
+    },
+    {
+      "rank": 65,
+      "bot_id": 16802,
+      "fitness_score": 10021.4833984375,
+      "total_pnl": 35.13984680175781,
+      "win_rate": 0.6428570747375488,
+      "total_trades": 28,
+      "sharpe_ratio": 1.5260016918182373,
+      "max_drawdown": 0.23027396202087402,
+      "survival_generations": 6,
+      "config": {
+        "num_indicators": 5,
+        "indicator_indices": [
+          6,
+          16,
+          14,
+          33,
+          37
+        ],
+        "risk_strategy_bitmap": 3105,
+        "tp_multiplier": 0.11070676147937775,
+        "sl_multiplier": 0.0506121963262558,
+        "leverage": 8
+      }
+    },
+    {
+      "rank": 66,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 1,
+      "config": {
+        "num_indicators": 3,
+        "indicator_indices": [
+          14,
+          28,
+          23
+        ],
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
+      }
+    },
+    {
+      "rank": 67,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 2,
+      "config": {
+        "num_indicators": 3,
+        "indicator_indices": [
+          14,
+          28,
+          23
+        ],
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
       }
     },
     {
       "rank": 68,
-      "bot_id": 1357,
-      "fitness_score": 10062.9111328125,
-      "total_pnl": 85.58595275878906,
-      "win_rate": 0.8118811845779419,
-      "total_trades": 101,
-      "sharpe_ratio": 2.0304458141326904,
-      "max_drawdown": 0.40297818183898926,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 3,
         "indicator_indices": [
-          35,
-          23,
-          18,
-          31
+          14,
+          28,
+          23
         ],
-        "risk_strategy_bitmap": 448,
-        "tp_multiplier": 0.05659855902194977,
-        "sl_multiplier": 0.09413234889507294,
-        "leverage": 5
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
       }
     },
     {
       "rank": 69,
-      "bot_id": 128,
-      "fitness_score": 10062.3583984375,
-      "total_pnl": 90.80111694335938,
-      "win_rate": 0.5249999761581421,
-      "total_trades": 200,
-      "sharpe_ratio": 2.53521466255188,
-      "max_drawdown": 0.3285101056098938,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 5,
+        "num_indicators": 3,
         "indicator_indices": [
-          17,
-          15,
-          27,
-          1,
-          39
+          14,
+          28,
+          23
         ],
-        "risk_strategy_bitmap": 16416,
-        "tp_multiplier": 0.10895967483520508,
-        "sl_multiplier": 0.06606883555650711,
-        "leverage": 5
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
       }
     },
     {
       "rank": 70,
-      "bot_id": 128,
-      "fitness_score": 10062.3583984375,
-      "total_pnl": 90.80111694335938,
-      "win_rate": 0.5249999761581421,
-      "total_trades": 200,
-      "sharpe_ratio": 2.53521466255188,
-      "max_drawdown": 0.3285101056098938,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 5,
       "config": {
-        "num_indicators": 5,
+        "num_indicators": 3,
         "indicator_indices": [
-          17,
-          15,
-          27,
-          1,
-          39
+          14,
+          28,
+          23
         ],
-        "risk_strategy_bitmap": 16416,
-        "tp_multiplier": 0.10895967483520508,
-        "sl_multiplier": 0.06606883555650711,
-        "leverage": 5
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
       }
     },
     {
       "rank": 71,
-      "bot_id": 466,
-      "fitness_score": 10059.6591796875,
-      "total_pnl": 56.449485778808594,
-      "win_rate": 0.9615384340286255,
-      "total_trades": 26,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.009505854919552803,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 6,
       "config": {
         "num_indicators": 3,
         "indicator_indices": [
-          39,
-          25,
-          30
+          14,
+          28,
+          23
         ],
-        "risk_strategy_bitmap": 8648,
-        "tp_multiplier": 0.08061918616294861,
-        "sl_multiplier": 0.04779000207781792,
-        "leverage": 3
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
       }
     },
     {
       "rank": 72,
-      "bot_id": 466,
-      "fitness_score": 10059.6591796875,
-      "total_pnl": 56.449485778808594,
-      "win_rate": 0.9615384340286255,
-      "total_trades": 26,
-      "sharpe_ratio": 10.0,
-      "max_drawdown": 0.009505854919552803,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 7,
       "config": {
         "num_indicators": 3,
         "indicator_indices": [
-          39,
-          25,
-          30
+          14,
+          28,
+          23
         ],
-        "risk_strategy_bitmap": 8648,
-        "tp_multiplier": 0.08061918616294861,
-        "sl_multiplier": 0.04779000207781792,
-        "leverage": 3
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
       }
     },
     {
       "rank": 73,
-      "bot_id": 53,
-      "fitness_score": 10050.58203125,
-      "total_pnl": 50.629356384277344,
-      "win_rate": 0.9012345671653748,
-      "total_trades": 81,
-      "sharpe_ratio": 9.9943208694458,
-      "max_drawdown": 0.050090283155441284,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 8,
       "config": {
-        "num_indicators": 5,
+        "num_indicators": 3,
         "indicator_indices": [
-          7,
-          17,
-          33,
-          48,
-          25
+          14,
+          28,
+          23
         ],
-        "risk_strategy_bitmap": 26632,
-        "tp_multiplier": 0.08857216686010361,
-        "sl_multiplier": 0.09686692804098129,
-        "leverage": 1
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
       }
     },
     {
       "rank": 74,
-      "bot_id": 53,
-      "fitness_score": 10050.58203125,
-      "total_pnl": 50.629356384277344,
-      "win_rate": 0.9012345671653748,
-      "total_trades": 81,
-      "sharpe_ratio": 9.9943208694458,
-      "max_drawdown": 0.050090283155441284,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 9,
       "config": {
-        "num_indicators": 5,
+        "num_indicators": 3,
         "indicator_indices": [
-          7,
-          17,
-          33,
-          48,
-          25
+          14,
+          28,
+          23
         ],
-        "risk_strategy_bitmap": 26632,
-        "tp_multiplier": 0.08857216686010361,
-        "sl_multiplier": 0.09686692804098129,
-        "leverage": 1
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
       }
     },
     {
       "rank": 75,
-      "bot_id": 133,
-      "fitness_score": 10048.6103515625,
-      "total_pnl": 55.04399108886719,
-      "win_rate": 0.7912087440490723,
-      "total_trades": 91,
-      "sharpe_ratio": 6.367063522338867,
-      "max_drawdown": 0.08144840598106384,
+      "bot_id": 10512,
+      "fitness_score": 10019.4228515625,
+      "total_pnl": 14.492515563964844,
+      "win_rate": 1.0,
+      "total_trades": 6,
+      "sharpe_ratio": 2.898502826690674,
+      "max_drawdown": 0.001399993896484375,
+      "survival_generations": 9,
       "config": {
-        "num_indicators": 5,
+        "num_indicators": 3,
         "indicator_indices": [
-          2,
-          30,
-          15,
-          40,
-          31
+          14,
+          28,
+          23
         ],
-        "risk_strategy_bitmap": 24,
-        "tp_multiplier": 0.046371281147003174,
-        "sl_multiplier": 0.03730405867099762,
-        "leverage": 5
+        "risk_strategy_bitmap": 17,
+        "tp_multiplier": 0.20256894826889038,
+        "sl_multiplier": 0.08831334114074707,
+        "leverage": 10
       }
     },
     {
       "rank": 76,
-      "bot_id": 133,
-      "fitness_score": 10048.6103515625,
-      "total_pnl": 55.04399108886719,
-      "win_rate": 0.7912087440490723,
-      "total_trades": 91,
-      "sharpe_ratio": 6.367063522338867,
-      "max_drawdown": 0.08144840598106384,
+      "bot_id": 16702,
+      "fitness_score": 10018.29296875,
+      "total_pnl": 13.35595703125,
+      "win_rate": 1.0,
+      "total_trades": 3,
+      "sharpe_ratio": 2.671191453933716,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 1,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          2,
-          30,
-          15,
-          40,
-          31
+          24,
+          7,
+          13,
+          12,
+          21
         ],
-        "risk_strategy_bitmap": 24,
-        "tp_multiplier": 0.046371281147003174,
-        "sl_multiplier": 0.03730405867099762,
-        "leverage": 5
+        "risk_strategy_bitmap": 4097,
+        "tp_multiplier": 0.17261075973510742,
+        "sl_multiplier": 0.04727198928594589,
+        "leverage": 9
       }
     },
     {
       "rank": 77,
-      "bot_id": 547,
-      "fitness_score": 10045.767578125,
-      "total_pnl": 45.762367248535156,
-      "win_rate": 0.8454545140266418,
-      "total_trades": 110,
-      "sharpe_ratio": 8.998428344726562,
-      "max_drawdown": 0.02266693115234375,
+      "bot_id": 16702,
+      "fitness_score": 10018.29296875,
+      "total_pnl": 13.35595703125,
+      "win_rate": 1.0,
+      "total_trades": 3,
+      "sharpe_ratio": 2.671191453933716,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 2,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          26,
-          31,
-          4,
-          40,
-          41
+          24,
+          7,
+          13,
+          12,
+          21
         ],
-        "risk_strategy_bitmap": 260,
-        "tp_multiplier": 0.057728223502635956,
-        "sl_multiplier": 0.021600453183054924,
-        "leverage": 1
+        "risk_strategy_bitmap": 4097,
+        "tp_multiplier": 0.17261075973510742,
+        "sl_multiplier": 0.04727198928594589,
+        "leverage": 9
       }
     },
     {
       "rank": 78,
-      "bot_id": 547,
-      "fitness_score": 10045.767578125,
-      "total_pnl": 45.762367248535156,
-      "win_rate": 0.8454545140266418,
-      "total_trades": 110,
-      "sharpe_ratio": 8.998428344726562,
-      "max_drawdown": 0.02266693115234375,
+      "bot_id": 16702,
+      "fitness_score": 10018.29296875,
+      "total_pnl": 13.35595703125,
+      "win_rate": 1.0,
+      "total_trades": 3,
+      "sharpe_ratio": 2.671191453933716,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 3,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          26,
-          31,
-          4,
-          40,
-          41
+          24,
+          7,
+          13,
+          12,
+          21
         ],
-        "risk_strategy_bitmap": 260,
-        "tp_multiplier": 0.057728223502635956,
-        "sl_multiplier": 0.021600453183054924,
-        "leverage": 1
+        "risk_strategy_bitmap": 4097,
+        "tp_multiplier": 0.17261075973510742,
+        "sl_multiplier": 0.04727198928594589,
+        "leverage": 9
       }
     },
     {
       "rank": 79,
-      "bot_id": 314,
-      "fitness_score": 10041.5478515625,
-      "total_pnl": 72.29271697998047,
-      "win_rate": 0.340471088886261,
-      "total_trades": 467,
-      "sharpe_ratio": 3.1236939430236816,
-      "max_drawdown": 0.18957321345806122,
+      "bot_id": 16702,
+      "fitness_score": 10018.29296875,
+      "total_pnl": 13.35595703125,
+      "win_rate": 1.0,
+      "total_trades": 3,
+      "sharpe_ratio": 2.671191453933716,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          0,
+          24,
           7,
-          27
+          13,
+          12,
+          21
         ],
-        "risk_strategy_bitmap": 25632,
-        "tp_multiplier": 0.1835942566394806,
-        "sl_multiplier": 0.008096873760223389,
-        "leverage": 4
+        "risk_strategy_bitmap": 4097,
+        "tp_multiplier": 0.17261075973510742,
+        "sl_multiplier": 0.04727198928594589,
+        "leverage": 9
       }
     },
     {
       "rank": 80,
-      "bot_id": 314,
-      "fitness_score": 10041.5478515625,
-      "total_pnl": 72.29271697998047,
-      "win_rate": 0.340471088886261,
-      "total_trades": 467,
-      "sharpe_ratio": 3.1236939430236816,
-      "max_drawdown": 0.18957321345806122,
+      "bot_id": 16702,
+      "fitness_score": 10018.29296875,
+      "total_pnl": 13.35595703125,
+      "win_rate": 1.0,
+      "total_trades": 3,
+      "sharpe_ratio": 2.671191453933716,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 5,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          0,
+          24,
           7,
-          27
+          13,
+          12,
+          21
         ],
-        "risk_strategy_bitmap": 25632,
-        "tp_multiplier": 0.1835942566394806,
-        "sl_multiplier": 0.008096873760223389,
-        "leverage": 4
+        "risk_strategy_bitmap": 4097,
+        "tp_multiplier": 0.17261075973510742,
+        "sl_multiplier": 0.04727198928594589,
+        "leverage": 9
       }
     },
     {
       "rank": 81,
-      "bot_id": 56,
-      "fitness_score": 10040.578125,
-      "total_pnl": 46.82124710083008,
-      "win_rate": 0.7499999403953552,
-      "total_trades": 28,
-      "sharpe_ratio": 4.369614601135254,
-      "max_drawdown": 0.10486436635255814,
+      "bot_id": 16702,
+      "fitness_score": 10018.29296875,
+      "total_pnl": 13.35595703125,
+      "win_rate": 1.0,
+      "total_trades": 3,
+      "sharpe_ratio": 2.671191453933716,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 6,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          9,
-          4,
-          28,
-          46,
-          23
+          24,
+          7,
+          13,
+          12,
+          21
         ],
-        "risk_strategy_bitmap": 8294,
-        "tp_multiplier": 0.078839510679245,
-        "sl_multiplier": 0.04394201561808586,
-        "leverage": 5
+        "risk_strategy_bitmap": 4097,
+        "tp_multiplier": 0.17261075973510742,
+        "sl_multiplier": 0.04727198928594589,
+        "leverage": 9
       }
     },
     {
       "rank": 82,
-      "bot_id": 56,
-      "fitness_score": 10040.578125,
-      "total_pnl": 46.82124710083008,
-      "win_rate": 0.7499999403953552,
-      "total_trades": 28,
-      "sharpe_ratio": 4.369614601135254,
-      "max_drawdown": 0.10486436635255814,
+      "bot_id": 16702,
+      "fitness_score": 10018.29296875,
+      "total_pnl": 13.35595703125,
+      "win_rate": 1.0,
+      "total_trades": 3,
+      "sharpe_ratio": 2.671191453933716,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 7,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          9,
-          4,
-          28,
-          46,
-          23
+          24,
+          7,
+          13,
+          12,
+          21
         ],
-        "risk_strategy_bitmap": 8294,
-        "tp_multiplier": 0.078839510679245,
-        "sl_multiplier": 0.04394201561808586,
-        "leverage": 5
+        "risk_strategy_bitmap": 4097,
+        "tp_multiplier": 0.17261075973510742,
+        "sl_multiplier": 0.04727198928594589,
+        "leverage": 9
       }
     },
     {
       "rank": 83,
-      "bot_id": 1373,
-      "fitness_score": 10038.9736328125,
-      "total_pnl": 38.13898468017578,
-      "win_rate": 0.8888888955116272,
-      "total_trades": 18,
-      "sharpe_ratio": 7.527005195617676,
-      "max_drawdown": 0.02877737767994404,
+      "bot_id": 16702,
+      "fitness_score": 10018.29296875,
+      "total_pnl": 13.35595703125,
+      "win_rate": 1.0,
+      "total_trades": 3,
+      "sharpe_ratio": 2.671191453933716,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 8,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
           24,
-          2,
-          28
+          7,
+          13,
+          12,
+          21
         ],
-        "risk_strategy_bitmap": 448,
-        "tp_multiplier": 0.07044815272092819,
-        "sl_multiplier": 0.049249909818172455,
-        "leverage": 4
+        "risk_strategy_bitmap": 4097,
+        "tp_multiplier": 0.17261075973510742,
+        "sl_multiplier": 0.04727198928594589,
+        "leverage": 9
       }
     },
     {
       "rank": 84,
-      "bot_id": 654,
-      "fitness_score": 10034.67578125,
-      "total_pnl": 35.325618743896484,
-      "win_rate": 0.8833332657814026,
-      "total_trades": 120,
-      "sharpe_ratio": 6.897036552429199,
-      "max_drawdown": 0.0495247058570385,
+      "bot_id": 26602,
+      "fitness_score": 10017.2568359375,
+      "total_pnl": 12.319595336914062,
+      "win_rate": 1.0,
+      "total_trades": 2,
+      "sharpe_ratio": 2.463919162750244,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 5,
         "indicator_indices": [
-          31,
-          2
+          29,
+          40,
+          27,
+          37,
+          6
         ],
-        "risk_strategy_bitmap": 4864,
-        "tp_multiplier": 0.04274224862456322,
-        "sl_multiplier": 0.04828115180134773,
-        "leverage": 1
+        "risk_strategy_bitmap": 45,
+        "tp_multiplier": 0.090480737388134,
+        "sl_multiplier": 0.007175924256443977,
+        "leverage": 9
       }
     },
     {
       "rank": 85,
-      "bot_id": 654,
-      "fitness_score": 10034.67578125,
-      "total_pnl": 35.325618743896484,
-      "win_rate": 0.8833332657814026,
-      "total_trades": 120,
-      "sharpe_ratio": 6.897036552429199,
-      "max_drawdown": 0.0495247058570385,
+      "bot_id": 26602,
+      "fitness_score": 10017.2568359375,
+      "total_pnl": 12.319595336914062,
+      "win_rate": 1.0,
+      "total_trades": 2,
+      "sharpe_ratio": 2.463919162750244,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 5,
         "indicator_indices": [
-          31,
-          2
+          29,
+          40,
+          27,
+          37,
+          6
         ],
-        "risk_strategy_bitmap": 4864,
-        "tp_multiplier": 0.04274224862456322,
-        "sl_multiplier": 0.04828115180134773,
-        "leverage": 1
+        "risk_strategy_bitmap": 45,
+        "tp_multiplier": 0.090480737388134,
+        "sl_multiplier": 0.007175924256443977,
+        "leverage": 9
       }
     },
     {
       "rank": 86,
-      "bot_id": 664,
-      "fitness_score": 10021.7578125,
-      "total_pnl": 63.653419494628906,
-      "win_rate": 0.3986928164958954,
-      "total_trades": 306,
-      "sharpe_ratio": 1.5701189041137695,
-      "max_drawdown": 0.26897817850112915,
+      "bot_id": 26602,
+      "fitness_score": 10017.2568359375,
+      "total_pnl": 12.319595336914062,
+      "win_rate": 1.0,
+      "total_trades": 2,
+      "sharpe_ratio": 2.463919162750244,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
-          35,
-          49,
-          38,
-          27
+          29,
+          40,
+          27,
+          37,
+          6
         ],
-        "risk_strategy_bitmap": 2496,
-        "tp_multiplier": 0.03420630097389221,
-        "sl_multiplier": 0.03614315390586853,
-        "leverage": 10
+        "risk_strategy_bitmap": 45,
+        "tp_multiplier": 0.090480737388134,
+        "sl_multiplier": 0.007175924256443977,
+        "leverage": 9
       }
     },
     {
       "rank": 87,
-      "bot_id": 664,
-      "fitness_score": 10021.7578125,
-      "total_pnl": 63.653419494628906,
-      "win_rate": 0.3986928164958954,
-      "total_trades": 306,
-      "sharpe_ratio": 1.5701189041137695,
-      "max_drawdown": 0.26897817850112915,
+      "bot_id": 26602,
+      "fitness_score": 10017.2568359375,
+      "total_pnl": 12.319595336914062,
+      "win_rate": 1.0,
+      "total_trades": 2,
+      "sharpe_ratio": 2.463919162750244,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 5,
         "indicator_indices": [
-          35,
-          49,
-          38,
-          27
+          29,
+          40,
+          27,
+          37,
+          6
         ],
-        "risk_strategy_bitmap": 2496,
-        "tp_multiplier": 0.03420630097389221,
-        "sl_multiplier": 0.03614315390586853,
-        "leverage": 10
+        "risk_strategy_bitmap": 45,
+        "tp_multiplier": 0.090480737388134,
+        "sl_multiplier": 0.007175924256443977,
+        "leverage": 9
       }
     },
     {
       "rank": 88,
-      "bot_id": 1168,
-      "fitness_score": 10016.94140625,
-      "total_pnl": 19.164522171020508,
-      "win_rate": 0.800000011920929,
-      "total_trades": 10,
-      "sharpe_ratio": 3.274564743041992,
-      "max_drawdown": 0.05745643749833107,
+      "bot_id": 26602,
+      "fitness_score": 10017.2568359375,
+      "total_pnl": 12.319595336914062,
+      "win_rate": 1.0,
+      "total_trades": 2,
+      "sharpe_ratio": 2.463919162750244,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 5,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          10,
-          41,
-          18,
-          39,
-          24
+          29,
+          40,
+          27,
+          37,
+          6
         ],
-        "risk_strategy_bitmap": 1536,
-        "tp_multiplier": 0.20117691159248352,
-        "sl_multiplier": 0.06785561144351959,
-        "leverage": 5
+        "risk_strategy_bitmap": 45,
+        "tp_multiplier": 0.090480737388134,
+        "sl_multiplier": 0.007175924256443977,
+        "leverage": 9
       }
     },
     {
       "rank": 89,
-      "bot_id": 405,
-      "fitness_score": 10016.400390625,
-      "total_pnl": 19.087066650390625,
-      "win_rate": 0.7599999904632568,
-      "total_trades": 25,
-      "sharpe_ratio": 3.7123899459838867,
-      "max_drawdown": 0.04723816737532616,
+      "bot_id": 26602,
+      "fitness_score": 10017.2568359375,
+      "total_pnl": 12.319595336914062,
+      "win_rate": 1.0,
+      "total_trades": 2,
+      "sharpe_ratio": 2.463919162750244,
+      "max_drawdown": 0.0012599944602698088,
+      "survival_generations": 6,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          9,
-          23,
-          19,
-          43,
-          35
+          29,
+          40,
+          27,
+          37,
+          6
         ],
-        "risk_strategy_bitmap": 16900,
-        "tp_multiplier": 0.05475115031003952,
-        "sl_multiplier": 0.030747756361961365,
-        "leverage": 3
+        "risk_strategy_bitmap": 45,
+        "tp_multiplier": 0.090480737388134,
+        "sl_multiplier": 0.007175924256443977,
+        "leverage": 9
       }
     },
     {
       "rank": 90,
-      "bot_id": 405,
-      "fitness_score": 10016.400390625,
-      "total_pnl": 19.087066650390625,
-      "win_rate": 0.7599999904632568,
-      "total_trades": 25,
-      "sharpe_ratio": 3.7123899459838867,
-      "max_drawdown": 0.04723816737532616,
+      "bot_id": 40981,
+      "fitness_score": 10015.54296875,
+      "total_pnl": 14.567184448242188,
+      "win_rate": 0.8181818723678589,
+      "total_trades": 11,
+      "sharpe_ratio": 2.9134368896484375,
+      "max_drawdown": 0.0077508543618023396,
+      "survival_generations": 1,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          9,
+          28,
+          20,
+          24,
           23,
-          19,
-          43,
-          35
+          22
         ],
-        "risk_strategy_bitmap": 16900,
-        "tp_multiplier": 0.05475115031003952,
-        "sl_multiplier": 0.030747756361961365,
-        "leverage": 3
+        "risk_strategy_bitmap": 5761,
+        "tp_multiplier": 0.11633312702178955,
+        "sl_multiplier": 0.083354152739048,
+        "leverage": 10
       }
     },
     {
       "rank": 91,
-      "bot_id": 1159,
-      "fitness_score": 10012.341796875,
-      "total_pnl": 13.998395919799805,
-      "win_rate": 0.7692307829856873,
-      "total_trades": 39,
-      "sharpe_ratio": 2.635850667953491,
-      "max_drawdown": 0.024444710463285446,
+      "bot_id": 40981,
+      "fitness_score": 10015.54296875,
+      "total_pnl": 14.567184448242188,
+      "win_rate": 0.8181818723678589,
+      "total_trades": 11,
+      "sharpe_ratio": 2.9134368896484375,
+      "max_drawdown": 0.0077508543618023396,
+      "survival_generations": 2,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
-          36,
-          4,
-          39,
-          25,
-          5
+          28,
+          20,
+          24,
+          23,
+          22
         ],
-        "risk_strategy_bitmap": 4,
-        "tp_multiplier": 0.10087431222200394,
-        "sl_multiplier": 0.04552432522177696,
-        "leverage": 3
+        "risk_strategy_bitmap": 5761,
+        "tp_multiplier": 0.11633312702178955,
+        "sl_multiplier": 0.083354152739048,
+        "leverage": 10
       }
     },
     {
       "rank": 92,
-      "bot_id": 1301,
-      "fitness_score": 10012.12109375,
-      "total_pnl": 12.30986499786377,
-      "win_rate": 0.9473684430122375,
-      "total_trades": 19,
-      "sharpe_ratio": 2.098458766937256,
-      "max_drawdown": 0.04637618735432625,
+      "bot_id": 40981,
+      "fitness_score": 10015.54296875,
+      "total_pnl": 14.567184448242188,
+      "win_rate": 0.8181818723678589,
+      "total_trades": 11,
+      "sharpe_ratio": 2.9134368896484375,
+      "max_drawdown": 0.0077508543618023396,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          12,
-          19,
-          9
+          28,
+          20,
+          24,
+          23,
+          22
         ],
-        "risk_strategy_bitmap": 16385,
-        "tp_multiplier": 0.11206535995006561,
-        "sl_multiplier": 0.01978212036192417,
-        "leverage": 7
+        "risk_strategy_bitmap": 5761,
+        "tp_multiplier": 0.11633312702178955,
+        "sl_multiplier": 0.083354152739048,
+        "leverage": 10
       }
     },
     {
       "rank": 93,
-      "bot_id": 673,
-      "fitness_score": 10010.8193359375,
-      "total_pnl": 12.421939849853516,
-      "win_rate": 0.8510637879371643,
-      "total_trades": 94,
-      "sharpe_ratio": 1.9833500385284424,
-      "max_drawdown": 0.05931293964385986,
+      "bot_id": 45272,
+      "fitness_score": 10013.806640625,
+      "total_pnl": 8.849090576171875,
+      "win_rate": 1.0,
+      "total_trades": 4,
+      "sharpe_ratio": 1.7698180675506592,
+      "max_drawdown": 0.0008399963262490928,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 3,
         "indicator_indices": [
-          34,
-          2,
-          31,
-          22
+          21,
+          18,
+          14
         ],
-        "risk_strategy_bitmap": 10304,
-        "tp_multiplier": 0.026545213535428047,
-        "sl_multiplier": 0.04855269938707352,
-        "leverage": 1
+        "risk_strategy_bitmap": 9,
+        "tp_multiplier": 0.15278509259223938,
+        "sl_multiplier": 0.0788320004940033,
+        "leverage": 6
       }
     },
     {
       "rank": 94,
-      "bot_id": 673,
-      "fitness_score": 10010.8193359375,
-      "total_pnl": 12.421939849853516,
-      "win_rate": 0.8510637879371643,
-      "total_trades": 94,
-      "sharpe_ratio": 1.9833500385284424,
-      "max_drawdown": 0.05931293964385986,
+      "bot_id": 45272,
+      "fitness_score": 10013.806640625,
+      "total_pnl": 8.849090576171875,
+      "win_rate": 1.0,
+      "total_trades": 4,
+      "sharpe_ratio": 1.7698180675506592,
+      "max_drawdown": 0.0008399963262490928,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 4,
+        "num_indicators": 3,
         "indicator_indices": [
-          34,
-          2,
-          31,
-          22
+          21,
+          18,
+          14
         ],
-        "risk_strategy_bitmap": 10304,
-        "tp_multiplier": 0.026545213535428047,
-        "sl_multiplier": 0.04855269938707352,
-        "leverage": 1
+        "risk_strategy_bitmap": 9,
+        "tp_multiplier": 0.15278509259223938,
+        "sl_multiplier": 0.0788320004940033,
+        "leverage": 6
       }
     },
     {
       "rank": 95,
-      "bot_id": 168,
-      "fitness_score": 10009.0478515625,
-      "total_pnl": 19.730703353881836,
-      "win_rate": 0.8137255311012268,
-      "total_trades": 102,
-      "sharpe_ratio": 1.4030808210372925,
-      "max_drawdown": 0.08607544004917145,
+      "bot_id": 20354,
+      "fitness_score": 10013.7294921875,
+      "total_pnl": 37.731201171875,
+      "win_rate": 0.2452554851770401,
+      "total_trades": 685,
+      "sharpe_ratio": 1.3565319776535034,
+      "max_drawdown": 0.27814456820487976,
+      "survival_generations": 1,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 5,
         "indicator_indices": [
-          42,
-          31
+          5,
+          41,
+          40,
+          11,
+          16
         ],
-        "risk_strategy_bitmap": 67,
-        "tp_multiplier": 0.18191422522068024,
-        "sl_multiplier": 0.01743686944246292,
-        "leverage": 6
+        "risk_strategy_bitmap": 2081,
+        "tp_multiplier": 0.18913161754608154,
+        "sl_multiplier": 0.027090538293123245,
+        "leverage": 10
       }
     },
     {
       "rank": 96,
-      "bot_id": 168,
-      "fitness_score": 10009.0478515625,
-      "total_pnl": 19.730703353881836,
-      "win_rate": 0.8137255311012268,
-      "total_trades": 102,
-      "sharpe_ratio": 1.4030808210372925,
-      "max_drawdown": 0.08607544004917145,
+      "bot_id": 20354,
+      "fitness_score": 10013.7294921875,
+      "total_pnl": 37.731201171875,
+      "win_rate": 0.2452554851770401,
+      "total_trades": 685,
+      "sharpe_ratio": 1.3565319776535034,
+      "max_drawdown": 0.27814456820487976,
+      "survival_generations": 2,
       "config": {
-        "num_indicators": 2,
+        "num_indicators": 5,
         "indicator_indices": [
-          42,
-          31
+          5,
+          41,
+          40,
+          11,
+          16
         ],
-        "risk_strategy_bitmap": 67,
-        "tp_multiplier": 0.18191422522068024,
-        "sl_multiplier": 0.01743686944246292,
-        "leverage": 6
+        "risk_strategy_bitmap": 2081,
+        "tp_multiplier": 0.18913161754608154,
+        "sl_multiplier": 0.027090538293123245,
+        "leverage": 10
       }
     },
     {
       "rank": 97,
-      "bot_id": 262,
-      "fitness_score": 10006.2880859375,
-      "total_pnl": 1.4978760480880737,
-      "win_rate": 1.0,
-      "total_trades": 2,
-      "sharpe_ratio": 0.271575927734375,
-      "max_drawdown": 0.001399993896484375,
+      "bot_id": 20354,
+      "fitness_score": 10013.7294921875,
+      "total_pnl": 37.731201171875,
+      "win_rate": 0.2452554851770401,
+      "total_trades": 685,
+      "sharpe_ratio": 1.3565319776535034,
+      "max_drawdown": 0.27814456820487976,
+      "survival_generations": 3,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          9,
-          13,
-          39
+          5,
+          41,
+          40,
+          11,
+          16
         ],
-        "risk_strategy_bitmap": 16896,
-        "tp_multiplier": 0.12160943448543549,
-        "sl_multiplier": 0.045039013028144836,
+        "risk_strategy_bitmap": 2081,
+        "tp_multiplier": 0.18913161754608154,
+        "sl_multiplier": 0.027090538293123245,
         "leverage": 10
       }
     },
     {
       "rank": 98,
-      "bot_id": 262,
-      "fitness_score": 10006.2880859375,
-      "total_pnl": 1.4978760480880737,
-      "win_rate": 1.0,
-      "total_trades": 2,
-      "sharpe_ratio": 0.271575927734375,
-      "max_drawdown": 0.001399993896484375,
+      "bot_id": 20354,
+      "fitness_score": 10013.7294921875,
+      "total_pnl": 37.731201171875,
+      "win_rate": 0.2452554851770401,
+      "total_trades": 685,
+      "sharpe_ratio": 1.3565319776535034,
+      "max_drawdown": 0.27814456820487976,
+      "survival_generations": 4,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          9,
-          13,
-          39
+          5,
+          41,
+          40,
+          11,
+          16
         ],
-        "risk_strategy_bitmap": 16896,
-        "tp_multiplier": 0.12160943448543549,
-        "sl_multiplier": 0.045039013028144836,
+        "risk_strategy_bitmap": 2081,
+        "tp_multiplier": 0.18913161754608154,
+        "sl_multiplier": 0.027090538293123245,
         "leverage": 10
       }
     },
     {
       "rank": 99,
-      "bot_id": 1061,
-      "fitness_score": 10005.779296875,
-      "total_pnl": 0.9259786009788513,
-      "win_rate": 1.0,
-      "total_trades": 7,
-      "sharpe_ratio": 0.16559600830078125,
-      "max_drawdown": 0.0009799957042559981,
+      "bot_id": 20354,
+      "fitness_score": 10013.7294921875,
+      "total_pnl": 37.731201171875,
+      "win_rate": 0.2452554851770401,
+      "total_trades": 685,
+      "sharpe_ratio": 1.3565319776535034,
+      "max_drawdown": 0.27814456820487976,
+      "survival_generations": 6,
       "config": {
-        "num_indicators": 3,
+        "num_indicators": 5,
         "indicator_indices": [
-          12,
-          9,
-          13
+          5,
+          41,
+          40,
+          11,
+          16
         ],
-        "risk_strategy_bitmap": 8220,
-        "tp_multiplier": 0.1817842572927475,
-        "sl_multiplier": 0.04378284141421318,
-        "leverage": 2
+        "risk_strategy_bitmap": 2081,
+        "tp_multiplier": 0.18913161754608154,
+        "sl_multiplier": 0.027090538293123245,
+        "leverage": 10
       }
     },
     {
       "rank": 100,
-      "bot_id": 1405,
-      "fitness_score": 10005.193359375,
-      "total_pnl": 0.35089513659477234,
-      "win_rate": 1.0,
-      "total_trades": 3,
-      "sharpe_ratio": 0.04917754977941513,
-      "max_drawdown": 0.0010501098586246371,
+      "bot_id": 20354,
+      "fitness_score": 10013.7294921875,
+      "total_pnl": 37.731201171875,
+      "win_rate": 0.2452554851770401,
+      "total_trades": 685,
+      "sharpe_ratio": 1.3565319776535034,
+      "max_drawdown": 0.27814456820487976,
+      "survival_generations": 7,
       "config": {
         "num_indicators": 5,
         "indicator_indices": [
+          5,
           41,
-          31,
-          15,
-          12,
-          10
+          40,
+          11,
+          16
         ],
-        "risk_strategy_bitmap": 8896,
-        "tp_multiplier": 0.14947527647018433,
-        "sl_multiplier": 0.051361728459596634,
-        "leverage": 5
+        "risk_strategy_bitmap": 2081,
+        "tp_multiplier": 0.18913161754608154,
+        "sl_multiplier": 0.027090538293123245,
+        "leverage": 10
       }
     }
   ]

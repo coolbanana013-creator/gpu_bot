@@ -13,6 +13,7 @@ from ..bot_generator.compact_generator import CompactBotConfig, CompactBotGenera
 from ..backtester.compact_simulator import BacktestResult, CompactBacktester
 from ..utils.validation import log_info, log_debug, log_warning
 from ..utils.config import TOP_BOTS_COUNT, RESULTS_FILE
+from ..indicators.factory import IndicatorFactory
 
 
 class GeneticAlgorithmEvolver:
@@ -476,6 +477,10 @@ class GeneticAlgorithmEvolver:
         log_dir = "logs"
         os.makedirs(log_dir, exist_ok=True)
         
+        # Get all indicator names for mapping
+        all_indicator_types = IndicatorFactory.get_all_indicator_types()
+        indicator_names = [indicator_type.value for indicator_type in all_indicator_types]
+        
         # CSV file for this generation
         csv_file = os.path.join(log_dir, f"generation_{gen}.csv")
         
@@ -486,12 +491,16 @@ class GeneticAlgorithmEvolver:
             writer.writerow([
                 'Generation', 'BotID', 'ProfitPct', 'WinRate', 'TotalTrades', 'FinalBalance', 
                 'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
-                'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles'
+                'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles', 'IndicatorsUsed'
             ])
             
             # Write data rows
             for bot, result in zip(bots, results):
                 profit_pct = (result.final_balance - initial_balance) / initial_balance * 100
+                # Map indicator indices to names
+                indicators_used = [indicator_names[idx] for idx in bot.indicator_indices if idx < len(indicator_names)]
+                indicators_str = ', '.join(indicators_used)
+                
                 writer.writerow([
                     gen,
                     bot.bot_id,
@@ -506,7 +515,8 @@ class GeneticAlgorithmEvolver:
                     bot.num_indicators,
                     bot.leverage,
                     f"{result.total_pnl:.2f}".replace('.', ','),
-                    num_cycles
+                    num_cycles,
+                    indicators_str
                 ])
         
         log_info(f"Logged {len(bots)} bots to {csv_file}")
