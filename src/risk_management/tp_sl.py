@@ -101,7 +101,7 @@ def generate_tp_sl(
     - SL must not trigger liquidation
     
     Args:
-        leverage: Leverage multiplier (1-125)
+        leverage: Leverage multiplier (1-25)
         entry_price: Entry price for liquidation calculation
         is_long: True for long, False for short
         fee_rate: Trading fee rate
@@ -114,7 +114,7 @@ def generate_tp_sl(
     Raises:
         ValueError: If parameters invalid
     """
-    leverage = validate_int(leverage, "leverage", min_val=1, max_val=125)
+    leverage = validate_int(leverage, "leverage", min_val=1, max_val=25)
     entry_price = validate_float(entry_price, "entry_price", strict_positive=True)
     
     # Calculate liquidation price

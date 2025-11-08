@@ -277,13 +277,13 @@ def validate_leverage(leverage: int) -> int:
         Validated leverage
         
     Raises:
-        ValueError: If leverage not in range [1, 125]
+        ValueError: If leverage not in range [1, 25]
     """
     return validate_int(
         leverage,
         "leverage",
         min_val=1,
-        max_val=125
+        max_val=25
     )
 
 

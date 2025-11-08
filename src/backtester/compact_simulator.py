@@ -414,6 +414,74 @@ class CompactBacktester:
         
         return batch_results
     
+    def _process_parallel_workloads_all_at_once(
+        self,
+        bots: List[CompactBotConfig],
+        batch_chunks: List[Dict],
+        progress_bar: tqdm
+    ) -> List[BacktestResult]:
+        """
+        Process ALL chunks simultaneously for maximum GPU utilization.
+        
+        Updates progress bar as each chunk completes, showing overall progress.
+        Collects all results at the end to avoid interruptions.
+        """
+        batch_results = []
+        
+        # For maximum parallelism, process all chunks simultaneously
+        max_concurrent = len(batch_chunks)
+        
+        log_debug(f"Running {max_concurrent} simultaneous workloads for maximum GPU utilization")
+        
+        completed_count = 0
+        
+        def process_single_workload(chunk):
+            """Process one chunk as an independent workload."""
+            nonlocal completed_count
+            
+            chunk_id = chunk['id']
+            chunk_data = chunk['data']
+            chunk_cycles = chunk['cycles']
+            indicators_buffer = chunk['indicators_buffer']
+            
+            # Run the backtest kernel for this workload
+            chunk_results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles)
+            
+            # Add chunk metadata to results
+            for result in chunk_results:
+                result.chunk_id = chunk_id
+                result.chunk_bars = len(chunk_data)
+            
+            # Update progress bar immediately when this chunk completes
+            completed_count += 1
+            progress_bar.update(1)
+            progress_bar.set_postfix({
+                'chunks': f"{completed_count}/{len(batch_chunks)}",
+                'workloads': max_concurrent,
+                'utilization': 'maximum',
+                'completed': f"{chunk_id + 1}"
+            })
+            
+            return chunk_results
+        
+        # Process all chunks in parallel using threading
+        # Each thread runs a separate GPU kernel workload
+        # Collect ALL results at the end to avoid interruptions during processing
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent) as executor:
+            # Submit all workloads - they will run simultaneously
+            workload_futures = [executor.submit(process_single_workload, chunk) for chunk in batch_chunks]
+            
+            # Wait for ALL workloads to complete, then collect results
+            # This eliminates interruptions during processing and maximizes GPU utilization
+            concurrent.futures.wait(workload_futures, return_when=concurrent.futures.ALL_COMPLETED)
+            
+            # Now collect all results at once
+            for future in workload_futures:
+                workload_results = future.result()
+                batch_results.extend(workload_results)
+        
+        return batch_results
+    
     def _backtest_bots_against_single_chunk(
         self,
         bots: List[CompactBotConfig],

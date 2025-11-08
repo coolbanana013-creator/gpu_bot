@@ -22,7 +22,7 @@ FUNDING_INTERVAL_HOURS = 8
 
 # Leverage limits
 MIN_LEVERAGE = 1
-MAX_LEVERAGE = 125  # Kucoin Futures maximum
+MAX_LEVERAGE = 25  # Reduced from 125x for safer trading
 
 # Margin requirements
 INITIAL_MARGIN_RATE = 0.01  # 1% for 100x leverage (1/leverage)

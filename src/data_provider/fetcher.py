@@ -1,6 +1,7 @@
 """
 Market data fetcher with smart downloading from Kucoin API.
 Only downloads missing data files, uses Parquet for efficient storage.
+PARALLEL FETCHING: Uses concurrent processing for faster data acquisition.
 """
 import os
 import time
@@ -9,6 +10,9 @@ from typing import Optional, List, Tuple
 import pandas as pd
 import ccxt
 from pathlib import Path
+import concurrent.futures
+from concurrent.futures import ThreadPoolExecutor
+import threading
 
 from ..utils.validation import (
     validate_pair, validate_timeframe, validate_int,
@@ -24,17 +28,20 @@ from ..utils.config import (
 class DataFetcher:
     """
     Fetches OHLCV data from Kucoin Futures API with smart caching.
+    Uses parallel fetching for improved performance.
     """
     
-    def __init__(self, data_dir: str = DATA_DIR):
+    def __init__(self, data_dir: str = DATA_DIR, max_workers: int = 4):
         """
         Initialize DataFetcher.
         
         Args:
             data_dir: Directory to store/load data files
+            max_workers: Maximum number of parallel fetch threads
         """
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.max_workers = max_workers
         
         # Initialize Kucoin exchange (futures)
         try:
@@ -266,20 +273,72 @@ class DataFetcher:
         
         # Fetch missing data
         if dates_to_fetch:
-            log_info(f"Fetching {missing_count} missing days...")
+            log_info(f"Fetching {missing_count} missing days using {self.max_workers} parallel threads...")
             
-            for date, file_path in dates_to_fetch:
-                # Rate limiting
-                time.sleep(API_REQUEST_DELAY)
-                
-                df = self._fetch_ohlcv_for_date(pair, timeframe, date)
-                
-                # CRASH if data fetch fails - no silent skipping
-                if df is None or df.empty:
+            # Use parallel fetching for better performance
+            fetched_data = self._fetch_missing_data_parallel(dates_to_fetch)
+            
+            # Save all fetched data
+            for date, df in fetched_data:
+                if df is not None and not df.empty:
+                    file_path = self._get_file_path(pair, timeframe, date)
+                    self._save_data(df, file_path)
+                    file_paths.append(file_path)
+                else:
                     raise RuntimeError(f"Failed to fetch data for {date.strftime('%Y-%m-%d')}: No data returned")
-                
-                self._save_data(df, file_path)
-                file_paths.append(file_path)
+        
+        log_info(f"Data fetching complete: {len(file_paths)} files available")
+        return file_paths
+    
+    def _fetch_missing_data_parallel(self, dates_to_fetch: List[Tuple[datetime, Path]]) -> List[Tuple[datetime, pd.DataFrame]]:
+        """
+        Fetch missing data in parallel using thread pool.
+        
+        Args:
+            dates_to_fetch: List of (date, file_path) tuples
+            
+        Returns:
+            List of (date, dataframe) tuples
+        """
+        results = []
+        
+        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+            # Submit all fetch tasks
+            future_to_date = {
+                executor.submit(self._fetch_single_date_with_retry, date, file_path): (date, file_path)
+                for date, file_path in dates_to_fetch
+            }
+            
+            # Collect results as they complete
+            for future in concurrent.futures.as_completed(future_to_date):
+                date, file_path = future_to_date[future]
+                try:
+                    df = future.result()
+                    if df is not None and not df.empty:
+                        results.append((date, df))
+                        log_debug(f"Successfully fetched data for {date.strftime('%Y-%m-%d')} ({len(df)} candles)")
+                    else:
+                        log_error(f"No data returned for {date.strftime('%Y-%m-%d')}")
+                except Exception as e:
+                    log_error(f"Failed to fetch data for {date.strftime('%Y-%m-%d')}: {e}")
+        
+        return results
+    
+    def _fetch_single_date_with_retry(self, date: datetime, file_path: Path) -> Optional[pd.DataFrame]:
+        """
+        Fetch data for a single date with retry logic.
+        
+        Args:
+            date: Date to fetch
+            file_path: Expected file path (for context)
+            
+        Returns:
+            DataFrame or None if failed
+        """
+        pair = file_path.name.split('_')[0]  # Extract pair from filename
+        timeframe = file_path.name.split('_')[1]  # Extract timeframe from filename
+        
+        return self._fetch_ohlcv_for_date(pair, timeframe, date)
         
         # Sort file paths by date (ascending)
         file_paths.sort()

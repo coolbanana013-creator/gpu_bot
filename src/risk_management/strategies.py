@@ -80,8 +80,8 @@ class FixedPercentStrategy(BaseRiskStrategy):
         super().__init__(RiskStrategyType.FIXED_PERCENT)
     
     def generate_params(self) -> Dict[str, Any]:
-        """Fixed percent: 1-10% of balance."""
-        percent = np.random.uniform(1.0, 10.0)
+        """Fixed percent: 0.1-2% of balance (conservative for high leverage)."""
+        percent = np.random.uniform(0.1, 2.0)  # Reduced from 1-10%
         return {"percent": float(percent)}
     
     def calculate_position_size(self, balance: float, params: Dict[str, Any], **kwargs) -> float:

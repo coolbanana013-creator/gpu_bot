@@ -235,7 +235,7 @@ class GeneticAlgorithmEvolver:
             # Mutation 6: Adjust leverage
             old_lev = mutated.leverage
             delta = random.choice([-1, 1]) * random.randint(1, 5)
-            mutated.leverage = max(1, min(125, mutated.leverage + delta))
+            mutated.leverage = max(1, min(25, mutated.leverage + delta))
             log_debug(f"Bot {bot.bot_id}: Mutated leverage: {old_lev} -> {mutated.leverage}")
         
         return mutated
@@ -510,7 +510,7 @@ class GeneticAlgorithmEvolver:
             
             # Write data rows
             for bot, result in zip(bots, results):
-                profit_pct = (result.final_balance - initial_balance) / initial_balance * 100
+                profit_pct = (result.total_pnl / initial_balance) * 100
                 # Map indicator indices to names
                 indicators_used = [indicator_names[idx] for idx in bot.indicator_indices if idx < len(indicator_names)]
                 indicators_str = ', '.join(indicators_used)
@@ -659,7 +659,7 @@ class GeneticAlgorithmEvolver:
         log_info(f"{'='*80}\n")
         
         for rank, (bot, result) in enumerate(top_bots, 1):
-            profit_pct = (result.final_balance - initial_balance) / initial_balance * 100
+            profit_pct = (result.total_pnl / initial_balance) * 100
             log_info(f"Rank #{rank}")
             log_info(f"  Bot ID: {bot.bot_id}")
             log_info(f"  Fitness Score: {result.fitness_score:.2f}")
@@ -685,7 +685,7 @@ class GeneticAlgorithmEvolver:
         log_info(f"{'='*80}\n")
         
         for i, (bot, result) in enumerate(zip(self.population, self.population_results)):
-            profit_pct = (result.final_balance - initial_balance) / initial_balance * 100
+            profit_pct = (result.total_pnl / initial_balance) * 100
             log_info(f"Bot #{i+1} (ID: {bot.bot_id})")
             log_info(f"  Fitness Score: {result.fitness_score:.2f}")
             log_info(f"  Total PnL: ${result.total_pnl:.2f}")

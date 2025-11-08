@@ -1,12 +1,14 @@
 """
 Data loader for market data with validation and cycle generation.
 Loads Parquet files, validates data integrity, generates non-overlapping cycle ranges.
+GPU-ACCELERATED: Uses GPU for fast data validation and cleaning.
 """
 import numpy as np
 import pandas as pd
 from pathlib import Path
 from typing import List, Tuple, Optional
 from datetime import datetime, timedelta
+import pyopencl as cl
 
 from ..utils.validation import (
     validate_int, validate_float, log_info, log_error, log_warning, log_debug
@@ -15,14 +17,24 @@ from ..utils.config import (
     OHLCV_COLUMNS, TIMEFRAME_TO_MS, DATA_GAP_TOLERANCE,
     MIN_DATA_POINTS_PER_DAY, MAX_INDICATOR_LOOKBACK
 )
+from .gpu_processor import GPUDataProcessor
 
 
 class DataLoader:
     """
     Loads and validates market data, generates non-overlapping cycle ranges.
+    GPU-ACCELERATED: Optional GPU processing for fast validation and cleaning.
     """
     
-    def __init__(self, file_paths: List[Path], timeframe: str, random_seed: Optional[int] = None):
+    def __init__(
+        self,
+        file_paths: List[Path],
+        timeframe: str,
+        random_seed: Optional[int] = None,
+        gpu_context: Optional[cl.Context] = None,
+        gpu_queue: Optional[cl.CommandQueue] = None,
+        use_gpu_processing: bool = True
+    ):
         """
         Initialize DataLoader.
         
@@ -30,11 +42,15 @@ class DataLoader:
             file_paths: List of Parquet file paths to load
             timeframe: Timeframe string (e.g., "1m")
             random_seed: Random seed for reproducibility
+            gpu_context: Optional GPU context for accelerated processing
+            gpu_queue: Optional GPU queue for accelerated processing
+            use_gpu_processing: Whether to use GPU for data validation/cleaning
         """
         self.file_paths = sorted(file_paths)
         self.timeframe = timeframe
         self.timeframe_ms = TIMEFRAME_TO_MS[timeframe]
         self.random_seed = random_seed
+        self.use_gpu_processing = use_gpu_processing
         
         # Set random seed for reproducibility
         if random_seed is not None:
@@ -43,6 +59,17 @@ class DataLoader:
         
         self.data: Optional[pd.DataFrame] = None
         self.cycle_ranges: List[Tuple[int, int]] = []
+        
+        # Initialize GPU processor if requested
+        self.gpu_processor = None
+        if use_gpu_processing and gpu_context is not None and gpu_queue is not None:
+            try:
+                self.gpu_processor = GPUDataProcessor(gpu_context, gpu_queue)
+                log_info("Initialized GPU-accelerated data processing")
+            except Exception as e:
+                log_warning(f"Failed to initialize GPU data processor: {e}")
+                log_warning("Falling back to CPU processing")
+                self.gpu_processor = None
     
     def load_all_data(self) -> pd.DataFrame:
         """
@@ -88,8 +115,11 @@ class DataLoader:
         
         log_info(f"Loaded total of {len(self.data)} candles")
         
-        # Validate data integrity
-        self._validate_data()
+        # Validate and clean data (GPU-accelerated if available)
+        if self.gpu_processor is not None:
+            self._validate_and_clean_data_gpu()
+        else:
+            self._validate_data()
         
         return self.data
     
@@ -166,6 +196,55 @@ class DataLoader:
             raise RuntimeError(f"Data contains {invalid_count} invalid price rows")
         
         log_info("Data validation passed")
+    
+    def _validate_and_clean_data_gpu(self) -> None:
+        """
+        GPU-accelerated data validation and cleaning.
+        Much faster than CPU validation for large datasets.
+        """
+        log_info("Performing GPU-accelerated data validation and cleaning")
+        
+        try:
+            # Convert DataFrame to numpy array for GPU processing
+            data_array = self.data[OHLCV_COLUMNS].values
+            
+            # Process data on GPU
+            processed_data, valid_flags, stats = self.gpu_processor.validate_and_clean_data(
+                data_array,
+                min_price=1e-8,    # Minimum valid price
+                max_price=1e6,     # Maximum valid price  
+                min_volume=1e-8,   # Minimum valid volume
+                max_gap_size=5     # Interpolate gaps of 5 candles or less
+            )
+            
+            # Update DataFrame with processed data
+            self.data[OHLCV_COLUMNS] = processed_data[:, 1:]  # Skip timestamp column
+            self.data['valid'] = valid_flags.astype(bool)
+            
+            # Log statistics
+            log_info(f"GPU processing complete:")
+            log_info(f"  Data quality score: {stats['data_quality_score']:.1%}")
+            log_info(f"  Mean return: {stats['mean_return']:.4f}")
+            log_info(f"  Mean volume: {stats['mean_volume']:.2f}")
+            log_info(f"  Gaps found: {stats['total_gaps']}")
+            log_info(f"  Invalid candles: {stats['total_invalids']}")
+            
+            # Check if data quality is acceptable
+            if stats['data_quality_score'] < 0.95:
+                log_warning(f"Data quality score {stats['data_quality_score']:.1%} is below 95% threshold")
+            
+            # Remove invalid candles if any
+            invalid_count = (valid_flags == 0).sum()
+            if invalid_count > 0:
+                log_warning(f"Removing {invalid_count} invalid candles")
+                self.data = self.data[valid_flags == 1].reset_index(drop=True)
+            
+            log_info("GPU data validation and cleaning completed successfully")
+            
+        except Exception as e:
+            log_error(f"GPU data processing failed: {e}")
+            log_warning("Falling back to CPU validation")
+            self._validate_data()
     
     def generate_cycle_ranges(
         self,

@@ -238,16 +238,16 @@ def get_mode1_parameters() -> dict:
     
     # Leverage range (NEW: min and max)
     params['min_leverage'] = get_user_input(
-        "Min leverage (1-125x)",
+        "Min leverage (1-25x)",
         1,
-        lambda x: validate_int(int(x), "min_leverage", min_val=1, max_val=125)
+        lambda x: validate_int(int(x), "min_leverage", min_val=1, max_val=25)
     )
     
     params['max_leverage'] = get_user_input(
-        f"Max leverage ({params['min_leverage']}-125x)",
+        f"Max leverage ({params['min_leverage']}-25x)",
         10,
         lambda x: validate_int(int(x), "max_leverage", 
-                              min_val=params['min_leverage'], max_val=125)
+                              min_val=params['min_leverage'], max_val=25)
     )
     
     # Indicators per bot
@@ -327,12 +327,15 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             total_days=total_days
         )
         
-        # Load and validate data
-        print("Loading data...")
+        # Load and validate data (GPU-accelerated)
+        print("Loading data with GPU acceleration...")
         loader = DataLoader(
             file_paths=file_paths,
             timeframe=params['timeframe'],
-            random_seed=params['random_seed']
+            random_seed=params['random_seed'],
+            gpu_context=gpu_context,
+            gpu_queue=gpu_queue,
+            use_gpu_processing=True
         )
         
         ohlcv_data = loader.load_all_data()
@@ -498,7 +501,7 @@ def get_mode4_parameters() -> dict:
     
     # Leverage
     params['leverage'] = get_user_input(
-        "Leverage (1-125)",
+        "Leverage (1-25)",
         10,
         lambda x: validate_leverage(int(x))
     )
@@ -542,12 +545,15 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             end_date=params['end_date']
         )
         
-        # Step 2: Load data
-        log_info("\nStep 2/4: Loading data...")
+        # Step 2: Load data (GPU-accelerated)
+        log_info("\nStep 2/4: Loading data with GPU acceleration...")
         loader = DataLoader(
             file_paths=file_paths,
             timeframe=params['timeframe'],
-            random_seed=42
+            random_seed=42,
+            gpu_context=gpu_context,
+            gpu_queue=gpu_queue,
+            use_gpu_processing=True
         )
         
         ohlcv_data = loader.load_all_data()
