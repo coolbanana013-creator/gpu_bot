@@ -85,12 +85,12 @@ DEFAULT_GENERATIONS = 10
 # Cycle constraints
 MIN_CYCLES = 1
 MAX_CYCLES = 100
-DEFAULT_CYCLES = 5
+DEFAULT_CYCLES = 2  # Updated to last used value
 
 # Backtest period constraints
 MIN_BACKTEST_DAYS = 1
 MAX_BACKTEST_DAYS = 365
-DEFAULT_BACKTEST_DAYS = 10  # Reasonable for data chunking testing
+DEFAULT_BACKTEST_DAYS = 60  # Updated to last used value (60 days per cycle)
 
 # Data buffer for indicator lookback
 DATA_BUFFER_MULTIPLIER = 1.25  # 25% extra data for lookback periods

@@ -295,66 +295,124 @@ class CompactBacktester:
         data_chunks: List[Dict]
     ) -> List[BacktestResult]:
         """
-        Backtest all bots against all data chunks and aggregate results.
-        
-        Strategy: Process multiple chunks in parallel for maximum GPU utilization,
-        keeping all bots in memory for efficiency.
+        Backtest all bots against all data chunks with parallel multi-workload processing.
+
+        NEW APPROACH: Process multiple cycles/batches in parallel simultaneously
+        to maximize GPU utilization by running independent workloads concurrently.
         """
         num_bots = len(bots)
         all_chunk_results = []
-        
+
         log_info(f"Processing {len(data_chunks)} data chunks with {num_bots} bots each")
-        
-        # Determine optimal parallel processing level based on GPU capabilities
-        # Intel UHD 630 has 80 compute units - we can run multiple kernels simultaneously
-        max_parallel_chunks = min(4, len(data_chunks))  # Conservative: 4 parallel chunks max
-        
-        log_info(f"Using parallel processing: {max_parallel_chunks} chunks simultaneously for max GPU utilization")
-        
-        # Use progress bar for overall progress
-        with tqdm(total=len(data_chunks), desc="Processing data chunks", unit="chunk") as pbar:
+
+        # === PHASE 1: PRELOAD ALL CHUNKS INTO MEMORY ===
+        log_info("Preloading all data chunks into memory for parallel processing...")
+        preloaded_chunks = []
+
+        for chunk in data_chunks:
+            chunk_id = chunk['id']
+            chunk_data = chunk['data']
+            chunk_cycles = chunk['cycles']
+
+            # Precompute indicators for this chunk (done once upfront)
+            indicators_buffer = self._precompute_indicators(chunk_data)
+
+            preloaded_chunks.append({
+                'id': chunk_id,
+                'data': chunk_data,
+                'cycles': chunk_cycles,
+                'indicators_buffer': indicators_buffer
+            })
+
+        log_info(f"Successfully preloaded {len(preloaded_chunks)} chunks into memory")
+
+        # === PHASE 2: PARALLEL MULTI-WORKLOAD PROCESSING ===
+        # Process ALL chunks simultaneously for maximum GPU utilization
+        # Each chunk becomes a separate workload running concurrently
+        max_parallel_workloads = len(preloaded_chunks)  # Process ALL chunks in parallel
+        log_info(f"Processing ALL {max_parallel_workloads} chunks simultaneously for maximum GPU utilization")
+
+        with tqdm(total=len(preloaded_chunks), desc="Parallel GPU processing", unit="chunk") as pbar:
+
+            # Process ALL chunks simultaneously for maximum parallelism
+            # No batching - all workloads run at once
+            batch_chunks = preloaded_chunks  # All chunks in one batch
             
-            def process_chunk_with_progress(chunk):
-                """Process a single chunk and update progress."""
-                chunk_id = chunk['id']
-                chunk_data = chunk['data']
-                chunk_cycles = chunk['cycles']
-                
-                # Process the chunk
-                chunk_results = self._backtest_bots_against_single_chunk(bots, chunk_data, chunk_cycles)
-                
-                # Store results with chunk metadata
-                for result in chunk_results:
-                    result.chunk_id = chunk_id
-                    result.chunk_bars = len(chunk_data)
-                
-                # Update progress
-                pbar.update(1)
-                pbar.set_postfix({
-                    'chunk': f"{chunk_id + 1}/{len(data_chunks)}",
-                    'bars': f"{len(chunk_data):,}",
-                    'cycles': len(chunk_cycles),
-                    'parallel': f"{max_parallel_chunks} threads"
-                })
-                
-                return chunk_results
-            
-            # Process chunks in parallel batches to maintain memory efficiency
-            for i in range(0, len(data_chunks), max_parallel_chunks):
-                batch_chunks = data_chunks[i:i + max_parallel_chunks]
-                
-                # Process this batch in parallel
-                with concurrent.futures.ThreadPoolExecutor(max_workers=max_parallel_chunks) as executor:
-                    batch_results = list(executor.map(process_chunk_with_progress, batch_chunks))
-                
-                # Collect results from this batch
-                for chunk_results in batch_results:
-                    all_chunk_results.extend(chunk_results)
-        
+            # Process this batch with multiple parallel workloads
+            batch_results = self._process_parallel_workloads_all_at_once(bots, batch_chunks, pbar)
+
+            # Collect results from this batch
+            all_chunk_results.extend(batch_results)
+
+            # Update final progress
+            pbar.set_postfix({
+                'chunks': f"{len(preloaded_chunks)}/{len(preloaded_chunks)}",
+                'workloads': len(preloaded_chunks),
+                'utilization': 'maximum'
+            })
+
+        # Cleanup all preloaded indicator buffers
+        for chunk in preloaded_chunks:
+            chunk['indicators_buffer'].release()
+
         # Aggregate results across all chunks
         aggregated_results = self._aggregate_chunk_results(all_chunk_results, num_bots)
-        
+
         return aggregated_results
+    
+    def _process_parallel_workloads(
+        self,
+        bots: List[CompactBotConfig],
+        batch_chunks: List[Dict]
+    ) -> List[BacktestResult]:
+        """
+        Process multiple chunks in parallel workloads to maximize GPU utilization.
+        
+        Each workload runs independently on the GPU, processing different chunks simultaneously.
+        This keeps all 80 compute units busy with multiple concurrent kernels.
+        """
+        batch_results = []
+        
+        # For maximum parallelism, process all chunks in this batch simultaneously
+        # Each chunk becomes a separate workload running on the GPU
+        max_concurrent = len(batch_chunks)  # Process all chunks in parallel
+        
+        log_debug(f"Running {max_concurrent} parallel workloads for {len(batch_chunks)} chunks")
+        
+        def process_single_workload(chunk):
+            """Process one chunk as an independent workload."""
+            chunk_id = chunk['id']
+            chunk_data = chunk['data']
+            chunk_cycles = chunk['cycles']
+            indicators_buffer = chunk['indicators_buffer']
+            
+            # Run the backtest kernel for this workload
+            chunk_results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles)
+            
+            # Add chunk metadata to results
+            for result in chunk_results:
+                result.chunk_id = chunk_id
+                result.chunk_bars = len(chunk_data)
+            
+            return chunk_results
+        
+        # Process all chunks in parallel using threading
+        # Each thread runs a separate GPU kernel workload
+        # Collect ALL results at the end to avoid interruptions during processing
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent) as executor:
+            # Submit all workloads - they will run simultaneously
+            workload_futures = [executor.submit(process_single_workload, chunk) for chunk in batch_chunks]
+            
+            # Wait for ALL workloads to complete, then collect results
+            # This eliminates interruptions during processing and maximizes GPU utilization
+            concurrent.futures.wait(workload_futures, return_when=concurrent.futures.ALL_COMPLETED)
+            
+            # Now collect all results at once
+            for future in workload_futures:
+                workload_results = future.result()
+                batch_results.extend(workload_results)
+        
+        return batch_results
     
     def _backtest_bots_against_single_chunk(
         self,
