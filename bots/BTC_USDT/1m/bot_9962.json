@@ -1,13 +1,13 @@
 {
-  "rank": 67,
+  "rank": 66,
   "bot_id": 9962,
-  "fitness_score": 20.04346466064453,
-  "total_pnl": 200.43466186523438,
+  "fitness_score": 22.042234420776367,
+  "total_pnl": 220.42234802246094,
   "win_rate": 100.0,
-  "total_trades": 12,
+  "total_trades": 13,
   "sharpe_ratio": 0.0,
   "max_drawdown": 0.0,
-  "survival_generations": 1,
+  "survival_generations": 2,
   "config": {
     "num_indicators": 5,
     "indicator_indices": [

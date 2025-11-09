@@ -17,6 +17,43 @@ from ..backtester.compact_simulator import BacktestResult
 from ..indicators.factory import IndicatorFactory
 
 
+# Risk strategy names corresponding to bitmap bits
+RISK_STRATEGY_NAMES = [
+    'FixedUSD',      # bit 0
+    'PctBalance',    # bit 1
+    'Kelly',         # bit 2
+    'Martingale',    # bit 3
+    'AntiMartingale',# bit 4
+    'Volatility',    # bit 5
+    'ATR',           # bit 6
+    'Momentum',      # bit 7
+    'Reserved8',     # bit 8
+    'Reserved9',     # bit 9
+    'Reserved10',    # bit 10
+    'Reserved11',    # bit 11
+    'Reserved12',    # bit 12
+    'Reserved13',    # bit 13
+    'Reserved14'     # bit 14
+]
+
+
+def decode_risk_strategies(bitmap: int) -> str:
+    """
+    Decode risk strategy bitmap to human-readable string.
+    
+    Args:
+        bitmap: Risk strategy bitmap (15-bit)
+        
+    Returns:
+        Comma-separated list of active strategy names
+    """
+    active_strategies = []
+    for bit_idx, strategy_name in enumerate(RISK_STRATEGY_NAMES):
+        if bitmap & (1 << bit_idx):
+            active_strategies.append(strategy_name)
+    return ', '.join(active_strategies) if active_strategies else 'None'
+
+
 class GPULoggingProcessor:
     """
     GPU-accelerated logging processor for high-performance CSV generation.
@@ -105,6 +142,10 @@ class GPULoggingProcessor:
 
         csv_file = os.path.join(output_dir, f"generation_{generation}.csv")
         self._write_csv_async(csv_file, csv_data)
+        
+        # Log detailed trades for first bot for verification
+        if len(bots) > 0 and len(results) > 0:
+            self._log_first_bot_details(bots[0], results[0], initial_balance, num_cycles, output_dir, generation)
 
     def _serialize_bot_data_gpu(self, data_arrays, generation, initial_balance, num_cycles):
         """Serialize bot data to binary format using GPU."""
@@ -159,9 +200,12 @@ class GPULoggingProcessor:
 
         # Build CSV header
         header = [
+            'AllCyclesPositive',  # NEW: First column - true/false for all cycles profitable
+            'AllCyclesHaveTrades',  # NEW: Second column - true/false for all cycles having at least 1 trade
             'Generation', 'BotID', 'ProfitPct', 'WinRate', 'TotalTrades', 'FinalBalance',
             'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
-            'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles', 'IndicatorsUsed',
+            'NumIndicators', 'Leverage', 'TPMultiplier', 'SLMultiplier', 'RiskStrategies',
+            'TotalPnL', 'NumCycles', 'IndicatorsUsed',
             'IndicatorParams'  # NEW: Add indicator parameters column
         ]
         for i in range(num_cycles):
@@ -232,6 +276,8 @@ class GPULoggingProcessor:
             avg_total_pnl = 0.0
             avg_sharpe_ratio = 0.0
             avg_max_drawdown = 0.0
+            all_cycles_positive = False
+            all_cycles_have_trades = False
             
             if num_cycles > 0:
                 # Average across all cycles
@@ -249,6 +295,14 @@ class GPULoggingProcessor:
                 avg_win_rate = total_wins / total_trades_sum if total_trades_sum > 0 else 0.0
                 avg_sharpe_ratio = result.sharpe_ratio  # Already an aggregate metric
                 avg_max_drawdown = result.max_drawdown  # Worst case across all cycles
+                
+                # Check if ALL cycles have positive profit percentage
+                if cycle_pnls:
+                    all_cycles_positive = all((pnl / initial_balance) * 100 > 0 for pnl in cycle_pnls)
+                
+                # Check if ALL cycles have at least 1 trade
+                if cycle_trades:
+                    all_cycles_have_trades = all(trades > 0 for trades in cycle_trades)
 
             # Format as CSV row
             indicators_used = [indicator_names[idx] for idx in bot.indicator_indices[:bot.num_indicators] if idx < len(indicator_names)]
@@ -263,8 +317,13 @@ class GPULoggingProcessor:
                 params_str = f"{ind_name}({params[0]:.1f},{params[1]:.1f},{params[2]:.1f})"
                 params_list.append(params_str)
             indicator_params_str = ' | '.join(params_list)
+            
+            # Decode risk strategies from bitmap
+            risk_strategies_str = decode_risk_strategies(bot.risk_strategy_bitmap)
 
             row = [
+                str(all_cycles_positive).lower(),  # NEW: First column - true/false
+                str(all_cycles_have_trades).lower(),  # NEW: Second column - true/false
                 str(generation),
                 str(bot_id),
                 f"{avg_profit_pct:.2f}".replace('.', ','),
@@ -277,6 +336,9 @@ class GPULoggingProcessor:
                 str(survival_generations),
                 str(num_indicators),
                 str(leverage),
+                f"{bot.tp_multiplier:.2f}".replace('.', ','),  # NEW: TP multiplier
+                f"{bot.sl_multiplier:.2f}".replace('.', ','),  # NEW: SL multiplier
+                risk_strategies_str,  # NEW: Risk strategies
                 f"{avg_total_pnl:.2f}".replace('.', ','),
                 str(num_cycles),
                 indicators_str,
@@ -465,6 +527,66 @@ class GPULoggingProcessor:
                 log_error(f"Async CSV write failed: {e}")
 
         self.file_executor.submit(write_task)
+
+    def _log_first_bot_details(self, bot: CompactBotConfig, result: BacktestResult, 
+                                 initial_balance: float, num_cycles: int, 
+                                 output_dir: str, generation: int):
+        """Log detailed per-cycle information for the first bot for verification."""
+        log_file = os.path.join(output_dir, f"generation_{generation}_bot_{bot.bot_id}_details.txt")
+        
+        try:
+            with open(log_file, 'w', encoding='utf-8') as f:
+                f.write(f"=== BOT {bot.bot_id} DETAILED VERIFICATION LOG ===\n")
+                f.write(f"Generation: {generation}\n")
+                f.write(f"Leverage: {bot.leverage}x\n")
+                f.write(f"Number of Indicators: {bot.num_indicators}\n")
+                f.write(f"Initial Balance: ${initial_balance:.2f}\n\n")
+                
+                f.write(f"=== AGGREGATE RESULTS ===\n")
+                f.write(f"Total Trades (all cycles): {result.total_trades}\n")
+                f.write(f"Winning Trades: {result.winning_trades}\n")
+                f.write(f"Losing Trades: {result.losing_trades}\n")
+                f.write(f"Total PnL: ${result.total_pnl:.2f}\n")
+                f.write(f"Win Rate: {result.win_rate:.4f}\n")
+                f.write(f"Final Balance: ${result.final_balance:.2f}\n")
+                f.write(f"Fitness Score: {result.fitness_score:.2f}\n")
+                f.write(f"Sharpe Ratio: {result.sharpe_ratio:.2f}\n")
+                f.write(f"Max Drawdown: {result.max_drawdown:.4f}\n\n")
+                
+                f.write(f"=== PER-CYCLE BREAKDOWN ===\n")
+                cycle_pnls = result.per_cycle_pnl if hasattr(result, 'per_cycle_pnl') and result.per_cycle_pnl else []
+                cycle_trades = result.per_cycle_trades if hasattr(result, 'per_cycle_trades') and result.per_cycle_trades else []
+                cycle_wins = result.per_cycle_wins if hasattr(result, 'per_cycle_wins') and result.per_cycle_wins else []
+                
+                for i in range(min(num_cycles, len(cycle_pnls))):
+                    trades = cycle_trades[i] if i < len(cycle_trades) else 0
+                    pnl = cycle_pnls[i] if i < len(cycle_pnls) else 0.0
+                    wins = cycle_wins[i] if i < len(cycle_wins) else 0
+                    profit_pct = (pnl / initial_balance) * 100 if initial_balance > 0 else 0.0
+                    win_rate = wins / trades if trades > 0 else 0.0
+                    
+                    f.write(f"\nCycle {i}:\n")
+                    f.write(f"  Trades: {trades}\n")
+                    f.write(f"  Wins: {wins}\n")
+                    f.write(f"  PnL: ${pnl:.2f}\n")
+                    f.write(f"  Profit %: {profit_pct:.2f}%\n")
+                    f.write(f"  Win Rate: {win_rate:.4f}\n")
+                
+                # Calculate verification metrics
+                f.write(f"\n=== VERIFICATION CHECKS ===\n")
+                total_cycle_trades = sum(cycle_trades) if cycle_trades else 0
+                f.write(f"Sum of per-cycle trades: {total_cycle_trades}\n")
+                f.write(f"Aggregate total trades: {result.total_trades}\n")
+                f.write(f"Match: {total_cycle_trades == result.total_trades}\n\n")
+                
+                avg_pnl = sum(cycle_pnls) / num_cycles if cycle_pnls else 0.0
+                f.write(f"Average per-cycle PnL: ${avg_pnl:.2f}\n")
+                f.write(f"Aggregate total PnL: ${result.total_pnl:.2f}\n")
+                f.write(f"Match: {abs(avg_pnl - result.total_pnl) < 0.01}\n")
+                
+            log_info(f"First bot details logged to {log_file}")
+        except Exception as e:
+            log_error(f"Failed to log first bot details: {e}")
 
     def shutdown(self):
         """Shutdown the logging processor."""

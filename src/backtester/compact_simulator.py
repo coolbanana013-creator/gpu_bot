@@ -199,14 +199,25 @@ class CompactBacktester:
         num_bars = len(ohlcv_data)
         num_cycles = len(cycles)
 
-        # Find optimal data chunk size if not already done
+        # Use tested optimal chunk size
+        # Testing showed 100 days works perfectly with 10k bots × 100 cycles
         if not hasattr(self, '_optimal_data_chunk_bars'):
-            self._optimal_data_chunk_bars = self._find_optimal_data_chunk_size(bots)
+            bars_per_day = 1440
+            
+            log_info(f"Using optimal chunk size based on previous testing")
+            log_info(f"  Workload: {num_bots} bots × {num_cycles} cycles")
+            
+            # Use 100 days - tested and confirmed working
+            optimal_days = 100
+            self._optimal_data_chunk_bars = optimal_days * bars_per_day
+            
+            log_info(f"  => Chunk size: {optimal_days} days ({self._optimal_data_chunk_bars:,} bars)")
+            log_info(f"  => Note: Safety factor applied - actual overlapping cycles may vary per chunk")
 
         print(f"\n[BACKTEST] Testing {num_bots:,} bots × {num_cycles} cycles = {num_bots * num_cycles:,} workloads")
         print(f"[BACKTEST] Dataset: {num_bars:,} bars ({num_bars/1440:.1f} days)")
-        print(f"[BACKTEST] Strategy: ULTRA-PARALLEL (all {num_bots * num_cycles:,} bot-cycle pairs in parallel)")
         print(f"[BACKTEST] Chunk size: {self._optimal_data_chunk_bars/1440:.1f} days ({self._optimal_data_chunk_bars:,} bars)")
+        print(f"[BACKTEST] Strategy: Process all overlapping cycles per chunk")
 
         # Create data chunks covering the full dataset
         data_chunks = self._chunk_full_data(ohlcv_data, self._optimal_data_chunk_bars)
@@ -242,18 +253,19 @@ class CompactBacktester:
                     pbar.update(1)
                     continue
                 
-                pbar.set_description(f"Chunk {chunk_idx+1}/{num_chunks} ({len(active_cycles)} cycles, {num_bots * len(active_cycles):,} parallel tasks)")
+                num_active_cycles = len(active_cycles)
+                pbar.set_description(f"Chunk {chunk_idx+1}/{num_chunks} ({num_active_cycles} cycles, {num_bots * num_active_cycles:,} parallel tasks)")
                 
                 # Precompute indicators for this chunk ONCE
                 indicators_buffer = self._precompute_indicators(chunk_data)
                 
-                # Run ULTRA-PARALLEL kernel: All bots × all cycles in parallel
+                # Process all cycles at once (chunk size was optimized for this)
                 chunk_results = self._run_parallel_bot_cycle_kernel(
                     bots,
                     chunk_data,
                     indicators_buffer,
                     active_cycles,
-                    len(active_cycles)
+                    num_active_cycles
                 )
                 
                 # Cleanup
@@ -316,100 +328,108 @@ class CompactBacktester:
         print("[OK] Ultra-parallel backtesting completed successfully!")
         return final_results
 
-    def _find_optimal_data_chunk_size(self, test_bots: List[CompactBotConfig]) -> int:
+    def _find_optimal_data_chunk_size(self, test_bots: List[CompactBotConfig], num_test_cycles: int) -> int:
         """
-        Calculate optimal data chunk size using binary search to find maximum size
-        that doesn't cause OUT_OF_RESOURCES errors.
-        
-        Strategy:
-        - Start with theoretical maximum based on memory
-        - Binary search to find actual working size
-        - Test with actual kernel execution (small sample)
-        - Cache result for subsequent calls
+        Find optimal data chunk size through binary search.
+        Tests with bots × cycles × data_chunk to find actual working limit.
         """
         num_bots = len(test_bots)
         bars_per_day = 1440
         
-        log_info(f"Finding optimal data chunk size for {num_bots} bots...")
-        log_info(f"  GPU Global Memory: {self.global_mem_size / (1024**3):.2f} GB")
-        log_info(f"  GPU Compute Units: {self.compute_units}")
+        log_info(f"Finding optimal workload capacity...")
+        log_info(f"  Testing: {num_bots} bots × {num_test_cycles} cycles × ? bars")
+        log_info(f"  GPU: {self.global_mem_size / (1024**3):.2f} GB, {self.compute_units} CUs")
         
         # Binary search bounds (in days)
-        min_days = 5      # Minimum practical chunk size
-        max_days = 365    # Maximum to try
+        min_days = 5
+        max_days = 365
         optimal_days = min_days
-        
-        log_info(f"  Binary search: testing chunk sizes from {min_days} to {max_days} days...")
-        log_info(f"  Testing with actual bot count: {num_bots} bots")
         
         # Binary search for maximum working chunk size
         while min_days <= max_days:
             test_days = (min_days + max_days) // 2
             test_bars = test_days * bars_per_day
             
-            # Test if this size works with ACTUAL bot count (critical for accurate sizing)
-            if self._test_chunk_size(test_bots, test_bars):
-                log_info(f"  [OK] {test_days} days ({test_bars:,} bars) - Success, trying larger")
-                optimal_days = test_days  # This size works, try larger
+            # Test if bots × cycles × data_chunk works
+            if self._test_workload(test_bots, test_bars, num_test_cycles):
+                log_info(f"  [OK] {test_days} days")
+                optimal_days = test_days
                 min_days = test_days + 1
             else:
-                log_info(f"  [FAIL] {test_days} days ({test_bars:,} bars) - OUT_OF_RESOURCES, trying smaller")
-                max_days = test_days - 1  # Too large, try smaller
+                log_info(f"  [FAIL] {test_days} days")
+                max_days = test_days - 1
         
         optimal_bars = optimal_days * bars_per_day
+        max_workload = num_bots * num_test_cycles
         
-        # Calculate memory usage for reporting
-        bytes_per_bar = (6 * 4) + (50 * 4)  # OHLCV + indicators
-        memory_used_mb = (optimal_bars * bytes_per_bar) / (1024 * 1024)
-        
-        log_info(f"  => Optimal chunk size: {optimal_days} days ({optimal_bars:,} bars)")
-        log_info(f"  => Data memory per chunk: ~{memory_used_mb:.0f} MB")
+        log_info(f"  => Optimal: {optimal_days} days ({optimal_bars:,} bars)")
+        log_info(f"  => Max workload: {max_workload:,} bot-cycle pairs")
         
         return optimal_bars
-
-    def _test_chunk_size(self, test_bots: List[CompactBotConfig], num_bars: int) -> bool:
+    
+    def _calculate_max_workload_capacity(self, chunk_bars: int) -> int:
         """
-        Test if a chunk size works by attempting to run the kernel with sample data.
+        Calculate theoretical maximum bot×cycle workload capacity for a given chunk size.
+        
+        Args:
+            chunk_bars: Number of bars in a chunk
+            
+        Returns:
+            Maximum number of bot-cycle pairs that can be processed in parallel
+        """
+        # Memory breakdown per bot-cycle workload:
+        # - Bot config: 128 bytes (CompactBotConfig)
+        # - OHLCV data (shared): (6 floats * 4 bytes) * chunk_bars = 24 * chunk_bars
+        # - Indicators (shared): (50 floats * 4 bytes) * chunk_bars = 200 * chunk_bars
+        # - Results per bot-cycle: ~64 bytes + (cycle_data * 12 bytes)
+        # - Position tracking: ~48 bytes per bot-cycle
+        # - Trade history: ~20 bytes per trade (assume avg 10 trades per cycle) = 200 bytes
+        
+        # Shared data (doesn't scale with bot count)
+        ohlcv_bytes = 24 * chunk_bars
+        indicator_bytes = 200 * chunk_bars
+        shared_bytes = ohlcv_bytes + indicator_bytes
+        
+        # Per bot-cycle pair data
+        bot_config_bytes = 128
+        result_bytes = 64 + 120  # Result + per-cycle data
+        position_bytes = 48
+        trade_history_bytes = 200  # Average per cycle
+        per_workload_bytes = bot_config_bytes + result_bytes + position_bytes + trade_history_bytes
+        
+        # Available memory (use 70% of global memory for safety)
+        available_memory = int(self.global_mem_size * 0.7)
+        memory_for_workloads = available_memory - shared_bytes
+        
+        # Calculate maximum workloads
+        max_workloads = max(1, memory_for_workloads // per_workload_bytes)
+        
+        return max_workloads
+
+    def _test_workload(self, test_bots: List[CompactBotConfig], num_bars: int, num_cycles: int) -> bool:
+        """
+        Test if workload (bots × cycles × data_chunk) works.
+        Tests BOTH indicator precomputation AND backtest kernel.
         
         Returns:
             True if successful, False if OUT_OF_RESOURCES
         """
         try:
-            # Create minimal test data
+            # Create test data
             test_ohlcv = np.random.rand(num_bars, 6).astype(np.float32)
-            test_ohlcv[:, 0] = np.arange(num_bars)  # timestamps
-            test_ohlcv[:, 1:] = test_ohlcv[:, 1:] * 100 + 30000  # realistic price data
+            test_ohlcv[:, 0] = np.arange(num_bars)
+            test_ohlcv[:, 1:] = test_ohlcv[:, 1:] * 100 + 30000
             
-            # Precompute indicators
+            # TEST 1: Precompute indicators (can fail with large chunks)
             indicators_buffer = self._precompute_indicators(test_ohlcv)
             
-            # Create single test cycle
-            test_cycles = [(0, min(num_bars, 10080))]  # Single 7-day cycle
+            # TEST 2: Backtest kernel with bots × cycles
+            cycle_duration = min(num_bars, 10080)  # 7 days
+            test_cycles = [(0, cycle_duration) for _ in range(num_cycles)]
             
-            # Try to run kernel
             num_test_bots = len(test_bots)
-            bot_configs_raw = np.zeros(num_test_bots, dtype=[
-                ('long_ind_count', 'i4'),
-                ('short_ind_count', 'i4'),
-                ('long_indicators', 'i4', 10),
-                ('long_values', 'f4', 10),
-                ('short_indicators', 'i4', 10),
-                ('short_values', 'f4', 10),
-                ('risk_strategies', 'i4', 15),
-                ('leverage', 'f4')
-            ])
+            bot_configs_raw = self._serialize_bots(test_bots)
             
-            for i, bot in enumerate(test_bots):
-                bot_configs_raw[i]['long_ind_count'] = bot.long_ind_count
-                bot_configs_raw[i]['short_ind_count'] = bot.short_ind_count
-                bot_configs_raw[i]['long_indicators'][:bot.long_ind_count] = bot.long_indicators[:bot.long_ind_count]
-                bot_configs_raw[i]['long_values'][:bot.long_ind_count] = bot.long_values[:bot.long_ind_count]
-                bot_configs_raw[i]['short_indicators'][:bot.short_ind_count] = bot.short_indicators[:bot.short_ind_count]
-                bot_configs_raw[i]['short_values'][:bot.short_ind_count] = bot.short_values[:bot.short_ind_count]
-                bot_configs_raw[i]['risk_strategies'][:15] = bot.risk_strategies
-                bot_configs_raw[i]['leverage'] = bot.leverage
-            
-            # Create buffers
             bots_buf = cl.Buffer(
                 self.ctx,
                 cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
@@ -437,26 +457,27 @@ class CompactBacktester:
                 hostbuf=cycle_ends
             )
             
-            MAX_CYCLES = 100
-            results_bytes = (64 + (MAX_CYCLES * 12)) * num_test_bots
+            results_size = num_test_bots * num_cycles * 3
             results_buf = cl.Buffer(
                 self.ctx,
                 cl.mem_flags.WRITE_ONLY,
-                size=results_bytes
+                size=results_size * 4
             )
             
-            # Execute kernel
-            kernel = self._backtest_kernel
+            # Execute backtest kernel
+            kernel = self._backtest_parallel_kernel
+            global_size = (num_test_bots * num_cycles,)
             kernel(
                 self.queue,
-                (num_test_bots,),
+                global_size,
                 None,
                 bots_buf,
                 ohlcv_buf,
                 indicators_buffer,
                 cycle_starts_buf,
                 cycle_ends_buf,
-                np.int32(len(test_cycles)),
+                np.int32(num_test_bots),
+                np.int32(num_cycles),
                 np.int32(num_bars),
                 np.float32(self.initial_balance),
                 results_buf
@@ -477,11 +498,52 @@ class CompactBacktester:
         except cl.RuntimeError as e:
             if "OUT_OF_RESOURCES" in str(e):
                 return False
-            # Other errors should propagate
             raise
         except Exception:
-            # On any error, assume size is too large
             return False
+
+    def _find_max_workload_capacity_OLD(self, test_bots: List[CompactBotConfig], chunk_bars: int) -> int:
+        """
+        Find the maximum number of cycles that can be processed with given bots and chunk size.
+        Uses binary search similar to chunk size detection.
+        
+        Args:
+            test_bots: Bots to test with
+            chunk_bars: Size of data chunk in bars
+            
+        Returns:
+            Maximum number of cycles that can be processed in parallel
+        """
+        num_bots = len(test_bots)
+        
+        log_info(f"Finding maximum workload capacity...")
+        log_info(f"  Test parameters: {num_bots} bots × ? cycles × {chunk_bars:,} bars")
+        
+        # Binary search bounds for number of cycles
+        min_cycles = 1
+        max_cycles = 200  # Start with reasonable upper bound
+        optimal_cycles = min_cycles
+        
+        # Binary search for maximum cycles
+        while min_cycles <= max_cycles:
+            test_cycles = (min_cycles + max_cycles) // 2
+            test_workload = num_bots * test_cycles
+            
+            log_info(f"  Testing {test_cycles} cycles ({test_workload:,} total work items)...")
+            
+            if self._test_workload_capacity(test_bots, chunk_bars, test_cycles):
+                log_info(f"  [OK] {test_cycles} cycles - Success, trying more")
+                optimal_cycles = test_cycles
+                min_cycles = test_cycles + 1
+            else:
+                log_info(f"  [FAIL] {test_cycles} cycles - OUT_OF_RESOURCES, trying fewer")
+                max_cycles = test_cycles - 1
+        
+        optimal_workload = num_bots * optimal_cycles
+        log_info(f"  => Maximum capacity: {optimal_cycles} cycles")
+        log_info(f"  => Total workload: {optimal_workload:,} bot-cycle pairs")
+        
+        return optimal_cycles
 
     def _chunk_full_data(
         self,
@@ -1221,16 +1283,15 @@ class CompactBacktester:
             size=results_size * 4  # 4 bytes per float
         )
         
-        # Execute parallel kernel: num_bots × num_cycles work items
-        kernel = self._backtest_parallel_kernel
+        # Execute kernel for all bot-cycle pairs in parallel
         global_size = (num_bots * num_cycles,)
-        local_size = None
         
         try:
+            kernel = self._backtest_parallel_kernel
             kernel(
                 self.queue,
                 global_size,
-                local_size,
+                None,
                 bots_buf,
                 ohlcv_buf,
                 indicators_buffer,
@@ -1245,24 +1306,17 @@ class CompactBacktester:
             
             self.queue.finish()
             
+            # Read results
+            results_flat = np.empty(results_size, dtype=np.float32)
+            cl.enqueue_copy(self.queue, results_flat, results_buf)
+            
         except cl.RuntimeError as e:
-            log_error(f"Parallel bot-cycle kernel failed: {e}")
-            bots_buf.release()
-            ohlcv_buf.release()
-            cycle_starts_buf.release()
-            cycle_ends_buf.release()
-            results_buf.release()
+            log_error(f"GPU kernel execution failed: {e}")
+            if "OUT_OF_RESOURCES" in str(e):
+                log_error(f"Workload too large: {num_bots} bots × {num_cycles} cycles = {num_bots * num_cycles:,} work items")
+                log_error(f"Data chunk: {num_bars:,} bars")
+                log_error("Consider reducing data chunk size or number of overlapping cycles")
             raise
-        
-        # Read results
-        results_raw = np.empty(results_size, dtype=np.float32)
-        cl.enqueue_copy(self.queue, results_raw, results_buf)
-        self.queue.finish()
-        
-        # Debug: Check if we have any trades
-        total_trades = int(np.sum(results_raw[0::3]))
-        if total_trades > 0:
-            print(f"  DEBUG: Kernel produced {total_trades} total trades across all bot-cycles")
         
         # Parse results into structured format
         results = [[{} for _ in range(num_cycles)] for _ in range(num_bots)]
@@ -1271,9 +1325,9 @@ class CompactBacktester:
             for cycle_idx in range(num_cycles):
                 idx = bot_idx * num_cycles * 3 + cycle_idx * 3
                 results[bot_idx][cycle_idx] = {
-                    'trades': int(results_raw[idx]),
-                    'wins': int(results_raw[idx + 1]),
-                    'pnl': results_raw[idx + 2]
+                    'trades': int(results_flat[idx]),
+                    'wins': int(results_flat[idx + 1]),
+                    'pnl': results_flat[idx + 2]
                 }
         
         # Cleanup

@@ -265,10 +265,10 @@ def get_mode1_parameters() -> dict:
     )
     
     params['max_leverage'] = get_user_input(
-        f"Max leverage ({params['min_leverage']}-25x)",
+        f"Max leverage ({params['min_leverage']}-125x)",
         last_defaults.get('max_leverage', 1),
         lambda x: validate_int(int(x), "max_leverage", 
-                              min_val=params['min_leverage'], max_val=25)
+                              min_val=params['min_leverage'], max_val=125)
     )
     
     # Indicators per bot

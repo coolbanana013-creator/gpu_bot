@@ -150,7 +150,7 @@ class CompactBotGenerator:
         min_risk_strategies: int = 2,
         max_risk_strategies: int = 5,
         min_leverage: int = 1,
-        max_leverage: int = 25,  # Reduced from 125x to 25x for safety
+        max_leverage: int = 125,  # Maximum leverage for testing
         random_seed: int = 42
     ):
         """Initialize compact bot generator."""
@@ -166,10 +166,10 @@ class CompactBotGenerator:
             raise ValueError(f"min_risk_strategies must be 1-15, got {min_risk_strategies}")
         if not (min_risk_strategies <= max_risk_strategies <= 15):
             raise ValueError(f"max_risk_strategies must be {min_risk_strategies}-15, got {max_risk_strategies}")
-        if not (1 <= min_leverage <= 25):
-            raise ValueError(f"min_leverage must be 1-25, got {min_leverage}")
-        if not (min_leverage <= max_leverage <= 25):
-            raise ValueError(f"max_leverage must be {min_leverage}-25, got {max_leverage}")
+        if not (1 <= min_leverage <= 125):
+            raise ValueError(f"min_leverage must be 1-125, got {min_leverage}")
+        if not (min_leverage <= max_leverage <= 125):
+            raise ValueError(f"max_leverage must be {min_leverage}-125, got {max_leverage}")
         
         self.ctx = gpu_context
         self.queue = gpu_queue

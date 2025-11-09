@@ -286,8 +286,10 @@ class GeneticAlgorithmEvolver:
         survival_rate: float = 0.5
     ) -> Tuple[List[CompactBotConfig], List[BacktestResult]]:
         """
-        Select bots with UNIQUE indicator combinations, positive total PnL, AND NO NEGATIVE CYCLES.
-        STRICT RULE: If a bot has even ONE cycle with negative % profit, it is ELIMINATED.
+        Select bots with UNIQUE indicator combinations that meet survival criteria:
+        1) Positive PnL percentage
+        2) At least 1 trade per cycle
+        
         Enforces 100% diversity among survivors by keeping only the BEST bot per unique indicator combination.
         
         Args:
@@ -299,44 +301,50 @@ class GeneticAlgorithmEvolver:
             Tuple of (surviving_bots, surviving_results) with 100% unique indicator combinations
         """
         # Step 1: Filter bots with:
-        # a) Non-negative total PnL
-        # b) NO negative cycles (all cycles must have >= 0% profit)
+        # a) Positive PnL percentage (profit_pct > 0)
+        # b) At least 1 trade per cycle (all cycles must have >= 1 trade)
         profitable_pairs = []
-        eliminated_negative_cycle = 0
+        eliminated_no_trades = 0
+        eliminated_negative_pnl = 0
         
         for bot, result in zip(population, results):
-            # Check total PnL
-            if result.total_pnl < 0:
+            # Check 1: Positive profit percentage
+            initial_balance = 1000.0  # Standard initial balance
+            profit_pct = (result.total_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
+            if profit_pct <= 0:
+                eliminated_negative_pnl += 1
                 continue
             
-            # STRICT: Check EVERY cycle - eliminate if ANY cycle is negative
-            has_negative_cycle = False
-            for cycle_pnl in result.per_cycle_pnl:
-                if cycle_pnl < 0:
-                    has_negative_cycle = True
-                    eliminated_negative_cycle += 1
+            # Check 2: All cycles must have at least 1 trade
+            has_empty_cycle = False
+            for cycle_trades in result.per_cycle_trades:
+                if cycle_trades < 1:
+                    has_empty_cycle = True
+                    eliminated_no_trades += 1
                     break
             
-            # Only keep bots with ALL cycles >= 0
-            if not has_negative_cycle:
+            # Only keep bots that pass BOTH criteria
+            if not has_empty_cycle:
                 profitable_pairs.append((bot, result))
         
-        # If no bots passed strict criteria, relax to just non-negative total PnL
+        # If no bots passed criteria, relax to just positive PnL
         if not profitable_pairs:
-            log_warning(f"STRICT CRITERIA: {eliminated_negative_cycle} bots eliminated for having negative cycles")
-            log_warning("No bots with all positive cycles, relaxing to total PnL >= 0")
+            log_warning(f"SURVIVAL FILTER: {eliminated_no_trades} bots eliminated for missing trades, {eliminated_negative_pnl} for non-positive PnL")
+            log_warning("No bots passed both criteria, relaxing to positive PnL only")
             for bot, result in zip(population, results):
-                if result.total_pnl >= 0:
+                initial_balance = 1000.0
+                profit_pct = (result.total_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
+                if profit_pct > 0:
                     profitable_pairs.append((bot, result))
         
-        # If still no profitable bots, keep the least unprofitable
+        # If still no profitable bots, keep the most profitable
         if not profitable_pairs:
             all_pairs = list(zip(population, results))
             all_pairs.sort(key=lambda x: x[1].total_pnl, reverse=True)
             profitable_pairs = [all_pairs[0]]
-            log_warning("No bots with non-negative profit, keeping least unprofitable")
+            log_warning("No bots with positive profit, keeping most profitable")
         else:
-            log_info(f"STRICT FILTER: {eliminated_negative_cycle} bots eliminated for negative cycles, {len(profitable_pairs)} passed")
+            log_info(f"SURVIVAL FILTER: {eliminated_no_trades} bots eliminated for missing trades, {eliminated_negative_pnl} for non-positive PnL, {len(profitable_pairs)} passed")
         
         # Step 2: Sort by fitness score (best first)
         profitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
@@ -380,12 +388,12 @@ class GeneticAlgorithmEvolver:
         # Update all-time best
         self._update_all_time_best(surviving_pairs)
         
-        # Log diversity and strict filtering stats
+        # Log diversity and filtering stats
         total_profitable = len(profitable_pairs)
         unique_count = len(surviving_pairs)
         eliminated_total = len(population) - len(profitable_pairs)
-        log_info(f"SURVIVAL: {unique_count} survivors (from {total_profitable} all-positive-cycles bots)")
-        log_info(f"ELIMINATED: {eliminated_total} bots ({eliminated_negative_cycle} had negative cycles)")
+        log_info(f"SURVIVAL: {unique_count} survivors (from {total_profitable} bots with positive PnL and all cycles with trades)")
+        log_info(f"ELIMINATED: {eliminated_total} bots total")
         
         return survivor_bots, survivor_results
     
