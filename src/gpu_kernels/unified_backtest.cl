@@ -4,7 +4,7 @@
  * COMPLETE FEATURE SET:
  * - All 50 indicators computed inline
  * - Multiple open positions (up to 100 per bot)
- * - 75% consensus threshold for signals
+ * - 100% consensus threshold for signals (STRICT: ALL indicators must agree)
  * - Realistic trading simulation with fees, slippage, funding
  * - TP/SL/Liquidation handling
  * - Strict parameter validation (crashes on unrecognized inputs)
@@ -52,7 +52,7 @@
 #define MAX_INDICATORS_PER_BOT 8
 #define MAX_PARAMS_PER_INDICATOR 3
 #define MAX_POSITIONS 100
-#define SIGNAL_CONSENSUS_THRESHOLD 0.75f  // 75% of indicators must agree
+#define SIGNAL_CONSENSUS_THRESHOLD 1.0f  // 100% consensus required (ALL indicators must agree)
 
 // Trading constants (Kucoin)
 #define MAKER_FEE 0.0002f
@@ -312,7 +312,7 @@ float compute_indicator(
 }
 
 // ============================================================================
-// SIGNAL GENERATION WITH 75% CONSENSUS THRESHOLD
+// SIGNAL GENERATION WITH 100% CONSENSUS THRESHOLD (STRICT: ALL MUST AGREE)
 // ============================================================================
 
 float generate_signal_with_consensus(
@@ -373,16 +373,16 @@ float generate_signal_with_consensus(
         total_signals++;
     }
     
-    // Check 75% consensus
+    // Check 100% consensus (ALL indicators must agree)
     float bullish_consensus = (float)bullish_signals / (float)total_signals;
     float bearish_consensus = (float)bearish_signals / (float)total_signals;
     
     if (bullish_consensus >= SIGNAL_CONSENSUS_THRESHOLD) {
-        return 1.0f;  // Strong buy
+        return 1.0f;  // ALL bullish
     } else if (bearish_consensus >= SIGNAL_CONSENSUS_THRESHOLD) {
-        return -1.0f;  // Strong sell
+        return -1.0f;  // ALL bearish
     } else {
-        return 0.0f;  // No consensus
+        return 0.0f;  // No consensus (not unanimous)
     }
 }
 

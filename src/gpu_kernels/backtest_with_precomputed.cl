@@ -16,7 +16,7 @@
  *   - Avoids OUT_OF_RESOURCES by reducing register pressure
  * 
  * Features:
- *   - 75% consensus signal generation
+ *   - 100% consensus signal generation (STRICT: ALL indicators must agree)
  *   - Multiple positions (up to 100 concurrent)
  *   - Leverage 1-125x
  *   - TP/SL with fees
@@ -198,7 +198,7 @@ int check_liquidation(Position *pos, float current_price, float leverage) {
 }
 
 /**
- * Generate signal from indicators using 75% consensus
+ * Generate signal from indicators using 100% consensus (STRICT: ALL indicators must agree)
  */
 float generate_signal_consensus(
     __global float *precomputed_indicators,
@@ -300,11 +300,11 @@ float generate_signal_consensus(
     float bullish_pct = (float)bullish_count / (float)bot->num_indicators;
     float bearish_pct = (float)bearish_count / (float)bot->num_indicators;
     
-    // 75% consensus required
-    if (bullish_pct >= 0.75f) return 1.0f;   // Strong buy
-    if (bearish_pct >= 0.75f) return -1.0f;  // Strong sell
+    // 100% consensus required (STRICT: ALL indicators must agree)
+    if (bullish_pct >= 1.0f) return 1.0f;   // ALL bullish
+    if (bearish_pct >= 1.0f) return -1.0f;  // ALL bearish
     
-    return 0.0f;  // No consensus
+    return 0.0f;  // No consensus (not unanimous)
 }
 
 /**
