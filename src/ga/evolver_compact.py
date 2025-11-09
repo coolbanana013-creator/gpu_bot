@@ -283,7 +283,8 @@ class GeneticAlgorithmEvolver:
         survival_rate: float = 0.5
     ) -> Tuple[List[CompactBotConfig], List[BacktestResult]]:
         """
-        Select bots with UNIQUE indicator combinations and positive PnL.
+        Select bots with UNIQUE indicator combinations, positive total PnL, AND NO NEGATIVE CYCLES.
+        STRICT RULE: If a bot has even ONE cycle with negative % profit, it is ELIMINATED.
         Enforces 100% diversity among survivors by keeping only the BEST bot per unique indicator combination.
         
         Args:
@@ -294,18 +295,45 @@ class GeneticAlgorithmEvolver:
         Returns:
             Tuple of (surviving_bots, surviving_results) with 100% unique indicator combinations
         """
-        # Step 1: Filter bots with non-negative PnL
+        # Step 1: Filter bots with:
+        # a) Non-negative total PnL
+        # b) NO negative cycles (all cycles must have >= 0% profit)
         profitable_pairs = []
+        eliminated_negative_cycle = 0
+        
         for bot, result in zip(population, results):
-            if result.total_pnl >= 0:
+            # Check total PnL
+            if result.total_pnl < 0:
+                continue
+            
+            # STRICT: Check EVERY cycle - eliminate if ANY cycle is negative
+            has_negative_cycle = False
+            for cycle_pnl in result.per_cycle_pnl:
+                if cycle_pnl < 0:
+                    has_negative_cycle = True
+                    eliminated_negative_cycle += 1
+                    break
+            
+            # Only keep bots with ALL cycles >= 0
+            if not has_negative_cycle:
                 profitable_pairs.append((bot, result))
         
-        # If no profitable bots, keep the least unprofitable
+        # If no bots passed strict criteria, relax to just non-negative total PnL
+        if not profitable_pairs:
+            log_warning(f"STRICT CRITERIA: {eliminated_negative_cycle} bots eliminated for having negative cycles")
+            log_warning("No bots with all positive cycles, relaxing to total PnL >= 0")
+            for bot, result in zip(population, results):
+                if result.total_pnl >= 0:
+                    profitable_pairs.append((bot, result))
+        
+        # If still no profitable bots, keep the least unprofitable
         if not profitable_pairs:
             all_pairs = list(zip(population, results))
             all_pairs.sort(key=lambda x: x[1].total_pnl, reverse=True)
             profitable_pairs = [all_pairs[0]]
             log_warning("No bots with non-negative profit, keeping least unprofitable")
+        else:
+            log_info(f"STRICT FILTER: {eliminated_negative_cycle} bots eliminated for negative cycles, {len(profitable_pairs)} passed")
         
         # Step 2: Sort by fitness score (best first)
         profitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
@@ -351,10 +379,12 @@ class GeneticAlgorithmEvolver:
         # Update all-time best
         self._update_all_time_best(surviving_pairs)
         
-        # Log diversity stats
+        # Log diversity and strict filtering stats
         total_profitable = len(profitable_pairs)
         unique_count = len(surviving_pairs)
-        log_info(f"Selected {unique_count} survivors with UNIQUE indicator combinations from {total_profitable} profitable bots (100% diversity among survivors)")
+        eliminated_total = len(population) - len(profitable_pairs)
+        log_info(f"SURVIVAL: {unique_count} survivors (from {total_profitable} all-positive-cycles bots)")
+        log_info(f"ELIMINATED: {eliminated_total} bots ({eliminated_negative_cycle} had negative cycles)")
         
         return survivor_bots, survivor_results
     
