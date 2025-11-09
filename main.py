@@ -744,6 +744,437 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         sys.exit(1)
 
 
+def run_mode2(gpu_context, gpu_queue):
+    """
+    Mode 2: Paper Trading (Live Simulation)
+    Replicates GPU kernel logic on CPU with live data.
+    Uses fake positions to track performance without real money.
+    """
+    try:
+        from src.live_trading.credentials import CredentialsManager
+        from src.live_trading.kucoin_client import KucoinFuturesClient, LiveDataStreamer
+        from src.live_trading.engine import RealTimeTradingEngine
+        from src.live_trading.position_manager import PaperPositionManager
+        from src.live_trading.dashboard import LiveDashboard
+        from src.bot_generator.compact_generator import CompactBotConfig
+        
+        print("\n" + "="*60)
+        print("MODE 2: PAPER TRADING (LIVE SIMULATION)")
+        print("="*60 + "\n")
+        
+        # Setup credentials
+        creds_manager = CredentialsManager()
+        
+        if not creds_manager.credentials_exist():
+            log_info("No Kucoin credentials found. Setting up...")
+            if not creds_manager.prompt_and_save_credentials():
+                log_error("Setup cancelled")
+                return
+        
+        credentials = creds_manager.load_credentials()
+        if not credentials:
+            log_error("Failed to load credentials")
+            return
+        
+        # Get trading parameters
+        print("\nPaper Trading Configuration:")
+        pair = get_user_input("Trading pair", "BTC/USDT", validate_pair)
+        initial_balance = float(get_user_input("Initial balance (USDT)", "1000.0", lambda x: float(x)))
+        timeframe = get_user_input("Timeframe (1m/5m/15m)", "1m", validate_timeframe)
+        
+        # Load or select bot
+        print("\nBot Selection:")
+        print("  1. Load saved bot from evolution results")
+        print("  2. Use test bot configuration")
+        choice = input("Select [1-2]: ").strip()
+        
+        if choice == "1":
+            # Load from saved bot files
+            from pathlib import Path
+            import glob
+            
+            bot_files = glob.glob("bots/**/*.json", recursive=True)
+            if not bot_files:
+                log_error("No saved bots found in bots/ directory")
+                log_info("Run Mode 1 (Genetic Algorithm) first to evolve bots")
+                return
+            
+            print("\nAvailable saved bots:")
+            for i, f in enumerate(bot_files[:20]):  # Show max 20
+                try:
+                    with open(f, 'r') as file:
+                        bot_data = json.load(file)
+                    fitness = bot_data.get('fitness_score', 0)
+                    bot_id = bot_data.get('bot_id', 0)
+                    survival = bot_data.get('survival_generations', 0)
+                    print(f"  {i+1}. {f} (ID:{bot_id}, Fitness:{fitness:.2f}, Survived:{survival} gens)")
+                except:
+                    print(f"  {i+1}. {f} (invalid file)")
+            
+            file_idx = int(input(f"Select bot [1-{min(len(bot_files), 20)}]: ").strip()) - 1
+            selected_file = bot_files[file_idx]
+            
+            try:
+                with open(selected_file, 'r') as f:
+                    bot_data = json.load(f)
+                
+                # Load using from_dict classmethod
+                bot_config = CompactBotConfig.from_dict(bot_data)
+                log_info(f"✅ Loaded bot {bot_config.bot_id} from {selected_file}")
+                log_info(f"   Indicators: {bot_config.num_indicators}, Leverage: {bot_config.leverage}x")
+                log_info(f"   TP: {bot_config.tp_multiplier:.3f}, SL: {bot_config.sl_multiplier:.3f}")
+                
+            except Exception as e:
+                log_error(f"Failed to load bot from {selected_file}: {e}")
+                log_warning("Using test bot configuration instead")
+                bot_config = CompactBotConfig(
+                    bot_id=1,
+                    num_indicators=3,
+                    indicator_indices=np.array([12, 26, 27, 0, 0, 0, 0, 0], dtype=np.uint8),
+                    indicator_params=np.array([[14, 0, 0], [12, 26, 9], [14, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], dtype=np.float32),
+                    risk_strategy_bitmap=7,
+                    tp_multiplier=0.02,
+                    sl_multiplier=0.01,
+                    leverage=10
+                )
+        else:
+            # Use test bot
+            bot_config = CompactBotConfig(
+                bot_id=1,
+                num_indicators=3,
+                indicator_indices=np.array([12, 26, 27, 0, 0, 0, 0, 0], dtype=np.uint8),  # RSI, MACD, ADX
+                indicator_params=np.array([[14, 0, 0], [12, 26, 9], [14, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], dtype=np.float32),
+                risk_strategy_bitmap=7,
+                tp_multiplier=0.02,
+                sl_multiplier=0.01,
+                leverage=10
+            )
+        
+        # Initialize components
+        log_info("Connecting to Kucoin...")
+        kucoin_client = KucoinFuturesClient(credentials, testnet=(credentials['environment'] == 'sandbox'))
+        
+        log_info("Initializing paper trading engine...")
+        position_manager = PaperPositionManager(initial_balance=initial_balance)
+        engine = RealTimeTradingEngine(
+            bot_config=bot_config,
+            initial_balance=initial_balance,
+            position_manager=position_manager,
+            pair=pair,
+            timeframe=timeframe
+        )
+        
+        # Fetch historical data for indicator calculation
+        log_info("Loading historical data...")
+        historical_candles = kucoin_client.fetch_ohlcv(pair.replace('/', '') + ':USDT', timeframe, limit=500)
+        
+        for candle in historical_candles:
+            timestamp_ms, open_, high, low, close, volume = candle
+            engine.process_candle(open_, high, low, close, volume, timestamp_ms / 1000.0)
+        
+        log_info(f"Loaded {len(historical_candles)} historical candles")
+        
+        # Start live data stream
+        dashboard = LiveDashboard()
+        data_streamer = LiveDataStreamer(kucoin_client, pair.replace('/', '') + ':USDT', timeframe)
+        
+        def on_new_candle(open_, high, low, close, volume, timestamp):
+            """Handle new candle."""
+            engine.process_candle(open_, high, low, close, volume, timestamp)
+            state = engine.get_current_state()
+            dashboard.render(state)
+        
+        engine.start()
+        data_streamer.start(on_new_candle)
+        
+        log_info("\n📄 PAPER TRADING STARTED - Press Ctrl+C to stop\n")
+        
+        # Keep running until interrupted
+        while True:
+            time.sleep(1)
+            state = engine.get_current_state()
+            dashboard.render(state)
+        
+    except KeyboardInterrupt:
+        log_warning("\n\nPaper trading stopped by user")
+        
+        # Stop components
+        if 'engine' in locals():
+            engine.stop()
+        if 'data_streamer' in locals():
+            data_streamer.stop()
+        
+        # Save trading session results
+        if 'engine' in locals() and 'bot_config' in locals():
+            try:
+                from pathlib import Path
+                from datetime import datetime
+                
+                # Create session directory
+                session_dir = Path("sessions") / "paper_trading"
+                session_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Get final state
+                final_state = engine.get_current_state()
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                
+                # Save session data
+                session_data = {
+                    "mode": "paper_trading",
+                    "bot_id": bot_config.bot_id,
+                    "pair": pair,
+                    "timeframe": timeframe,
+                    "start_time": timestamp,
+                    "initial_balance": initial_balance,
+                    "final_balance": final_state.get('balance', initial_balance),
+                    "total_pnl": final_state.get('balance', initial_balance) - initial_balance,
+                    "total_trades": final_state.get('total_trades', 0),
+                    "win_rate": final_state.get('win_rate', 0),
+                    "candles_processed": final_state.get('candles_processed', 0),
+                    "bot_config": bot_config.to_dict()
+                }
+                
+                session_file = session_dir / f"session_{timestamp}_bot{bot_config.bot_id}.json"
+                with open(session_file, 'w') as f:
+                    json.dump(session_data, f, indent=2)
+                
+                log_info(f"\n✅ Session saved to: {session_file}")
+                log_info(f"Final Balance: ${session_data['final_balance']:.2f}")
+                log_info(f"Total PnL: ${session_data['total_pnl']:+.2f}")
+                log_info(f"Total Trades: {session_data['total_trades']}")
+                
+            except Exception as e:
+                log_warning(f"Failed to save session: {e}")
+        
+    except Exception as e:
+        log_error(f"Paper trading error: {e}")
+        import traceback
+        traceback.print_exc()
+
+
+def run_mode3(gpu_context, gpu_queue):
+    """
+    Mode 3: Live Trading (Real Money)
+    Same as Mode 2 but uses real positions on exchange.
+    """
+    try:
+        from src.live_trading.credentials import CredentialsManager
+        from src.live_trading.kucoin_client import KucoinFuturesClient, LiveDataStreamer
+        from src.live_trading.engine import RealTimeTradingEngine
+        from src.live_trading.position_manager import LivePositionManager
+        from src.live_trading.dashboard import LiveDashboard
+        from src.bot_generator.compact_generator import CompactBotConfig
+        
+        print("\n" + "="*60)
+        print("MODE 3: LIVE TRADING (REAL MONEY)")
+        print("="*60 + "\n")
+        
+        print("⚠️  WARNING: This mode trades with REAL MONEY!")
+        print("⚠️  You can lose your entire balance!")
+        print("⚠️  Only use funds you can afford to lose!")
+        print()
+        
+        confirm = input("Type 'I UNDERSTAND THE RISKS' to continue: ").strip()
+        if confirm != 'I UNDERSTAND THE RISKS':
+            log_info("Live trading cancelled")
+            return
+        
+        # Setup credentials
+        creds_manager = CredentialsManager()
+        
+        if not creds_manager.credentials_exist():
+            log_info("No Kucoin credentials found. Setting up...")
+            if not creds_manager.prompt_and_save_credentials():
+                log_error("Setup cancelled")
+                return
+        
+        credentials = creds_manager.load_credentials()
+        if not credentials:
+            log_error("Failed to load credentials")
+            return
+        
+        if credentials['environment'] != 'live':
+            log_error("Credentials are set for sandbox. Live trading requires live API keys.")
+            log_info("Delete credentials file and set up live keys, or use Mode 2 for paper trading.")
+            return
+        
+        # Get trading parameters
+        print("\nLive Trading Configuration:")
+        pair = get_user_input("Trading pair", "BTC/USDT", validate_pair)
+        initial_balance = float(get_user_input("Account balance (USDT)", "1000.0", lambda x: float(x)))
+        timeframe = get_user_input("Timeframe (1m/5m/15m)", "1m", validate_timeframe)
+        
+        # Load bot (same as Mode 2)
+        print("\nBot Selection:")
+        print("  1. Load saved bot from evolution results")
+        print("  2. Use test bot configuration")
+        choice = input("Select [1-2]: ").strip()
+        
+        if choice == "1":
+            # Load from saved bot files
+            from pathlib import Path
+            import glob
+            
+            bot_files = glob.glob("bots/**/*.json", recursive=True)
+            if not bot_files:
+                log_error("No saved bots found in bots/ directory")
+                log_info("Run Mode 1 (Genetic Algorithm) first to evolve bots")
+                return
+            
+            print("\nAvailable saved bots:")
+            for i, f in enumerate(bot_files[:20]):  # Show max 20
+                try:
+                    with open(f, 'r') as file:
+                        bot_data = json.load(file)
+                    fitness = bot_data.get('fitness_score', 0)
+                    bot_id = bot_data.get('bot_id', 0)
+                    survival = bot_data.get('survival_generations', 0)
+                    print(f"  {i+1}. {f} (ID:{bot_id}, Fitness:{fitness:.2f}, Survived:{survival} gens)")
+                except:
+                    print(f"  {i+1}. {f} (invalid file)")
+            
+            file_idx = int(input(f"Select bot [1-{min(len(bot_files), 20)}]: ").strip()) - 1
+            selected_file = bot_files[file_idx]
+            
+            try:
+                with open(selected_file, 'r') as f:
+                    bot_data = json.load(f)
+                
+                # Load using from_dict classmethod
+                bot_config = CompactBotConfig.from_dict(bot_data)
+                log_info(f"✅ Loaded bot {bot_config.bot_id} from {selected_file}")
+                log_info(f"   Indicators: {bot_config.num_indicators}, Leverage: {bot_config.leverage}x")
+                log_info(f"   TP: {bot_config.tp_multiplier:.3f}, SL: {bot_config.sl_multiplier:.3f}")
+                
+            except Exception as e:
+                log_error(f"Failed to load bot from {selected_file}: {e}")
+                log_warning("Using test bot configuration instead")
+                bot_config = CompactBotConfig(
+                    bot_id=1,
+                    num_indicators=3,
+                    indicator_indices=np.array([12, 26, 27, 0, 0, 0, 0, 0], dtype=np.uint8),
+                    indicator_params=np.array([[14, 0, 0], [12, 26, 9], [14, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], dtype=np.float32),
+                    risk_strategy_bitmap=7,
+                    tp_multiplier=0.02,
+                    sl_multiplier=0.01,
+                    leverage=10
+                )
+        else:
+            # Use test bot
+            bot_config = CompactBotConfig(
+                bot_id=1,
+                num_indicators=3,
+                indicator_indices=np.array([12, 26, 27, 0, 0, 0, 0, 0], dtype=np.uint8),
+                indicator_params=np.array([[14, 0, 0], [12, 26, 9], [14, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], dtype=np.float32),
+                risk_strategy_bitmap=7,
+                tp_multiplier=0.02,
+                sl_multiplier=0.01,
+                leverage=10
+            )
+        
+        # Initialize components
+        log_info("Connecting to Kucoin LIVE...")
+        kucoin_client = KucoinFuturesClient(credentials, testnet=False)
+        
+        log_info("Initializing LIVE trading engine...")
+        position_manager = LivePositionManager(initial_balance=initial_balance, kucoin_client=kucoin_client)
+        engine = RealTimeTradingEngine(
+            bot_config=bot_config,
+            initial_balance=initial_balance,
+            position_manager=position_manager,
+            pair=pair,
+            timeframe=timeframe
+        )
+        
+        # Fetch historical data
+        log_info("Loading historical data...")
+        historical_candles = kucoin_client.fetch_ohlcv(pair.replace('/', '') + ':USDT', timeframe, limit=500)
+        
+        for candle in historical_candles:
+            timestamp_ms, open_, high, low, close, volume = candle
+            engine.process_candle(open_, high, low, close, volume, timestamp_ms / 1000.0)
+        
+        log_info(f"Loaded {len(historical_candles)} historical candles")
+        
+        # Start live data stream
+        dashboard = LiveDashboard()
+        data_streamer = LiveDataStreamer(kucoin_client, pair.replace('/', '') + ':USDT', timeframe)
+        
+        def on_new_candle(open_, high, low, close, volume, timestamp):
+            """Handle new candle."""
+            engine.process_candle(open_, high, low, close, volume, timestamp)
+            state = engine.get_current_state()
+            dashboard.render(state)
+        
+        engine.start()
+        data_streamer.start(on_new_candle)
+        
+        log_info("\n💰 LIVE TRADING STARTED - Press Ctrl+C to stop\n")
+        log_warning("⚠️  ALL TRADES ARE REAL - MONITOR CAREFULLY!")
+        
+        # Keep running until interrupted
+        while True:
+            time.sleep(1)
+            state = engine.get_current_state()
+            dashboard.render(state)
+        
+    except KeyboardInterrupt:
+        log_warning("\n\nLive trading stopped by user")
+        
+        # Stop components
+        if 'engine' in locals():
+            engine.stop()
+        if 'data_streamer' in locals():
+            data_streamer.stop()
+        
+        # Save trading session results
+        if 'engine' in locals() and 'bot_config' in locals():
+            try:
+                from pathlib import Path
+                from datetime import datetime
+                
+                # Create session directory
+                session_dir = Path("sessions") / "live_trading"
+                session_dir.mkdir(parents=True, exist_ok=True)
+                
+                # Get final state
+                final_state = engine.get_current_state()
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                
+                # Save session data
+                session_data = {
+                    "mode": "live_trading",
+                    "bot_id": bot_config.bot_id,
+                    "pair": pair,
+                    "timeframe": timeframe,
+                    "start_time": timestamp,
+                    "initial_balance": initial_balance,
+                    "final_balance": final_state.get('balance', initial_balance),
+                    "total_pnl": final_state.get('balance', initial_balance) - initial_balance,
+                    "total_trades": final_state.get('total_trades', 0),
+                    "win_rate": final_state.get('win_rate', 0),
+                    "candles_processed": final_state.get('candles_processed', 0),
+                    "bot_config": bot_config.to_dict()
+                }
+                
+                session_file = session_dir / f"session_{timestamp}_bot{bot_config.bot_id}.json"
+                with open(session_file, 'w') as f:
+                    json.dump(session_data, f, indent=2)
+                
+                log_info(f"\n✅ Live session saved to: {session_file}")
+                log_info(f"Final Balance: ${session_data['final_balance']:.2f}")
+                log_info(f"Total PnL: ${session_data['total_pnl']:+.2f}")
+                log_info(f"Total Trades: {session_data['total_trades']}")
+                
+            except Exception as e:
+                log_warning(f"Failed to save session: {e}")
+        
+    except Exception as e:
+        log_error(f"Live trading error: {e}")
+        import traceback
+        traceback.print_exc()
+
+
 def main():
     """Main entry point."""
     try:
@@ -758,6 +1189,12 @@ def main():
             # Mode 1: Genetic Algorithm
             params = get_mode1_parameters()
             run_mode1(params, gpu_context, gpu_queue, gpu_info)
+        elif mode == 2:
+            # Mode 2: Paper Trading (Live Simulation)
+            run_mode2(gpu_context, gpu_queue)
+        elif mode == 3:
+            # Mode 3: Live Trading (Real Money)
+            run_mode3(gpu_context, gpu_queue)
         elif mode == 4:
             # Mode 4: Single Bot Backtest
             params = get_mode4_parameters()

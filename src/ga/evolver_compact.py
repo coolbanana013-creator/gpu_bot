@@ -171,8 +171,8 @@ class GeneticAlgorithmEvolver:
         self.population: List[CompactBotConfig] = []
         self.population_results: List[BacktestResult] = []
         
-        # Track combination usage for diversity
-        self.used_combinations: Set[frozenset] = set()
+        # NO global tracking - combinations can be reused across generations
+        # Only enforce uniqueness WITHIN each generation (not across all history)
         
         # Global pre-computed combination pools for O(1) selection
         self._precompute_combination_pools()
@@ -201,14 +201,19 @@ class GeneticAlgorithmEvolver:
         - 3 indicators: C(50,3) = 19,600
         - 4 indicators: C(50,4) = 230,300
         - 5 indicators: C(50,5) = 2,118,760
-        Total: ~2.37 million combinations
+        - 6 indicators: C(50,6) = 15,890,700
+        - 7 indicators: C(50,7) = 99,884,400
+        - 8 indicators: C(50,8) = 536,878,650
+        Total: ~652 million combinations (1-8 indicators)
+        
+        Note: Pools are shared across all generations. Combinations can be reused.
         """
         import itertools
         
         self.unused_combinations = {}
         available_indicators = list(range(50))
         
-        for num_indicators in range(1, 6):  # 1-5 indicators
+        for num_indicators in range(1, 9):  # 1-8 indicators (expanded from 1-5)
             log_info(f"  Pre-computing {num_indicators}-indicator combinations...")
             combos = set(
                 frozenset(combo) 
@@ -228,19 +233,13 @@ class GeneticAlgorithmEvolver:
         self.population = self.bot_generator.generate_population()
         self.current_generation = 0
         
-        # SKIP uniqueness enforcement for initial population - too slow with 100k bots
-        # GPU generates random combinations, natural diversity is ~95-98% for large populations
-        # We only enforce uniqueness during survivor selection (much smaller set)
+        # GPU generates random combinations with natural diversity (~70-98% for large populations)
+        # No global tracking - combinations can be reused across generations
         seen_combinations = set()
         
         for bot in self.population:
             combo = frozenset(bot.indicator_indices[:bot.num_indicators])
             seen_combinations.add(combo)
-            # Mark combo as used (don't reuse in future generations)
-            self.unused_combinations[bot.num_indicators].discard(combo)
-        
-        # Track combinations globally
-        self.used_combinations.update(seen_combinations)
         
         # DEBUG: Log diversity metrics
         unique_combos = len(seen_combinations)
@@ -248,7 +247,7 @@ class GeneticAlgorithmEvolver:
         diversity_pct = 100 * unique_combos / total_bots if total_bots > 0 else 0
         
         log_info(f"Initial population: {total_bots} bots, {unique_combos} unique ({diversity_pct:.1f}% natural diversity)")
-        log_info(f"Global used combinations: {len(self.used_combinations)}")
+        log_info(f"Note: Combinations can be reused across generations (no global tracking)")
         
         return self.population
     
@@ -418,48 +417,38 @@ class GeneticAlgorithmEvolver:
     
     def generate_unique_bot(self, bot_id: int, excluded_combinations: set = None) -> CompactBotConfig:
         """
-        Generate a bot with a GUARANTEED unique indicator combination using pre-computed pools.
-        O(1) selection from unused combination pools.
+        Generate a bot with a GUARANTEED unique indicator combination.
+        Unique within current batch only - allows reuse from dead bots in previous generations.
         
         Args:
             bot_id: ID to assign to new bot
-            excluded_combinations: Additional combinations to exclude (beyond self.used_combinations)
+            excluded_combinations: Combinations to exclude in THIS batch (survivors + already generated)
             
         Returns:
-            New bot with 100% guaranteed unique indicator combination
+            New bot with unique indicator combination within current batch
         """
         # Generate base bot with random parameters
         bot = self.bot_generator.generate_single_bot(bot_id)
         
-        # Combine global used + batch excluded combinations
-        all_excluded = self.used_combinations.copy()
-        if excluded_combinations:
-            all_excluded.update(excluded_combinations)
+        # Only exclude combinations in THIS batch (not global history)
+        batch_excluded = excluded_combinations if excluded_combinations else set()
         
-        # Check if combination is already used
+        # Check if combination is already used in this batch
         combo = frozenset(bot.indicator_indices[:bot.num_indicators])
         
-        if combo not in all_excluded:
-            # Lucky! The random combo is already unique
-            # CRITICAL: Still need to remove from pool and mark as used!
-            num_indicators = bot.num_indicators
-            self.unused_combinations[num_indicators].discard(combo)
-            self.used_combinations.add(combo)
+        if combo not in batch_excluded:
+            # Lucky! The random combo is unique in this batch
             return bot
         
         # Need to select from pre-computed unused pool
         num_indicators = bot.num_indicators
         
-        # Get available combinations for this size (O(1) set difference)
-        available = self.unused_combinations[num_indicators] - all_excluded
+        # Get available combinations for this size (exclude only current batch)
+        available = self.unused_combinations[num_indicators] - batch_excluded
         
         if available:
-            # Pop one combination from the available set (O(1))
+            # Pop one combination from the available set
             combo = available.pop()
-            
-            # CRITICAL: Remove from pool and mark as globally used
-            self.unused_combinations[num_indicators].discard(combo)
-            self.used_combinations.add(combo)  # Add to global tracker!
             
             # Update bot with this combination
             for i, idx in enumerate(sorted(combo)):
@@ -467,37 +456,33 @@ class GeneticAlgorithmEvolver:
             bot.num_indicators = len(combo)
             return bot
         
-        # Try alternative sizes if current size is exhausted
-        # Prefer LARGER sizes first (more combinations available), then smaller
+        # Try alternative sizes if current size is exhausted in this batch
+        # Prefer LARGER sizes first (4->5->3->2->1 for more combinations)
         alternatives = []
         for delta in [1, 2, -1, -2]:
             alt_size = num_indicators + delta
-            if 1 <= alt_size <= 5:
+            if 1 <= alt_size <= 8:  # Support up to 8 indicators
                 alternatives.append(alt_size)
         
         for alternative_size in alternatives:
-            available = self.unused_combinations[alternative_size] - all_excluded
+            available = self.unused_combinations[alternative_size] - batch_excluded
             if available:
                 combo = available.pop()
-                
-                # CRITICAL: Remove from pool and mark as globally used
-                self.unused_combinations[alternative_size].discard(combo)
-                self.used_combinations.add(combo)  # Add to global tracker!
                 
                 # Update bot with alternative size
                 bot.num_indicators = alternative_size
                 for i, idx in enumerate(sorted(combo)):
                     bot.indicator_indices[i] = idx
-                log_debug(f"Changed from {num_indicators} to {alternative_size} indicators (pool exhausted)")
+                log_debug(f"Changed from {num_indicators} to {alternative_size} indicators (batch exhausted)")
                 return bot
         
-        # Critical: all pools exhausted - this should never happen with 2.37M combinations
-        # Check total available across all pools
-        total_available = sum(len(pool - all_excluded) for pool in self.unused_combinations.values())
-        log_error(f"CRITICAL: ALL {total_available} pools exhausted! Cannot generate unique bot.")
-        log_error(f"  Pools: {[len(self.unused_combinations[i] - all_excluded) for i in range(1, 6)]}")
+        # Critical: all pools exhausted for this batch
+        # This is unlikely unless batch size > 2M combinations
+        total_available = sum(len(pool - batch_excluded) for pool in self.unused_combinations.values())
+        log_error(f"CRITICAL: All pools exhausted for batch! {total_available} globally available")
+        log_error(f"  Batch size: {len(batch_excluded)}, Pool availability: {[len(self.unused_combinations[i] - batch_excluded) for i in range(1, 9)]}")
         
-        # Last resort: return bot with duplicate combo
+        # Last resort: return duplicate (will be logged in refill_population)
         return bot
     
     def refill_population(
@@ -523,8 +508,8 @@ class GeneticAlgorithmEvolver:
         
         new_population = []
         
-        # Track unique indicator combinations in survivors
-        batch_combinations = set()  # Track combinations from survivors
+        # Track unique indicator combinations in THIS generation only
+        batch_combinations = set()  # Only track within THIS batch/generation
         survivor_combos = []  # For debugging
         
         # Add all survivors to new population (no deduplication)
@@ -540,8 +525,7 @@ class GeneticAlgorithmEvolver:
             
             combo = frozenset(survivor.indicator_indices[:survivor.num_indicators])
             
-            # Track this combination
-            self.used_combinations.add(combo)
+            # Track this combination ONLY in batch (no global tracking)
             batch_combinations.add(combo)
             survivor_combos.append(combo)
             
@@ -566,15 +550,15 @@ class GeneticAlgorithmEvolver:
             # DEBUG: Log pool sizes before generation
             pool_sizes = {size: len(pool) for size, pool in self.unused_combinations.items()}
             log_info(f"Unused pool sizes: {pool_sizes}")
-            log_info(f"batch_combinations size: {len(batch_combinations)}, global used: {len(self.used_combinations)}")
+            log_info(f"batch_combinations size: {len(batch_combinations)} (tracking THIS generation only)")
             
             for i in range(num_new_bots):
-                # CRITICAL: Pass batch_combinations to exclude combos already generated in THIS refill batch
-                # Without this, random generation might create dupes within the same batch
+                # CRITICAL: Pass batch_combinations to exclude combos already in THIS batch
+                # This ensures uniqueness WITHIN generation, but allows reuse across generations
                 new_bot = self.generate_unique_bot(next_bot_id + i, batch_combinations)
                 combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
                 
-                # DEBUG: Check if combo was already in batch (THIS SHOULD NEVER HAPPEN!)
+                # DEBUG: Check if combo was already in batch (should be rare)
                 if combo in batch_combinations:
                     all_indicator_types = IndicatorFactory.get_all_indicator_types()
                     indicator_names = [indicator_type.value for indicator_type in all_indicator_types]
@@ -582,10 +566,8 @@ class GeneticAlgorithmEvolver:
                     log_warning(f"Bot {i}: DUPLICATE DETECTED! combo = [{indicators_str}]")
                     log_warning(f"  batch_combinations size: {len(batch_combinations)}, unused pool sizes: {pool_sizes}")
                 
-                # CRITICAL: Mark as used IMMEDIATELY after generation (updates batch_combinations for next iteration)
+                # CRITICAL: Track in batch (no global tracking - allows reuse across generations)
                 batch_combinations.add(combo)
-                self.used_combinations.add(combo)
-                # Note: generate_unique_bot() already removed combo from unused_combinations pool
                 
                 new_population.append(new_bot)
             
@@ -596,7 +578,7 @@ class GeneticAlgorithmEvolver:
             diversity_pct = 100 * unique_after_refill / total_after_refill if total_after_refill > 0 else 0
             
             log_info(f"After refill: {total_after_refill} total bots, {unique_after_refill} unique indicator combinations ({diversity_pct:.1f}% diversity)")
-            log_info(f"Global used_combinations: {len(self.used_combinations)}")
+            log_info(f"Combinations reused across generations (allowed): {total_after_refill - unique_after_refill} potential duplicates")
         
         return new_population
     
@@ -910,6 +892,7 @@ class GeneticAlgorithmEvolver:
                 'config': {
                     'num_indicators': int(bot.num_indicators),
                     'indicator_indices': bot.indicator_indices[:bot.num_indicators].tolist(),
+                    'indicator_params': bot.indicator_params[:bot.num_indicators].tolist(),  # CRITICAL: Save params!
                     'risk_strategy_bitmap': int(bot.risk_strategy_bitmap),
                     'tp_multiplier': float(bot.tp_multiplier),
                     'sl_multiplier': float(bot.sl_multiplier),

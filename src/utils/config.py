@@ -247,11 +247,11 @@ MAX_API_RETRIES = 3
 # ============================================================================
 
 AVAILABLE_MODES = [1, 2, 3, 4]
-IMPLEMENTED_MODES = [1, 4]  # Mode 1 (GA) and Mode 4 (Single Bot) are implemented
+IMPLEMENTED_MODES = [1, 2, 3, 4]  # All modes implemented: GA, Paper Trading, Live Trading, Single Bot
 
 MODE_DESCRIPTIONS = {
     1: "Genetic Algorithm Mode - Evolve trading bots over multiple generations",
-    2: "Not Implemented",
-    3: "Not Implemented",
+    2: "Paper Trading Mode - Live simulation with fake money (CPU-based, replicates GPU logic)",
+    3: "Live Trading Mode - Real trading with real money (CPU-based, replicates GPU logic)",
     4: "Single Bot Backtest Mode - Test individual bots on historical data (supports loading saved bots)"
 }

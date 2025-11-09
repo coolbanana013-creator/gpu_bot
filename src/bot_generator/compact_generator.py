@@ -73,7 +73,7 @@ class CompactBotConfig:
         return hash(self.bot_id)
     
     def to_dict(self) -> dict:
-        """Convert to JSON-serializable dict."""
+        """Convert to JSON-serializable dict with FULL indicator data."""
         return {
             "bot_id": self.bot_id,
             "num_indicators": self.num_indicators,
@@ -85,6 +85,51 @@ class CompactBotConfig:
             "leverage": self.leverage,
             "survival_generations": self.survival_generations
         }
+    
+    @classmethod
+    def from_dict(cls, data: dict) -> 'CompactBotConfig':
+        """
+        Reconstruct bot from JSON dict (exact GPU config reproduction).
+        
+        Args:
+            data: Dict from to_dict() or saved bot file
+            
+        Returns:
+            CompactBotConfig with exact same configuration
+        """
+        import numpy as np
+        
+        # Handle both formats: direct dict or nested 'config' dict
+        if 'config' in data:
+            config = data['config']
+            bot_id = data.get('bot_id', config.get('bot_id', 1))
+            survival_generations = data.get('survival_generations', 0)
+        else:
+            config = data
+            bot_id = config.get('bot_id', 1)
+            survival_generations = config.get('survival_generations', 0)
+        
+        # Pad indicator arrays to 8 elements
+        indicator_indices = config['indicator_indices']
+        indicator_params = config.get('indicator_params', [])
+        
+        # Ensure arrays are exactly 8 elements (pad with zeros)
+        while len(indicator_indices) < 8:
+            indicator_indices.append(0)
+        while len(indicator_params) < 8:
+            indicator_params.append([0.0, 0.0, 0.0])
+        
+        return cls(
+            bot_id=bot_id,
+            num_indicators=config['num_indicators'],
+            indicator_indices=np.array(indicator_indices[:8], dtype=np.uint8),
+            indicator_params=np.array(indicator_params[:8], dtype=np.float32),
+            risk_strategy_bitmap=config['risk_strategy_bitmap'],
+            tp_multiplier=config['tp_multiplier'],
+            sl_multiplier=config['sl_multiplier'],
+            leverage=config['leverage'],
+            survival_generations=survival_generations
+        )
 
 
 class CompactBotGenerator:

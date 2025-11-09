@@ -6,3 +6,5 @@ TA-Lib>=0.4.28
 pyopencl>=2023.1.0
 pytest>=7.4.0
 pytest-cov>=4.1.0
+cryptography>=41.0.0
+tqdm>=4.66.0
