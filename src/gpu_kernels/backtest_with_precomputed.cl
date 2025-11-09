@@ -853,3 +853,167 @@ __kernel void backtest_with_signals(
 
     results[bot_idx] = result;
 }
+
+// ============================================================================
+// OPTIMIZED PARALLEL KERNEL (BOT × CYCLE PARALLELIZATION)
+// ============================================================================
+
+/**
+ * Ultra-parallel backtest kernel that processes each bot-cycle pair as a separate work item.
+ * 
+ * PARALLELIZATION STRATEGY:
+ * - Old: num_bots work items, each loops through num_cycles
+ * - New: num_bots × num_cycles work items, each processes ONE bot-cycle pair
+ * 
+ * MEMORY EFFICIENCY:
+ * - Each work item only needs ~160 bytes (bot config + 1 position)
+ * - No cycle arrays needed (each work item processes one cycle)
+ * - Results written to separate bot-cycle slots
+ * 
+ * GPU UTILIZATION:
+ * - 10,000 bots × 100 cycles = 1,000,000 parallel work items
+ * - Maximizes GPU occupancy and throughput
+ * - Better load balancing across compute units
+ */
+__kernel void backtest_parallel_bot_cycle(
+    __global CompactBotConfig *bots,
+    __global OHLCVBar *ohlcv,
+    __global float *precomputed_indicators,
+    __global int *cycle_starts,
+    __global int *cycle_ends,
+    const int num_bots,
+    const int num_cycles,
+    const int num_bars,
+    const float initial_balance,
+    __global float *cycle_results  // Output: [bot_idx * num_cycles + cycle_idx] = {trades, wins, pnl}
+) {
+    // Decode bot and cycle indices from work item ID
+    int global_id = get_global_id(0);
+    int bot_idx = global_id / num_cycles;
+    int cycle_idx = global_id % num_cycles;
+    
+    // Bounds check
+    if (bot_idx >= num_bots || cycle_idx >= num_cycles) {
+        return;
+    }
+    
+    CompactBotConfig bot = bots[bot_idx];
+    int start_bar = cycle_starts[cycle_idx];
+    int end_bar = cycle_ends[cycle_idx];
+    
+    // Quick validation
+    if (bot.leverage < 1 || bot.leverage > 125 || bot.num_indicators == 0 || bot.num_indicators > 8) {
+        // Write failure markers
+        int result_idx = bot_idx * num_cycles * 3 + cycle_idx * 3;
+        cycle_results[result_idx] = 0.0f;     // trades
+        cycle_results[result_idx + 1] = 0.0f; // wins
+        cycle_results[result_idx + 2] = -999999.0f; // pnl (failure marker)
+        return;
+    }
+    
+    // Initialize trading state for THIS CYCLE ONLY
+    float balance = initial_balance;
+    Position positions[MAX_POSITIONS];
+    for (int i = 0; i < MAX_POSITIONS; i++) {
+        positions[i].is_active = 0;
+    }
+    int num_positions = 0;
+    
+    int trades = 0;
+    int wins = 0;
+    float pnl = 0.0f;
+    
+    unsigned int seed = bot.bot_id * 31337 + cycle_idx * 997 + 42;
+    
+    // Backtest this specific cycle
+    for (int bar = start_bar; bar <= end_bar && bar < num_bars; bar++) {
+        // Generate signal
+        float signal = generate_signal_consensus(
+            precomputed_indicators,
+            &bot,
+            bar,
+            num_bars
+        );
+        
+        // Manage existing positions (close at TP/SL, update tracking)
+        int prev_trades = trades;
+        float dummy_max_drawdown = 0.0f;
+        manage_positions(
+            positions,
+            &num_positions,
+            &ohlcv[bar],
+            signal,
+            (float)bot.leverage,
+            &balance,
+            &trades,
+            &wins,
+            &trades,  // Pass trades as losing_trades placeholder
+            &pnl,
+            &pnl,  // cycle_pnl
+            &dummy_max_drawdown,
+            initial_balance
+        );
+        
+        // Open new positions if signal present and balance allows
+        if (signal != 0.0f && balance > initial_balance * MIN_BALANCE_PCT) {
+            if (num_positions < MAX_POSITIONS) {
+                float quantity = calculate_position_size(
+                    balance,
+                    ohlcv[bar].close,
+                    bot.risk_strategy_bitmap,
+                    &seed
+                );
+                
+                int direction = (signal > 0.0f) ? 1 : -1;
+                
+                open_position(
+                    positions,
+                    &num_positions,
+                    ohlcv[bar].close,
+                    quantity,
+                    direction,
+                    bot.tp_multiplier,
+                    bot.sl_multiplier,
+                    bar,
+                    (float)bot.leverage,
+                    &balance
+                );
+            }
+        }
+        
+        // Stop if balance too low
+        if (balance < initial_balance * MIN_BALANCE_PCT) {
+            break;
+        }
+    }
+    
+    // Close any remaining positions at cycle end
+    for (int i = 0; i < MAX_POSITIONS; i++) {
+        if (positions[i].is_active) {
+            float exit_price = ohlcv[end_bar].close;
+            float position_pnl = 0.0f;
+            
+            if (positions[i].direction == 1) {  // Long
+                position_pnl = (exit_price - positions[i].entry_price) * positions[i].quantity;
+            } else {  // Short
+                position_pnl = (positions[i].entry_price - exit_price) * positions[i].quantity;
+            }
+            
+            float fee = positions[i].entry_price * positions[i].quantity * TAKER_FEE;
+            position_pnl -= fee;
+            
+            balance += position_pnl;
+            pnl += position_pnl;
+            trades++;
+            if (position_pnl > 0) wins++;
+            
+            positions[i].is_active = 0;
+        }
+    }
+    
+    // Write results for this bot-cycle pair
+    int result_idx = bot_idx * num_cycles * 3 + cycle_idx * 3;
+    cycle_results[result_idx] = (float)trades;
+    cycle_results[result_idx + 1] = (float)wins;
+    cycle_results[result_idx + 2] = pnl;
+}

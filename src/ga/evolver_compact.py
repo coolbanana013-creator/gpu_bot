@@ -213,7 +213,11 @@ class GeneticAlgorithmEvolver:
         self.unused_combinations = {}
         available_indicators = list(range(50))
         
-        for num_indicators in range(1, 9):  # 1-8 indicators (expanded from 1-5)
+        # Only pre-compute up to max_indicators to avoid excessive memory/time
+        min_ind = self.bot_generator.min_indicators
+        max_ind = self.bot_generator.max_indicators
+        
+        for num_indicators in range(min_ind, max_ind + 1):
             log_info(f"  Pre-computing {num_indicators}-indicator combinations...")
             combos = set(
                 frozenset(combo) 
@@ -352,11 +356,9 @@ class GeneticAlgorithmEvolver:
         # Convert to lists
         surviving_pairs = list(unique_survivors.values())
         
-        # Step 4: Limit to target survival count (if we have more unique combos than needed)
-        target_survivors = max(1, int(len(population) * survival_rate))
-        if len(surviving_pairs) > target_survivors:
-            surviving_pairs = surviving_pairs[:target_survivors]
-            log_info(f"Limited {len(unique_survivors)} unique survivors to {target_survivors} (survival_rate={survival_rate:.1%})")
+        # Step 4: Keep ALL unique survivors (no artificial cap)
+        # Previously limited to survival_rate * population, but now we keep all that passed filters
+        log_info(f"Survivors: {len(surviving_pairs)} unique bots kept (no cap applied)")
         
         # Extract bots and results
         survivor_bots = [bot for bot, _ in surviving_pairs]
@@ -401,19 +403,14 @@ class GeneticAlgorithmEvolver:
     
     def release_combinations(self, dead_bots: List[CompactBotConfig]):
         """
+        DEPRECATED: No longer used (per-generation uniqueness only).
         Release indicator combinations from eliminated bots.
         Returns combinations to the unused pool for recycling.
         """
-        for bot in dead_bots:
-            combo = frozenset(bot.indicator_indices[:bot.num_indicators])
-            self.used_combinations.discard(combo)
-            
-            # Return to unused pool for recycling
-            num_indicators = len(combo)
-            if num_indicators in self.unused_combinations:
-                self.unused_combinations[num_indicators].add(combo)
-        
-        log_debug(f"Released and recycled {len(dead_bots)} combinations")
+        # NOTE: This method is no longer called.
+        # We use per-generation uniqueness, not global tracking.
+        # Combinations are automatically available for reuse in next generation.
+        pass
     
     def generate_unique_bot(self, bot_id: int, excluded_combinations: set = None) -> CompactBotConfig:
         """
@@ -665,7 +662,7 @@ class GeneticAlgorithmEvolver:
             log_info("Refilling population...")
             self.population = self.refill_population(survivors, target_size)
             log_info(f"Population refilled: {len(self.population)} bots")
-            log_info(f"Total unique combinations used: {len(self.used_combinations)}")
+            # Note: No global tracking - combinations reused across generations
             self.profiler.end_phase("population_refill")
             
             self.current_generation += 1
@@ -946,29 +943,9 @@ class GeneticAlgorithmEvolver:
             log_info("")
     
     def print_current_generation(self, initial_balance: float = 10000.0):
-        """Print all bots from the current generation with their results."""
-        if not self.population or not self.population_results:
-            log_info("No current generation data to display")
-            return
-        
-        log_info(f"\n{'='*80}")
-        log_info(f"CURRENT GENERATION #{self.current_generation} - ALL {len(self.population)} BOTS")
-        log_info(f"{'='*80}\n")
-        
-        for i, (bot, result) in enumerate(zip(self.population, self.population_results)):
-            profit_pct = (result.total_pnl / initial_balance) * 100
-            log_info(f"Bot #{i+1} (ID: {bot.bot_id})")
-            log_info(f"  Fitness Score: {result.fitness_score:.2f}")
-            log_info(f"  Total PnL: ${result.total_pnl:.2f}")
-            log_info(f"  Profit %: {profit_pct:+.2f}%")
-            log_info(f"  Final Balance: ${result.final_balance:.2f}")
-            log_info(f"  Win Rate: {result.win_rate:.2%}")
-            log_info(f"  Total Trades: {result.total_trades}")
-            log_info(f"  Sharpe Ratio: {result.sharpe_ratio:.2f}")
-            log_info(f"  Max Drawdown: {result.max_drawdown:.2%}")
-            log_info(f"  Indicators: {bot.num_indicators}")
-            log_info(f"  Leverage: {bot.leverage}x")
-            log_info("")
+        """DEPRECATED: Detailed per-bot printing removed to reduce output noise."""
+        # This function intentionally does nothing - detailed logging removed
+        pass
     
     def shutdown(self):
         """Shutdown GPU processors."""

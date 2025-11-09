@@ -153,12 +153,6 @@ class GPULoggingProcessor:
         output_buffer, record_size = binary_data
         num_bots = len(bots)
         
-        # DEBUG: Log actual bot.survival_generations values before CSV creation
-        import sys
-        if generation == 0:  # Only log for first generation
-            sg_values = [getattr(bot, 'survival_generations', 0) for bot in bots[:10]]
-            print(f"[DEBUG CSV] generation_0: First 10 bot survival_generations = {sg_values}", file=sys.stderr)
-
         # Get indicator names for mapping
         all_indicator_types = IndicatorFactory.get_all_indicator_types()
         indicator_names = [indicator_type.value for indicator_type in all_indicator_types]
@@ -175,7 +169,6 @@ class GPULoggingProcessor:
         csv_lines = [';'.join(header)]
 
         # Process each bot's binary data
-        debug_count = 0
         for bot_idx in range(num_bots):
             bot = bots[bot_idx]
             result = results[bot_idx]
@@ -194,13 +187,6 @@ class GPULoggingProcessor:
             bot_data_offset += 4
             leverage = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
             bot_data_offset += 4
-            
-            # DEBUG: Log first 5 bots to check binary integrity
-            if debug_count < 5:
-                debug_count += 1
-                import sys
-                binary_hex = ' '.join(f'{b:02x}' for b in data_view[:32])  # First 32 bytes in hex
-                print(f"[DEBUG] bot_idx={bot_idx}, bot.bot_id={bot.bot_id}, binary_bot_id={bot_id_from_binary}, binary_hex={binary_hex}", file=sys.stderr)
             
             # NOTE: survival_generations NOT in binary buffer - read directly from bot object
             # This ensures it's always accurate and not corrupted by binary serialization

@@ -152,7 +152,8 @@ class CompactBacktester:
         try:
             self.backtest_program = cl.Program(self.ctx, backtest_src).build()
             self._backtest_kernel = cl.Kernel(self.backtest_program, "backtest_with_signals")
-            log_info("[OK] Compiled backtest_with_precomputed.cl (real trading logic)")
+            self._backtest_parallel_kernel = cl.Kernel(self.backtest_program, "backtest_parallel_bot_cycle")
+            log_info("[OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)")
         except cl.RuntimeError as e:
             log_error(f"Backtest kernel compilation failed: {e}")
             raise
@@ -167,6 +168,7 @@ class CompactBacktester:
         try:
             self.aggregate_program = cl.Program(self.ctx, aggregate_src).build()
             self._aggregate_kernel = cl.Kernel(self.aggregate_program, "aggregate_bot_results")
+            self._aggregate_flat_kernel = cl.Kernel(self.aggregate_program, "aggregate_flat_results")
             log_info("[OK] Compiled aggregate_results.cl (GPU result aggregation)")
         except cl.RuntimeError as e:
             log_error(f"Aggregation kernel compilation failed: {e}")
@@ -179,14 +181,19 @@ class CompactBacktester:
         cycles: List[Tuple[int, int]]
     ) -> List[BacktestResult]:
         """
-        Backtest bots using data chunking within each cycle.
+        Backtest bots using multi-cycle parallel processing with data chunking.
 
-        Strategy:
-        - Each cycle is independent with its own data range
-        - Within each cycle, chunk the data into smaller pieces that fit GPU memory
-        - Process all bots against each data chunk
-        - Aggregate results across data chunks for each cycle
-        - Aggregate results across cycles for each bot
+        NEW STRATEGY (Optimized):
+        - Process ALL cycles together in each data chunk (up to memory limit)
+        - Chunk the full dataset into pieces that fit GPU memory
+        - For each chunk, run ALL cycles that overlap with that chunk
+        - Each cycle uses its own slice of the data within the chunk
+        - Aggregate results across chunks and cycles
+
+        Benefits:
+        - Massive GPU utilization: Process 100 cycles × 10k bots = 1M workloads in parallel
+        - Fewer kernel launches: ~170 chunks instead of 100 cycles × ~170 chunks
+        - Better memory efficiency: Load data once, test all cycles
         """
         num_bots = len(bots)
         num_bars = len(ohlcv_data)
@@ -196,132 +203,328 @@ class CompactBacktester:
         if not hasattr(self, '_optimal_data_chunk_bars'):
             self._optimal_data_chunk_bars = self._find_optimal_data_chunk_size(bots)
 
-        # Process each cycle independently with progress tracking
-        all_cycle_results = []
+        print(f"\n[BACKTEST] Testing {num_bots:,} bots × {num_cycles} cycles = {num_bots * num_cycles:,} workloads")
+        print(f"[BACKTEST] Dataset: {num_bars:,} bars ({num_bars/1440:.1f} days)")
+        print(f"[BACKTEST] Strategy: ULTRA-PARALLEL (all {num_bots * num_cycles:,} bot-cycle pairs in parallel)")
+        print(f"[BACKTEST] Chunk size: {self._optimal_data_chunk_bars/1440:.1f} days ({self._optimal_data_chunk_bars:,} bars)")
 
-        print(f"\n[BACKTEST] Testing {num_bots:,} bots against {num_bars:,} bars ({num_cycles} cycles)")
-        print(f"[BACKTEST] Using {self._optimal_data_chunk_bars/1440:.1f} day chunks")
-
-        with tqdm(total=num_cycles, desc="Processing cycles", unit="cycle", position=0) as cycle_pbar:
-            for cycle_idx, (cycle_start, cycle_end) in enumerate(cycles):
-                cycle_data = ohlcv_data[cycle_start:cycle_end]
-                cycle_bars = len(cycle_data)
-
-                # Chunk this cycle's data
-                data_chunks = self._chunk_cycle_data(cycle_data, self._optimal_data_chunk_bars)
-                num_chunks = len(data_chunks)
-
-                # Update cycle progress bar with chunk info
-                cycle_pbar.set_description(f"Cycle {cycle_idx + 1}/{num_cycles} ({num_chunks} chunks)")
-
-                # Process all bots against each data chunk with nested progress bar
-                cycle_chunk_results = []
-                with tqdm(total=num_chunks, desc="  Chunks", unit="chunk", position=1, leave=False) as chunk_pbar:
-                    for chunk_idx, chunk_info in enumerate(data_chunks):
-                        chunk_data = chunk_info['data']
-                        chunk_cycles = chunk_info['cycles']
-
-                        # Precompute indicators for this chunk
-                        indicators_buffer = self._precompute_indicators(chunk_data)
-
-                        # Run ALL bots against this data chunk
-                        chunk_results = self._run_backtest_kernel_direct(
-                            bots,
-                            chunk_data,
-                            indicators_buffer,
-                            chunk_cycles
-                        )
-
-                        # Cleanup
-                        indicators_buffer.release()
-
-                        # Store results for this chunk
-                        cycle_chunk_results.append(chunk_results)
-                        chunk_pbar.update(1)
-
-                # Aggregate results across data chunks for this cycle
-                cycle_aggregated = self._aggregate_data_chunks(cycle_chunk_results, num_bots)
-
-                # Mark which cycle these results are from
-                for result in cycle_aggregated:
-                    result.cycle_id = cycle_idx
-
-                all_cycle_results.append(cycle_aggregated)
-                cycle_pbar.update(1)
-
-        # Aggregate results across cycles for each bot
-        final_results = self._aggregate_cycle_results(all_cycle_results, num_bots, num_cycles)
-
-        print("[OK] Backtesting completed successfully!")
-        return final_results
+        # Create data chunks covering the full dataset
+        data_chunks = self._chunk_full_data(ohlcv_data, self._optimal_data_chunk_bars)
+        num_chunks = len(data_chunks)
         
-        log_info(f"Completed cycle-based backtesting: {len(final_results)} results generated")
+        print(f"[BACKTEST] Split into {num_chunks} chunks (maximum GPU parallelization per chunk)")
+
+        # Process each chunk with ALL cycles that overlap
+        all_cycle_results = [[] for _ in range(num_cycles)]  # results[cycle_idx][bot_idx]
+
+        with tqdm(total=num_chunks, desc="Processing chunks", unit="chunk") as pbar:
+            for chunk_idx, chunk_info in enumerate(data_chunks):
+                chunk_data = chunk_info['data']
+                chunk_start = chunk_info['global_start']
+                chunk_end = chunk_info['global_end']
+                
+                # Find all cycles that overlap with this chunk
+                active_cycles = []
+                cycle_indices = []
+                
+                for cycle_idx, (cycle_start, cycle_end) in enumerate(cycles):
+                    # Check if cycle overlaps with this chunk
+                    if cycle_start < chunk_end and cycle_end > chunk_start:
+                        # Calculate the cycle's range within this chunk
+                        cycle_chunk_start = max(0, cycle_start - chunk_start)
+                        cycle_chunk_end = min(len(chunk_data), cycle_end - chunk_start)
+                        
+                        if cycle_chunk_end > cycle_chunk_start:
+                            active_cycles.append((cycle_chunk_start, cycle_chunk_end))
+                            cycle_indices.append(cycle_idx)
+                
+                if not active_cycles:
+                    pbar.update(1)
+                    continue
+                
+                pbar.set_description(f"Chunk {chunk_idx+1}/{num_chunks} ({len(active_cycles)} cycles, {num_bots * len(active_cycles):,} parallel tasks)")
+                
+                # Precompute indicators for this chunk ONCE
+                indicators_buffer = self._precompute_indicators(chunk_data)
+                
+                # Run ULTRA-PARALLEL kernel: All bots × all cycles in parallel
+                chunk_results = self._run_parallel_bot_cycle_kernel(
+                    bots,
+                    chunk_data,
+                    indicators_buffer,
+                    active_cycles,
+                    len(active_cycles)
+                )
+                
+                # Cleanup
+                indicators_buffer.release()
+                
+                # Distribute results to appropriate cycles
+                for local_cycle_idx, global_cycle_idx in enumerate(cycle_indices):
+                    # Extract results for this cycle (one per bot)
+                    # Convert dict results to simple tuples for aggregation
+                    cycle_data = []
+                    for bot_idx in range(num_bots):
+                        result_dict = chunk_results[bot_idx][local_cycle_idx]
+                        # Store as tuple: (bot_idx, trades, wins, pnl)
+                        cycle_data.append((
+                            bots[bot_idx].bot_id,
+                            result_dict['trades'],
+                            result_dict['wins'],
+                            result_dict['pnl']
+                        ))
+                    all_cycle_results[global_cycle_idx].append(cycle_data)
+                
+                pbar.update(1)
+
+        # GPU-accelerated aggregation: sum trades/wins/pnl across chunks and cycles
+        print("[BACKTEST] GPU-accelerated aggregation of multi-cycle results...")
+        
+        # Flatten all chunk results into single array for GPU processing
+        # Format: [bot0_cycle0_chunk0, bot1_cycle0_chunk0, ..., bot0_cycle1_chunk0, ...]
+        total_data_points = 0
+        for cycle_idx in range(num_cycles):
+            total_data_points += len(all_cycle_results[cycle_idx]) * num_bots
+        
+        # Create flat arrays for GPU
+        flat_bot_ids = []
+        flat_cycle_ids = []
+        flat_trades = []
+        flat_wins = []
+        flat_pnls = []
+        
+        for cycle_idx in range(num_cycles):
+            for chunk_data in all_cycle_results[cycle_idx]:
+                for bot_id, trades, wins, pnl in chunk_data:
+                    flat_bot_ids.append(bot_id)
+                    flat_cycle_ids.append(cycle_idx)
+                    flat_trades.append(trades)
+                    flat_wins.append(wins)
+                    flat_pnls.append(pnl)
+        
+        # Run GPU aggregation (sum per bot across all cycles and chunks)
+        final_results = self._gpu_aggregate_results(
+            bots,
+            np.array(flat_bot_ids, dtype=np.int32),
+            np.array(flat_cycle_ids, dtype=np.int32),
+            np.array(flat_trades, dtype=np.int32),
+            np.array(flat_wins, dtype=np.int32),
+            np.array(flat_pnls, dtype=np.float32),
+            num_cycles
+        )
+
+        print("[OK] Ultra-parallel backtesting completed successfully!")
         return final_results
 
     def _find_optimal_data_chunk_size(self, test_bots: List[CompactBotConfig]) -> int:
         """
-        Calculate optimal data chunk size based on GPU memory constraints.
+        Calculate optimal data chunk size using binary search to find maximum size
+        that doesn't cause OUT_OF_RESOURCES errors.
         
-        Uses GPU device info to compute maximum bars that fit in memory.
-        The formula provides a theoretical maximum, then applies aggressive safety margins
-        since OpenCL drivers, workgroups, and runtime consume significant overhead.
-        
-        For reference on Intel UHD 630 (3.19 GB):
-        - Theoretical max: ~10,000 days
-        - After 85% safety margin: ~1,500 days
-        - Clamped to 5 days due to actual driver overhead
-        
-        Future GPUs with more memory (e.g., 8GB, 16GB) will automatically benefit from
-        larger chunk sizes up to the conservative limit, reducing chunk count.
+        Strategy:
+        - Start with theoretical maximum based on memory
+        - Binary search to find actual working size
+        - Test with actual kernel execution (small sample)
+        - Cache result for subsequent calls
         """
         num_bots = len(test_bots)
         bars_per_day = 1440
         
-        log_info(f"Calculating optimal data chunk size for {num_bots} bots...")
+        log_info(f"Finding optimal data chunk size for {num_bots} bots...")
         log_info(f"  GPU Global Memory: {self.global_mem_size / (1024**3):.2f} GB")
         log_info(f"  GPU Compute Units: {self.compute_units}")
         
-        # Memory calculation:
+        # Binary search bounds (in days)
+        min_days = 5      # Minimum practical chunk size
+        max_days = 365    # Maximum to try
+        optimal_days = min_days
         
-        bytes_per_bot_config = 128
-        bytes_per_bar_ohlcv = 5 * 4  # 5 columns × 4 bytes
-        bytes_per_bar_indicators = 50 * 4  # 50 indicators × 4 bytes
-        bytes_per_result = 864  # Result struct size
+        log_info(f"  Binary search: testing chunk sizes from {min_days} to {max_days} days...")
+        log_info(f"  Testing with actual bot count: {num_bots} bots")
         
-        # Fixed overhead
-        bots_memory = num_bots * bytes_per_bot_config
-        results_memory = num_bots * bytes_per_result
-        cycles_memory = 1024  # Small fixed overhead
-        overhead_memory = 100 * 1024 * 1024  # 100 MB safety margin
+        # Binary search for maximum working chunk size
+        while min_days <= max_days:
+            test_days = (min_days + max_days) // 2
+            test_bars = test_days * bars_per_day
+            
+            # Test if this size works with ACTUAL bot count (critical for accurate sizing)
+            if self._test_chunk_size(test_bots, test_bars):
+                log_info(f"  [OK] {test_days} days ({test_bars:,} bars) - Success, trying larger")
+                optimal_days = test_days  # This size works, try larger
+                min_days = test_days + 1
+            else:
+                log_info(f"  [FAIL] {test_days} days ({test_bars:,} bars) - OUT_OF_RESOURCES, trying smaller")
+                max_days = test_days - 1  # Too large, try smaller
         
-        # Available memory for data
-        available_memory = self.global_mem_size - bots_memory - results_memory - cycles_memory - overhead_memory
+        optimal_bars = optimal_days * bars_per_day
         
-        # Memory per bar
-        bytes_per_bar = bytes_per_bar_ohlcv + bytes_per_bar_indicators
+        # Calculate memory usage for reporting
+        bytes_per_bar = (6 * 4) + (50 * 4)  # OHLCV + indicators
+        memory_used_mb = (optimal_bars * bytes_per_bar) / (1024 * 1024)
         
-        # Calculate max bars
-        max_bars = int(available_memory / bytes_per_bar)
-        
-        # Convert to days and apply aggressive safety margin
-        # GPU drivers, workgroups, and OpenCL runtime consume significant memory
-        # The theoretical calculation significantly underestimates actual usage
-        max_days = max_bars / bars_per_day
-        safe_days = int(max_days * 0.15)  # 85% safety margin (only use 15% of theoretical)
-        
-        # Conservative clamp for stability across different GPU architectures
-        # This limit will scale with more powerful GPUs but stays safe for current hardware
-        # Tested on Intel UHD 630 (3.19 GB): 5 days works, 30 days fails
-        if safe_days > 5:
-            safe_days = 5  # Conservative limit validated on Intel UHD 630
-        safe_days = max(1, safe_days)  # At least 1 day
-        
-        optimal_bars = safe_days * bars_per_day
-        
-        log_info(f"  Clamped to conservative: {safe_days} days ({optimal_bars} bars)")
+        log_info(f"  => Optimal chunk size: {optimal_days} days ({optimal_bars:,} bars)")
+        log_info(f"  => Data memory per chunk: ~{memory_used_mb:.0f} MB")
         
         return optimal_bars
 
+    def _test_chunk_size(self, test_bots: List[CompactBotConfig], num_bars: int) -> bool:
+        """
+        Test if a chunk size works by attempting to run the kernel with sample data.
+        
+        Returns:
+            True if successful, False if OUT_OF_RESOURCES
+        """
+        try:
+            # Create minimal test data
+            test_ohlcv = np.random.rand(num_bars, 6).astype(np.float32)
+            test_ohlcv[:, 0] = np.arange(num_bars)  # timestamps
+            test_ohlcv[:, 1:] = test_ohlcv[:, 1:] * 100 + 30000  # realistic price data
+            
+            # Precompute indicators
+            indicators_buffer = self._precompute_indicators(test_ohlcv)
+            
+            # Create single test cycle
+            test_cycles = [(0, min(num_bars, 10080))]  # Single 7-day cycle
+            
+            # Try to run kernel
+            num_test_bots = len(test_bots)
+            bot_configs_raw = np.zeros(num_test_bots, dtype=[
+                ('long_ind_count', 'i4'),
+                ('short_ind_count', 'i4'),
+                ('long_indicators', 'i4', 10),
+                ('long_values', 'f4', 10),
+                ('short_indicators', 'i4', 10),
+                ('short_values', 'f4', 10),
+                ('risk_strategies', 'i4', 15),
+                ('leverage', 'f4')
+            ])
+            
+            for i, bot in enumerate(test_bots):
+                bot_configs_raw[i]['long_ind_count'] = bot.long_ind_count
+                bot_configs_raw[i]['short_ind_count'] = bot.short_ind_count
+                bot_configs_raw[i]['long_indicators'][:bot.long_ind_count] = bot.long_indicators[:bot.long_ind_count]
+                bot_configs_raw[i]['long_values'][:bot.long_ind_count] = bot.long_values[:bot.long_ind_count]
+                bot_configs_raw[i]['short_indicators'][:bot.short_ind_count] = bot.short_indicators[:bot.short_ind_count]
+                bot_configs_raw[i]['short_values'][:bot.short_ind_count] = bot.short_values[:bot.short_ind_count]
+                bot_configs_raw[i]['risk_strategies'][:15] = bot.risk_strategies
+                bot_configs_raw[i]['leverage'] = bot.leverage
+            
+            # Create buffers
+            bots_buf = cl.Buffer(
+                self.ctx,
+                cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+                hostbuf=bot_configs_raw
+            )
+            
+            ohlcv_buf = cl.Buffer(
+                self.ctx,
+                cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+                hostbuf=test_ohlcv
+            )
+            
+            cycle_starts = np.array([c[0] for c in test_cycles], dtype=np.int32)
+            cycle_ends = np.array([c[1] for c in test_cycles], dtype=np.int32)
+            
+            cycle_starts_buf = cl.Buffer(
+                self.ctx,
+                cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+                hostbuf=cycle_starts
+            )
+            
+            cycle_ends_buf = cl.Buffer(
+                self.ctx,
+                cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+                hostbuf=cycle_ends
+            )
+            
+            MAX_CYCLES = 100
+            results_bytes = (64 + (MAX_CYCLES * 12)) * num_test_bots
+            results_buf = cl.Buffer(
+                self.ctx,
+                cl.mem_flags.WRITE_ONLY,
+                size=results_bytes
+            )
+            
+            # Execute kernel
+            kernel = self._backtest_kernel
+            kernel(
+                self.queue,
+                (num_test_bots,),
+                None,
+                bots_buf,
+                ohlcv_buf,
+                indicators_buffer,
+                cycle_starts_buf,
+                cycle_ends_buf,
+                np.int32(len(test_cycles)),
+                np.int32(num_bars),
+                np.float32(self.initial_balance),
+                results_buf
+            )
+            
+            self.queue.finish()
+            
+            # Cleanup
+            bots_buf.release()
+            ohlcv_buf.release()
+            cycle_starts_buf.release()
+            cycle_ends_buf.release()
+            results_buf.release()
+            indicators_buffer.release()
+            
+            return True
+            
+        except cl.RuntimeError as e:
+            if "OUT_OF_RESOURCES" in str(e):
+                return False
+            # Other errors should propagate
+            raise
+        except Exception:
+            # On any error, assume size is too large
+            return False
+
+    def _chunk_full_data(
+        self,
+        ohlcv_data: np.ndarray,
+        chunk_size_bars: int
+    ) -> List[Dict]:
+        """
+        Split FULL dataset into chunks that will be tested with ALL cycles.
+        Each chunk contains a window of data, and we'll run all relevant cycles on it.
+        
+        Returns:
+            List of dicts with 'data', 'global_start', 'global_end'
+        """
+        chunks = []
+        total_bars = len(ohlcv_data)
+        
+        # Add overlap for indicator lookback
+        overlap_bars = 200  # For SMA(200) and other indicators
+        
+        chunk_start = 0
+        chunk_id = 0
+        
+        while chunk_start < total_bars:
+            # Calculate chunk end
+            chunk_end = min(chunk_start + chunk_size_bars, total_bars)
+            
+            # Extract chunk with lookback
+            data_start = max(0, chunk_start - overlap_bars)
+            chunk_data_slice = ohlcv_data[data_start:chunk_end]
+            
+            chunks.append({
+                'id': chunk_id,
+                'data': chunk_data_slice,
+                'global_start': chunk_start,
+                'global_end': chunk_end,
+                'lookback_offset': chunk_start - data_start
+            })
+            
+            chunk_id += 1
+            chunk_start = chunk_end  # No overlap in processing, only for indicators
+        
+        return chunks
+    
     def _chunk_cycle_data(
         self,
         cycle_data: np.ndarray,
@@ -330,6 +533,8 @@ class CompactBacktester:
         """
         Split cycle data into chunks of specified size.
         Each chunk will be processed with all bots.
+        
+        DEPRECATED: Use _chunk_full_data for multi-cycle processing.
         """
         chunks = []
         total_bars = len(cycle_data)
@@ -365,6 +570,79 @@ class CompactBacktester:
         
         return chunks
 
+    def _aggregate_data_chunks_for_cycle(
+        self,
+        bot_chunks: List[List[BacktestResult]]
+    ) -> List[BacktestResult]:
+        """
+        Aggregate results from multiple data chunks for each bot within a cycle.
+        
+        Args:
+            bot_chunks: List where bot_chunks[bot_idx] = [result1, result2, ...] for that bot
+        
+        Returns:
+            List of aggregated BacktestResult, one per bot
+        """
+        aggregated = []
+        
+        for bot_chunk_results in bot_chunks:
+            if not bot_chunk_results:
+                continue
+            
+            # Sum trades across chunks
+            total_trades = sum(r.total_trades for r in bot_chunk_results)
+            total_wins = sum(r.winning_trades for r in bot_chunk_results)
+            total_losses = sum(r.losing_trades for r in bot_chunk_results)
+            
+            # Average metrics (weighted by number of trades if needed)
+            if total_trades > 0:
+                # Weight by trades in each chunk
+                avg_win = sum(
+                    r.avg_win * r.winning_trades for r in bot_chunk_results if r.winning_trades > 0
+                ) / total_wins if total_wins > 0 else 0.0
+                
+                avg_loss = sum(
+                    r.avg_loss * r.losing_trades for r in bot_chunk_results if r.losing_trades > 0
+                ) / total_losses if total_losses > 0 else 0.0
+                
+                win_rate = total_wins / total_trades if total_trades > 0 else 0.0
+            else:
+                avg_win = 0.0
+                avg_loss = 0.0
+                win_rate = 0.0
+            
+            # Take worst drawdown and average other metrics
+            max_drawdown = max(r.max_drawdown for r in bot_chunk_results)
+            avg_sharpe = sum(r.sharpe_ratio for r in bot_chunk_results) / len(bot_chunk_results)
+            avg_profit_factor = sum(r.profit_factor for r in bot_chunk_results) / len(bot_chunk_results)
+            
+            # Use last chunk's final balance
+            final_balance = bot_chunk_results[-1].final_balance
+            
+            result = BacktestResult(
+                bot_id=bot_chunk_results[0].bot_id,
+                total_trades=total_trades,
+                winning_trades=total_wins,
+                losing_trades=total_losses,
+                per_cycle_trades=[],
+                per_cycle_wins=[],
+                per_cycle_pnl=[],
+                total_pnl=sum(r.total_pnl for r in bot_chunk_results),
+                max_drawdown=max_drawdown,
+                sharpe_ratio=avg_sharpe,
+                win_rate=win_rate,
+                avg_win=avg_win,
+                avg_loss=avg_loss,
+                profit_factor=avg_profit_factor,
+                max_consecutive_wins=max(r.max_consecutive_wins for r in bot_chunk_results),
+                max_consecutive_losses=max(r.max_consecutive_losses for r in bot_chunk_results),
+                final_balance=final_balance
+            )
+            
+            aggregated.append(result)
+        
+        return aggregated
+    
     def _aggregate_data_chunks(
         self,
         chunk_results: List[List[BacktestResult]],
@@ -373,6 +651,8 @@ class CompactBacktester:
         """
         Aggregate results from multiple data chunks within a single cycle.
         Sum up trades and metrics across chunks for each bot.
+        
+        DEPRECATED: Use _aggregate_data_chunks_for_cycle for clearer semantics.
         """
         aggregated = []
         
@@ -881,6 +1161,266 @@ class CompactBacktester:
         results_buf.release()
         
         return results
+    
+    def _run_parallel_bot_cycle_kernel(
+        self,
+        bots: List[CompactBotConfig],
+        ohlcv_data: np.ndarray,
+        indicators_buffer: cl.Buffer,
+        cycles: List[Tuple[int, int]],
+        num_active_cycles: int
+    ) -> List[List[Dict]]:
+        """
+        Run ultra-parallel kernel that processes each bot-cycle pair as a separate work item.
+        
+        Returns:
+            results[bot_idx][cycle_idx] = {'trades': int, 'wins': int, 'pnl': float}
+        """
+        num_bots = len(bots)
+        num_bars = len(ohlcv_data)
+        num_cycles = num_active_cycles
+        
+        # Serialize bot configs
+        bot_configs_raw = self._serialize_bots(bots)
+        
+        bots_buf = cl.Buffer(
+            self.ctx,
+            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+            hostbuf=bot_configs_raw
+        )
+        
+        # OHLCV buffer
+        ohlcv_flat = ohlcv_data.astype(np.float32)
+        ohlcv_buf = cl.Buffer(
+            self.ctx,
+            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+            hostbuf=ohlcv_flat
+        )
+        
+        # Cycles buffers
+        cycle_starts = np.array([c[0] for c in cycles], dtype=np.int32)
+        cycle_ends = np.array([c[1] for c in cycles], dtype=np.int32)
+        
+        cycle_starts_buf = cl.Buffer(
+            self.ctx,
+            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+            hostbuf=cycle_starts
+        )
+        
+        cycle_ends_buf = cl.Buffer(
+            self.ctx,
+            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+            hostbuf=cycle_ends
+        )
+        
+        # Results buffer: [bot_idx * num_cycles * 3 + cycle_idx * 3] = {trades, wins, pnl}
+        results_size = num_bots * num_cycles * 3  # 3 floats per bot-cycle pair
+        results_buf = cl.Buffer(
+            self.ctx,
+            cl.mem_flags.WRITE_ONLY,
+            size=results_size * 4  # 4 bytes per float
+        )
+        
+        # Execute parallel kernel: num_bots × num_cycles work items
+        kernel = self._backtest_parallel_kernel
+        global_size = (num_bots * num_cycles,)
+        local_size = None
+        
+        try:
+            kernel(
+                self.queue,
+                global_size,
+                local_size,
+                bots_buf,
+                ohlcv_buf,
+                indicators_buffer,
+                cycle_starts_buf,
+                cycle_ends_buf,
+                np.int32(num_bots),
+                np.int32(num_cycles),
+                np.int32(num_bars),
+                np.float32(self.initial_balance),
+                results_buf
+            )
+            
+            self.queue.finish()
+            
+        except cl.RuntimeError as e:
+            log_error(f"Parallel bot-cycle kernel failed: {e}")
+            bots_buf.release()
+            ohlcv_buf.release()
+            cycle_starts_buf.release()
+            cycle_ends_buf.release()
+            results_buf.release()
+            raise
+        
+        # Read results
+        results_raw = np.empty(results_size, dtype=np.float32)
+        cl.enqueue_copy(self.queue, results_raw, results_buf)
+        self.queue.finish()
+        
+        # Debug: Check if we have any trades
+        total_trades = int(np.sum(results_raw[0::3]))
+        if total_trades > 0:
+            print(f"  DEBUG: Kernel produced {total_trades} total trades across all bot-cycles")
+        
+        # Parse results into structured format
+        results = [[{} for _ in range(num_cycles)] for _ in range(num_bots)]
+        
+        for bot_idx in range(num_bots):
+            for cycle_idx in range(num_cycles):
+                idx = bot_idx * num_cycles * 3 + cycle_idx * 3
+                results[bot_idx][cycle_idx] = {
+                    'trades': int(results_raw[idx]),
+                    'wins': int(results_raw[idx + 1]),
+                    'pnl': results_raw[idx + 2]
+                }
+        
+        # Cleanup
+        bots_buf.release()
+        ohlcv_buf.release()
+        cycle_starts_buf.release()
+        cycle_ends_buf.release()
+        results_buf.release()
+        
+        return results
+    
+    def _gpu_aggregate_results(
+        self,
+        bots: List[CompactBotConfig],
+        bot_ids: np.ndarray,
+        cycle_ids: np.ndarray,
+        trades: np.ndarray,
+        wins: np.ndarray,
+        pnls: np.ndarray,
+        num_cycles: int
+    ) -> List[BacktestResult]:
+        """
+        Ultra-fast GPU aggregation of bot-cycle results.
+        
+        Sums trades/wins/pnl across all cycles and chunks for each bot in parallel.
+        Each work item processes ONE bot and sums all its data points.
+        """
+        num_bots = len(bots)
+        num_data_points = len(bot_ids)
+        
+        print(f"  GPU aggregating {num_data_points:,} data points for {num_bots:,} bots...")
+        
+        # Upload data to GPU
+        bot_ids_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=bot_ids)
+        cycle_ids_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=cycle_ids)
+        trades_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=trades)
+        wins_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=wins)
+        pnls_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=pnls)
+        
+        # Create bot_id lookup array
+        bot_id_lookup = np.array([b.bot_id for b in bots], dtype=np.int32)
+        bot_id_lookup_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=bot_id_lookup)
+        
+        # Output: aggregated results per bot [trades, wins, pnl] × num_bots
+        output_buf = cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY, size=num_bots * 3 * 4)  # 3 floats per bot
+        
+        # Run aggregation kernel: one work item per bot
+        kernel = self._aggregate_flat_kernel
+        global_size = (num_bots,)
+        
+        kernel(
+            self.queue,
+            global_size,
+            None,
+            bot_id_lookup_buf,
+            bot_ids_buf,
+            cycle_ids_buf,
+            trades_buf,
+            wins_buf,
+            pnls_buf,
+            np.int32(num_bots),
+            np.int32(num_data_points),
+            output_buf
+        )
+        
+        self.queue.finish()
+        
+        # Read results
+        output = np.empty(num_bots * 3, dtype=np.float32)
+        cl.enqueue_copy(self.queue, output, output_buf)
+        self.queue.finish()
+        
+        # Cleanup
+        bot_ids_buf.release()
+        cycle_ids_buf.release()
+        trades_buf.release()
+        wins_buf.release()
+        pnls_buf.release()
+        bot_id_lookup_buf.release()
+        output_buf.release()
+        
+        # Build per-cycle arrays by aggregating data points per cycle
+        # Group data points by (bot_id, cycle_id) for per-cycle results
+        bot_cycle_map = {}  # {bot_id: {cycle_id: [trades, wins, pnl]}}
+        
+        for i in range(num_data_points):
+            b_id = bot_ids[i]
+            c_id = cycle_ids[i]
+            if b_id not in bot_cycle_map:
+                bot_cycle_map[b_id] = {}
+            if c_id not in bot_cycle_map[b_id]:
+                bot_cycle_map[b_id][c_id] = [0, 0, 0.0]
+            bot_cycle_map[b_id][c_id][0] += trades[i]
+            bot_cycle_map[b_id][c_id][1] += wins[i]
+            bot_cycle_map[b_id][c_id][2] += pnls[i]
+        
+        # Convert to BacktestResult objects
+        final_results = []
+        for bot_idx in range(num_bots):
+            bot = bots[bot_idx]
+            idx = bot_idx * 3
+            
+            total_trades = int(output[idx])
+            total_wins = int(output[idx + 1])
+            total_pnl = output[idx + 2]
+            
+            # Build per-cycle arrays
+            per_cycle_trades = []
+            per_cycle_wins = []
+            per_cycle_pnl = []
+            
+            bot_data = bot_cycle_map.get(bot.bot_id, {})
+            for cycle_idx in range(num_cycles):
+                cycle_data = bot_data.get(cycle_idx, [0, 0, 0.0])
+                per_cycle_trades.append(cycle_data[0])
+                per_cycle_wins.append(cycle_data[1])
+                per_cycle_pnl.append(cycle_data[2])
+            
+            win_rate = (total_wins / total_trades * 100) if total_trades > 0 else 0.0
+            final_balance = self.initial_balance + total_pnl
+            roi = (total_pnl / self.initial_balance * 100) if self.initial_balance > 0 else 0.0
+            
+            result = BacktestResult(
+                bot_id=bot.bot_id,
+                total_trades=total_trades,
+                winning_trades=total_wins,
+                losing_trades=total_trades - total_wins,
+                per_cycle_trades=per_cycle_trades,
+                per_cycle_wins=per_cycle_wins,
+                per_cycle_pnl=per_cycle_pnl,
+                total_pnl=total_pnl,
+                final_balance=final_balance,
+                win_rate=win_rate,
+                fitness_score=roi,
+                max_drawdown=0.0,
+                sharpe_ratio=0.0,
+                avg_win=0.0,
+                avg_loss=0.0,
+                profit_factor=0.0,
+                max_consecutive_wins=0,
+                max_consecutive_losses=0,
+                generation_survived=0
+            )
+            
+            final_results.append(result)
+        
+        return final_results
     
     def _aggregate_chunk_results(
         self,

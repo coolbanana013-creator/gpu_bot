@@ -13,6 +13,7 @@ import pyopencl as cl
 import time
 import json
 import os
+from pathlib import Path
 
 from src.utils.validation import (
     validate_int, validate_float, validate_pair, validate_timeframe,
@@ -190,7 +191,15 @@ def get_mode1_parameters() -> dict:
     
     # Load last run defaults if available
     last_defaults = {}
-    if os.path.exists('last_run_config.json'):
+    config_path = Path("config") / "last_run_config.json"
+    if config_path.exists():
+        try:
+            with open(config_path, 'r') as f:
+                last_defaults = json.load(f)
+        except:
+            pass
+    # Also check old location for backwards compatibility
+    elif os.path.exists('last_run_config.json'):
         try:
             with open('last_run_config.json', 'r') as f:
                 last_defaults = json.load(f)
@@ -331,6 +340,17 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
     print("GENETIC ALGORITHM - STARTING")
     print("="*60)
     
+    # Save configuration before starting (for easy restart/debugging)
+    try:
+        config_dir = Path("config")
+        config_dir.mkdir(exist_ok=True)
+        config_path = config_dir / "last_run_config.json"
+        with open(config_path, 'w') as f:
+            json.dump(params, f, indent=2)
+        log_info(f"Configuration saved to {config_path}")
+    except Exception as e:
+        log_warning(f"Failed to save configuration: {e}")
+    
     # Start data loading profiling
     data_loading_start = time.time()
     
@@ -453,9 +473,12 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         print("GENETIC ALGORITHM - COMPLETE")
         print("="*60 + "\n")
         
-        # Save params as defaults for next run
+        # Save params as defaults for next run (already saved at start, but update in case of any changes)
         try:
-            with open('last_run_config.json', 'w') as f:
+            config_dir = Path("config")
+            config_dir.mkdir(exist_ok=True)
+            config_path = config_dir / "last_run_config.json"
+            with open(config_path, 'w') as f:
                 json.dump(params, f, indent=2)
         except:
             pass

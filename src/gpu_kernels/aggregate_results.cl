@@ -43,3 +43,48 @@ __kernel void aggregate_bot_results(
     aggregated_results[agg_offset + 3] = total_pnl;
     aggregated_results[agg_offset + 4] = max_drawdown;
 }
+
+/**
+ * Ultra-fast aggregation kernel for flat bot-cycle results.
+ * 
+ * Each work item processes ONE bot and sums all its data points across
+ * all cycles and chunks in parallel.
+ * 
+ * Input: Flat arrays of [bot_id, cycle_id, trades, wins, pnl] × N data points
+ * Output: Aggregated [trades, wins, pnl] per bot
+ */
+__kernel void aggregate_flat_results(
+    __global const int* bot_id_lookup,    // Bot IDs in order [bot0_id, bot1_id, ...]
+    __global const int* data_bot_ids,     // Bot ID for each data point
+    __global const int* data_cycle_ids,   // Cycle ID for each data point
+    __global const int* data_trades,      // Trades for each data point
+    __global const int* data_wins,        // Wins for each data point
+    __global const float* data_pnls,      // PnL for each data point
+    const int num_bots,
+    const int num_data_points,
+    __global float* output                // Output: [trades, wins, pnl] × num_bots
+) {
+    const int bot_idx = get_global_id(0);
+    if (bot_idx >= num_bots) return;
+    
+    const int my_bot_id = bot_id_lookup[bot_idx];
+    
+    // Accumulate all data points belonging to this bot
+    float total_trades = 0.0f;
+    float total_wins = 0.0f;
+    float total_pnl = 0.0f;
+    
+    for (int i = 0; i < num_data_points; i++) {
+        if (data_bot_ids[i] == my_bot_id) {
+            total_trades += (float)data_trades[i];
+            total_wins += (float)data_wins[i];
+            total_pnl += data_pnls[i];
+        }
+    }
+    
+    // Write aggregated results
+    int out_idx = bot_idx * 3;
+    output[out_idx] = total_trades;
+    output[out_idx + 1] = total_wins;
+    output[out_idx + 2] = total_pnl;
+}

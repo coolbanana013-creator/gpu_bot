@@ -1,0 +1,18 @@
+{
+  "mode": 1,
+  "pair": "BTC/USDT",
+  "timeframe": "1m",
+  "cycles": 10,
+  "backtest_days": 1,
+  "population": 1000,
+  "generations": 2,
+  "min_indicators": 3,
+  "max_indicators": 5,
+  "min_risk_strategies": 2,
+  "max_risk_strategies": 5,
+  "min_leverage": 1,
+  "max_leverage": 10,
+  "initial_balance": 1000,
+  "random_seed": 42,
+  "days": 7
+}
