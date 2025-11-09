@@ -403,8 +403,8 @@ float close_position(
         price_diff = pos->entry_price - exit_price;
     }
     
-    // PnL = price difference * quantity * leverage
-    float pnl = price_diff * pos->quantity * leverage;
+    // PnL = price difference * quantity (leverage is already in position size, don't multiply again!)
+    float pnl = price_diff * pos->quantity;
     
     // Calculate position value and fees
     float position_value = exit_price * pos->quantity;
