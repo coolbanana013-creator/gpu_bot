@@ -5,12 +5,23 @@ Contains Kucoin Futures specifications and global settings.
 from typing import Dict, List
 
 # ============================================================================
-# EXCHANGE CONFIGURATION (Kucoin Futures)
+# EXCHANGE CONFIGURATION (Kucoin Spot/Futures)
 # ============================================================================
 
-# Trading fees
-MAKER_FEE_RATE = 0.0002  # 0.02%
-TAKER_FEE_RATE = 0.0002  # 0.02%
+# Exchange type selection
+EXCHANGE_TYPE = 'spot'  # 'spot' or 'futures'
+
+# Trading fees (Spot)
+SPOT_MAKER_FEE_RATE = 0.001  # 0.1%
+SPOT_TAKER_FEE_RATE = 0.001  # 0.1%
+
+# Trading fees (Futures)
+FUTURES_MAKER_FEE_RATE = 0.0002  # 0.02%
+FUTURES_TAKER_FEE_RATE = 0.0006  # 0.06%
+
+# Default fee rate based on exchange type
+MAKER_FEE_RATE = SPOT_MAKER_FEE_RATE if EXCHANGE_TYPE == 'spot' else FUTURES_MAKER_FEE_RATE
+TAKER_FEE_RATE = SPOT_TAKER_FEE_RATE if EXCHANGE_TYPE == 'spot' else FUTURES_TAKER_FEE_RATE
 DEFAULT_FEE_RATE = TAKER_FEE_RATE  # Conservative assumption
 
 # Slippage model
@@ -80,12 +91,12 @@ DEFAULT_POPULATION = 10000
 # Generation constraints
 MIN_GENERATIONS = 1
 MAX_GENERATIONS = 100
-DEFAULT_GENERATIONS = 10
+DEFAULT_GENERATIONS = 50  # Updated to last used value
 
 # Cycle constraints
 MIN_CYCLES = 1
 MAX_CYCLES = 100
-DEFAULT_CYCLES = 2  # Updated to last used value
+DEFAULT_CYCLES = 1  # Updated to last used value
 
 # Backtest period constraints
 MIN_BACKTEST_DAYS = 1
@@ -140,11 +151,11 @@ MIN_FREE_BALANCE_PCT = 10.0  # 10% of initial balance must remain free
 # DATA STORAGE CONFIGURATION
 # ============================================================================
 
-# Data directory
+# Data directory (organized by pair/timeframe)
 DATA_DIR = 'data'
 
-# File naming pattern for market data
-DATA_FILE_PATTERN = '{pair}_{timeframe}_{date}.parquet'
+# File naming pattern for market data (organized: data/pair/timeframe/date.parquet)
+DATA_FILE_PATTERN = '{date}.parquet'  # Stored in data/{pair}/{timeframe}/ directory
 
 # Columns in OHLCV data
 OHLCV_COLUMNS = ['timestamp', 'open', 'high', 'low', 'close', 'volume']
@@ -189,8 +200,10 @@ MIN_DATA_POINTS_PER_DAY = {
 # Supported quote currencies
 SUPPORTED_QUOTE_CURRENCIES = ['USDT', 'BUSD', 'USD']
 
-# Default trading pair (KuCoin Futures perpetual swap - XBTUSDTM)
-DEFAULT_TRADING_PAIR = 'XBTUSDTM'
+# Default trading pair
+# Spot: BTC/USDT (classical format)
+# Futures: BTC/USDT:USDT (perpetual swap)
+DEFAULT_TRADING_PAIR = 'BTC/USDT' if EXCHANGE_TYPE == 'spot' else 'BTC/USDT:USDT'
 
 # ============================================================================
 # BALANCE CONFIGURATION

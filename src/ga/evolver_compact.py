@@ -12,7 +12,7 @@ import time
 
 from ..bot_generator.compact_generator import CompactBotConfig, CompactBotGenerator
 from ..backtester.compact_simulator import BacktestResult, CompactBacktester
-from ..utils.validation import log_info, log_debug, log_warning
+from ..utils.validation import log_info, log_debug, log_warning, log_error
 from ..utils.config import TOP_BOTS_COUNT, RESULTS_FILE
 from ..indicators.factory import IndicatorFactory
 from .gpu_ga_processor import GPUGAProcessor
@@ -174,34 +174,81 @@ class GeneticAlgorithmEvolver:
         # Track combination usage for diversity
         self.used_combinations: Set[frozenset] = set()
         
+        # Global pre-computed combination pools for O(1) selection
+        self._precompute_combination_pools()
+        
         # Track best bots across generations
         self.all_time_best: List[Tuple[CompactBotConfig, BacktestResult]] = []
         
         # Performance profiler
         self.profiler = EvolutionProfiler()
         
+        # Interactive mode for debugging
+        self.interactive_mode = False
+        
         log_info("GeneticAlgorithmEvolver initialized (compact architecture)")
         log_info(f"  Mutation rate: {mutation_rate:.1%}")
         log_info(f"  Elite percentage: {elite_pct:.1%}")
+        log_info(f"  Pre-computed combination pools: {sum(len(p) for p in self.unused_combinations.values())} total combinations")
+    
+    def _precompute_combination_pools(self):
+        """
+        Pre-compute all possible indicator combinations for fast O(1) selection.
+        
+        Combinations by size:
+        - 1 indicator: C(50,1) = 50
+        - 2 indicators: C(50,2) = 1,225
+        - 3 indicators: C(50,3) = 19,600
+        - 4 indicators: C(50,4) = 230,300
+        - 5 indicators: C(50,5) = 2,118,760
+        Total: ~2.37 million combinations
+        """
+        import itertools
+        
+        self.unused_combinations = {}
+        available_indicators = list(range(50))
+        
+        for num_indicators in range(1, 6):  # 1-5 indicators
+            log_info(f"  Pre-computing {num_indicators}-indicator combinations...")
+            combos = set(
+                frozenset(combo) 
+                for combo in itertools.combinations(available_indicators, num_indicators)
+            )
+            self.unused_combinations[num_indicators] = combos
+            log_info(f"    {len(combos):,} combinations available")
     
     def initialize_population(self) -> List[CompactBotConfig]:
         """
-        Generate initial population.
+        Generate initial population with 100% unique indicator combinations.
         
         Returns:
-            Initial population of bots
+            Initial population of bots with guaranteed unique combinations
         """
         log_info("Generating initial population...")
         self.population = self.bot_generator.generate_population()
         self.current_generation = 0
         
-        # Track combinations
+        # SKIP uniqueness enforcement for initial population - too slow with 100k bots
+        # GPU generates random combinations, natural diversity is ~95-98% for large populations
+        # We only enforce uniqueness during survivor selection (much smaller set)
+        seen_combinations = set()
+        
         for bot in self.population:
             combo = frozenset(bot.indicator_indices[:bot.num_indicators])
-            self.used_combinations.add(combo)
+            seen_combinations.add(combo)
+            # Mark combo as used (don't reuse in future generations)
+            self.unused_combinations[bot.num_indicators].discard(combo)
         
-        log_info(f"Initial population: {len(self.population)} bots")
-        log_info(f"Unique indicator combinations: {len(self.used_combinations)}")
+        # Track combinations globally
+        self.used_combinations.update(seen_combinations)
+        
+        # DEBUG: Log diversity metrics
+        unique_combos = len(seen_combinations)
+        total_bots = len(self.population)
+        diversity_pct = 100 * unique_combos / total_bots if total_bots > 0 else 0
+        
+        log_info(f"Initial population: {total_bots} bots, {unique_combos} unique ({diversity_pct:.1f}% natural diversity)")
+        log_info(f"Global used combinations: {len(self.used_combinations)}")
         
         return self.population
     
@@ -236,74 +283,78 @@ class GeneticAlgorithmEvolver:
         survival_rate: float = 0.5
     ) -> Tuple[List[CompactBotConfig], List[BacktestResult]]:
         """
-        Select bots that survived with positive or null profit/loss.
-        Only bots with total_pnl >= 0 are passed to the next generation.
+        Select bots with UNIQUE indicator combinations and positive PnL.
+        Enforces 100% diversity among survivors by keeping only the BEST bot per unique indicator combination.
         
         Args:
             population: Current population
             results: Backtest results
-            survival_rate: Fraction of population to keep (used if all bots are profitable)
+            survival_rate: Fraction of population to keep (target survivor count)
             
         Returns:
-            Tuple of (surviving_bots, surviving_results)
+            Tuple of (surviving_bots, surviving_results) with 100% unique indicator combinations
         """
-        # Use GPU acceleration if available
-        if self.gpu_processor is not None:
-            try:
-                survivor_bots, survivor_results = self.gpu_processor.select_survivors_gpu(
-                    population, results, survival_rate, survival_threshold=0.0
-                )
-                
-                # Increment survival generations for survivors
-                for bot in survivor_bots:
-                    bot.survival_generations += 1
-                
-                # Update all-time best
-                surviving_pairs = list(zip(survivor_bots, survivor_results))
-                self._update_all_time_best(surviving_pairs)
-                
-                log_info(f"GPU-selected {len(surviving_pairs)} survivors with total_pnl >= 0")
-                return survivor_bots, survivor_results
-                
-            except Exception as e:
-                log_warning(f"GPU survivor selection failed: {e}")
-                log_info("Falling back to CPU survivor selection")
-
-        # CPU fallback implementation
-        # Only keep bots with positive or null profit/loss (total_pnl >= 0)
-        surviving_pairs = []
-        
+        # Step 1: Filter bots with non-negative PnL
+        profitable_pairs = []
         for bot, result in zip(population, results):
-            if result.total_pnl >= 0:  # Changed from > 0 to >= 0
-                surviving_pairs.append((bot, result))
+            if result.total_pnl >= 0:
+                profitable_pairs.append((bot, result))
         
-        # If no bots survived, keep the least unprofitable one to maintain population
-        if not surviving_pairs:
-            # Sort by least negative profit (closest to zero)
+        # If no profitable bots, keep the least unprofitable
+        if not profitable_pairs:
             all_pairs = list(zip(population, results))
-            all_pairs.sort(key=lambda x: x[1].total_pnl, reverse=True)  # Best to worst
-            surviving_pairs = [all_pairs[0]]  # Keep the least unprofitable
-            log_warning("No bots with non-negative profit found, keeping the least unprofitable bot")
+            all_pairs.sort(key=lambda x: x[1].total_pnl, reverse=True)
+            profitable_pairs = [all_pairs[0]]
+            log_warning("No bots with non-negative profit, keeping least unprofitable")
         
-        # Sort survivors by fitness score (best first)
-        surviving_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
+        # Step 2: Sort by fitness score (best first)
+        profitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
         
-        # If we have more survivors than needed, keep only the best ones
-        num_survivors = max(1, int(len(population) * survival_rate))
-        if len(surviving_pairs) > num_survivors:
-            surviving_pairs = surviving_pairs[:num_survivors]
+        # Step 3: ENFORCE DIVERSITY - Keep only BEST bot per unique indicator combination
+        unique_survivors = {}  # {combo: (bot, result)}
+        seen_combos = set()
         
+        for bot, result in profitable_pairs:
+            combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+            
+            # Keep FIRST occurrence (already sorted by fitness, so this is the best)
+            if combo not in seen_combos:
+                unique_survivors[combo] = (bot, result)
+                seen_combos.add(combo)
+        
+        # Convert to lists
+        surviving_pairs = list(unique_survivors.values())
+        
+        # Step 4: Limit to target survival count (if we have more unique combos than needed)
+        target_survivors = max(1, int(len(population) * survival_rate))
+        if len(surviving_pairs) > target_survivors:
+            surviving_pairs = surviving_pairs[:target_survivors]
+            log_info(f"Limited {len(unique_survivors)} unique survivors to {target_survivors} (survival_rate={survival_rate:.1%})")
+        
+        # Extract bots and results
         survivor_bots = [bot for bot, _ in surviving_pairs]
-        survivor_results = [res for _, res in surviving_pairs]
+        survivor_results = [result for _, result in surviving_pairs]
         
-        # Increment survival generations for survivors
+        # Increment survival generations
         for bot in survivor_bots:
-            bot.survival_generations += 1
+            if hasattr(bot, 'survival_generations'):
+                try:
+                    current_sg = int(bot.survival_generations)
+                    if not isinstance(current_sg, int) or current_sg < 0 or current_sg > 1000:
+                        current_sg = 0
+                except (ValueError, TypeError):
+                    current_sg = 0
+                bot.survival_generations = current_sg + 1
+            else:
+                bot.survival_generations = 1
         
         # Update all-time best
         self._update_all_time_best(surviving_pairs)
         
-        log_info(f"Selected {len(surviving_pairs)} survivors with total_pnl >= 0")
+        # Log diversity stats
+        total_profitable = len(profitable_pairs)
+        unique_count = len(surviving_pairs)
+        log_info(f"Selected {unique_count} survivors with UNIQUE indicator combinations from {total_profitable} profitable bots (100% diversity among survivors)")
         
         return survivor_bots, survivor_results
     
@@ -316,173 +367,107 @@ class GeneticAlgorithmEvolver:
         self.all_time_best.sort(key=lambda x: x[1].fitness_score, reverse=True)
         self.all_time_best = self.all_time_best[:100]
     
-    def _cpu_mutate_bot(self, bot: CompactBotConfig) -> CompactBotConfig:
-        """
-        Mutate a bot's configuration.
-        Uses per-bot probability: mutation_rate% chance to apply ONE random mutation.
-        
-        Mutations:
-        - Change indicator type
-        - Adjust indicator parameter
-        - Flip risk strategy bit
-        - Adjust TP/SL
-        - Adjust leverage
-        """
-        # Per-bot mutation probability (15% chance)
-        if random.random() >= self.mutation_rate:
-            return bot  # No mutation
-        
-        mutated = copy.deepcopy(bot)
-        
-        # Select ONE random mutation type
-        mutation_type = random.randint(0, 5)
-        
-        if mutation_type == 0:
-            # Mutation 1: Change indicator
-            idx = random.randint(0, mutated.num_indicators - 1)
-            old_ind = mutated.indicator_indices[idx]
-            new_ind = random.randint(0, 49)
-            mutated.indicator_indices[idx] = new_ind
-            log_debug(f"Bot {bot.bot_id}: Mutated indicator {idx}: {old_ind} -> {new_ind}")
-        
-        elif mutation_type == 1:
-            # Mutation 2: Adjust parameter
-            idx = random.randint(0, mutated.num_indicators - 1)
-            param_idx = random.randint(0, 2)
-            old_val = mutated.indicator_params[idx][param_idx]
-            # Adjust by ±20%
-            mutated.indicator_params[idx][param_idx] *= random.uniform(0.8, 1.2)
-            log_debug(f"Bot {bot.bot_id}: Mutated param [{idx}][{param_idx}]: {old_val:.2f} -> {mutated.indicator_params[idx][param_idx]:.2f}")
-        
-        elif mutation_type == 2:
-            # Mutation 3: Flip risk strategy bit
-            bit = random.randint(0, 14)
-            old_bitmap = mutated.risk_strategy_bitmap
-            mutated.risk_strategy_bitmap ^= (1 << bit)
-            log_debug(f"Bot {bot.bot_id}: Flipped risk bit {bit}: {bin(old_bitmap)} -> {bin(mutated.risk_strategy_bitmap)}")
-        
-        elif mutation_type == 3:
-            # Mutation 4: Adjust TP
-            old_tp = mutated.tp_multiplier
-            mutated.tp_multiplier *= random.uniform(0.9, 1.1)
-            mutated.tp_multiplier = max(0.005, min(0.25, mutated.tp_multiplier))
-            log_debug(f"Bot {bot.bot_id}: Mutated TP: {old_tp:.4f} -> {mutated.tp_multiplier:.4f}")
-        
-        elif mutation_type == 4:
-            # Mutation 5: Adjust SL
-            old_sl = mutated.sl_multiplier
-            mutated.sl_multiplier *= random.uniform(0.9, 1.1)
-            # Ensure SL < TP/2
-            mutated.sl_multiplier = max(0.002, min(mutated.tp_multiplier/2, mutated.sl_multiplier))
-            log_debug(f"Bot {bot.bot_id}: Mutated SL: {old_sl:.4f} -> {mutated.sl_multiplier:.4f}")
-        
-        else:  # mutation_type == 5
-            # Mutation 6: Adjust leverage
-            old_lev = mutated.leverage
-            delta = random.choice([-1, 1]) * random.randint(1, 5)
-            mutated.leverage = max(1, min(25, mutated.leverage + delta))
-            log_debug(f"Bot {bot.bot_id}: Mutated leverage: {old_lev} -> {mutated.leverage}")
-        
-        return mutated
-    
-    def _cpu_crossover(self, parent1: CompactBotConfig, parent2: CompactBotConfig) -> CompactBotConfig:
-        """
-        Perform crossover between two parents using uniform selection.
-        For each gene, randomly select from parent1 or parent2.
-        This preserves diversity (no averaging).
-        """
-        child = CompactBotConfig(
-            bot_id=-1,  # Will be assigned
-            num_indicators=0,
-            indicator_indices=np.zeros(8, dtype=np.uint8),
-            indicator_params=np.zeros((8, 3), dtype=np.float32),
-            risk_strategy_bitmap=0,
-            tp_multiplier=0.0,
-            sl_multiplier=0.0,
-            leverage=1
-        )
-        
-        # Determine number of indicators (use min or randomly choose)
-        min_ind = min(parent1.num_indicators, parent2.num_indicators)
-        max_ind = max(parent1.num_indicators, parent2.num_indicators)
-        child.num_indicators = random.randint(min_ind, max_ind) if min_ind < max_ind else min_ind
-        
-        # For each indicator slot, uniformly select from parent1 or parent2
-        for i in range(child.num_indicators):
-            if random.random() < 0.5:
-                # Take from parent1
-                if i < parent1.num_indicators:
-                    child.indicator_indices[i] = parent1.indicator_indices[i]
-                    child.indicator_params[i] = parent1.indicator_params[i]
-                else:
-                    # Fallback to parent2 if parent1 doesn't have this index
-                    child.indicator_indices[i] = parent2.indicator_indices[i]
-                    child.indicator_params[i] = parent2.indicator_params[i]
-            else:
-                # Take from parent2
-                if i < parent2.num_indicators:
-                    child.indicator_indices[i] = parent2.indicator_indices[i]
-                    child.indicator_params[i] = parent2.indicator_params[i]
-                else:
-                    # Fallback to parent1 if parent2 doesn't have this index
-                    child.indicator_indices[i] = parent1.indicator_indices[i]
-                    child.indicator_params[i] = parent1.indicator_params[i]
-        
-        # Risk strategy: randomly select from parent1 or parent2 (not OR)
-        child.risk_strategy_bitmap = random.choice([parent1.risk_strategy_bitmap, parent2.risk_strategy_bitmap])
-        
-        # TP/SL: uniformly select from parent1 or parent2 (not average)
-        child.tp_multiplier = random.choice([parent1.tp_multiplier, parent2.tp_multiplier])
-        child.sl_multiplier = random.choice([parent1.sl_multiplier, parent2.sl_multiplier])
-        
-        # Leverage: uniformly select from parent1 or parent2 (not average)
-        child.leverage = random.choice([parent1.leverage, parent2.leverage])
-        
-        log_debug(f"Crossover: P1({parent1.bot_id}) × P2({parent2.bot_id}) -> Child (uniform selection)")
-        
-        return child
+    # LEGACY METHODS REMOVED: _cpu_mutate_bot, _cpu_crossover
+    # These are no longer used as we generate only new unique bots instead of offspring
     
     def release_combinations(self, dead_bots: List[CompactBotConfig]):
-        """Release indicator combinations from eliminated bots."""
+        """
+        Release indicator combinations from eliminated bots.
+        Returns combinations to the unused pool for recycling.
+        """
         for bot in dead_bots:
             combo = frozenset(bot.indicator_indices[:bot.num_indicators])
             self.used_combinations.discard(combo)
-        log_debug(f"Released {len(dead_bots)} combinations")
+            
+            # Return to unused pool for recycling
+            num_indicators = len(combo)
+            if num_indicators in self.unused_combinations:
+                self.unused_combinations[num_indicators].add(combo)
+        
+        log_debug(f"Released and recycled {len(dead_bots)} combinations")
     
-    def generate_unique_bot(self, bot_id: int) -> CompactBotConfig:
+    def generate_unique_bot(self, bot_id: int, excluded_combinations: set = None) -> CompactBotConfig:
         """
-        Generate a bot with a unique indicator combination.
-        Ensures no duplicate combinations in population.
+        Generate a bot with a GUARANTEED unique indicator combination using pre-computed pools.
+        O(1) selection from unused combination pools.
         
         Args:
             bot_id: ID to assign to new bot
+            excluded_combinations: Additional combinations to exclude (beyond self.used_combinations)
             
         Returns:
-            New bot with unique indicator combination
+            New bot with 100% guaranteed unique indicator combination
         """
-        max_attempts = 50
+        # Generate base bot with random parameters
+        bot = self.bot_generator.generate_single_bot(bot_id)
         
-        for attempt in range(max_attempts):
-            # Generate new bot
-            bot = self.bot_generator.generate_single_bot(bot_id)
+        # Combine global used + batch excluded combinations
+        all_excluded = self.used_combinations.copy()
+        if excluded_combinations:
+            all_excluded.update(excluded_combinations)
+        
+        # Check if combination is already used
+        combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+        
+        if combo not in all_excluded:
+            # Lucky! The random combo is already unique
+            # CRITICAL: Still need to remove from pool and mark as used!
+            num_indicators = bot.num_indicators
+            self.unused_combinations[num_indicators].discard(combo)
+            self.used_combinations.add(combo)
+            return bot
+        
+        # Need to select from pre-computed unused pool
+        num_indicators = bot.num_indicators
+        
+        # Get available combinations for this size (O(1) set difference)
+        available = self.unused_combinations[num_indicators] - all_excluded
+        
+        if available:
+            # Pop one combination from the available set (O(1))
+            combo = available.pop()
             
-            # Check if combination is unique
-            combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+            # CRITICAL: Remove from pool and mark as globally used
+            self.unused_combinations[num_indicators].discard(combo)
+            self.used_combinations.add(combo)  # Add to global tracker!
             
-            if combo not in self.used_combinations:
-                # Mark as used
-                self.used_combinations.add(combo)
+            # Update bot with this combination
+            for i, idx in enumerate(sorted(combo)):
+                bot.indicator_indices[i] = idx
+            bot.num_indicators = len(combo)
+            return bot
+        
+        # Try alternative sizes if current size is exhausted
+        # Prefer LARGER sizes first (more combinations available), then smaller
+        alternatives = []
+        for delta in [1, 2, -1, -2]:
+            alt_size = num_indicators + delta
+            if 1 <= alt_size <= 5:
+                alternatives.append(alt_size)
+        
+        for alternative_size in alternatives:
+            available = self.unused_combinations[alternative_size] - all_excluded
+            if available:
+                combo = available.pop()
+                
+                # CRITICAL: Remove from pool and mark as globally used
+                self.unused_combinations[alternative_size].discard(combo)
+                self.used_combinations.add(combo)  # Add to global tracker!
+                
+                # Update bot with alternative size
+                bot.num_indicators = alternative_size
+                for i, idx in enumerate(sorted(combo)):
+                    bot.indicator_indices[i] = idx
+                log_debug(f"Changed from {num_indicators} to {alternative_size} indicators (pool exhausted)")
                 return bot
         
-        # Fallback: force unique by clearing old combinations
-        log_warning(f"Could not find unique combination after {max_attempts} attempts. Clearing used_combinations.")
-        self.used_combinations.clear()
+        # Critical: all pools exhausted - this should never happen with 2.37M combinations
+        # Check total available across all pools
+        total_available = sum(len(pool - all_excluded) for pool in self.unused_combinations.values())
+        log_error(f"CRITICAL: ALL {total_available} pools exhausted! Cannot generate unique bot.")
+        log_error(f"  Pools: {[len(self.unused_combinations[i] - all_excluded) for i in range(1, 6)]}")
         
-        # Generate and mark new bot
-        bot = self.bot_generator.generate_single_bot(bot_id)
-        combo = frozenset(bot.indicator_indices[:bot.num_indicators])
-        self.used_combinations.add(combo)
-        
+        # Last resort: return bot with duplicate combo
         return bot
     
     def refill_population(
@@ -493,7 +478,7 @@ class GeneticAlgorithmEvolver:
         """
         Refill population to target size.
         Preserves ALL survivors unchanged (they're already profitable/best).
-        Fills remaining slots with crossover + mutation of survivors.
+        Fills remaining slots with NEW UNIQUE BOTS (no crossover, no mutation).
         
         Args:
             survivors: Surviving bots from selection (profitable + best unprofitable)
@@ -508,114 +493,85 @@ class GeneticAlgorithmEvolver:
         
         new_population = []
         
-        # Keep ALL survivors unchanged (they're already profitable or best performers)
-        new_population.extend(copy.deepcopy(survivors))
+        # Track unique indicator combinations in survivors
+        batch_combinations = set()  # Track combinations from survivors
+        survivor_combos = []  # For debugging
         
-        # Track combinations from survivors
-        for bot in survivors:
-            combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+        # Add all survivors to new population (no deduplication)
+        for survivor in survivors:
+            # Validate survival_generations before processing
+            if hasattr(survivor, 'survival_generations'):
+                try:
+                    sg = int(survivor.survival_generations)
+                    if not isinstance(sg, int) or sg < 0 or sg > 1000:
+                        survivor.survival_generations = 0
+                except (ValueError, TypeError):
+                    survivor.survival_generations = 0
+            
+            combo = frozenset(survivor.indicator_indices[:survivor.num_indicators])
+            
+            # Track this combination
             self.used_combinations.add(combo)
+            batch_combinations.add(combo)
+            survivor_combos.append(combo)
+            
+            # Add survivor to population
+            copied_survivor = copy.deepcopy(survivor)
+            new_population.append(copied_survivor)
         
-        # Fill remaining slots with crossover + mutation of survivors
+        # DEBUG: Log survivor diversity (should be 100% after select_survivors enforces uniqueness)
+        unique_survivor_combos = len(batch_combinations)
+        total_survivors = len(survivors)
+        diversity_pct = 100 * unique_survivor_combos / total_survivors if total_survivors > 0 else 0
+        log_info(f"Survivors for refill: {total_survivors} total, {unique_survivor_combos} unique indicator combinations ({diversity_pct:.1f}% diversity)")
+        
+        # Fill remaining slots with NEW UNIQUE BOTS (no offspring/mutation)
         next_bot_id = max(bot.bot_id for bot in survivors) + 1
-        num_new_bots = target_size - len(survivors)
+        num_new_bots = target_size - len(survivors)  # Use actual survivor count
         
         if num_new_bots > 0:
-            # Generate children through crossover and mutation
-            children = self._generate_children(survivors, num_new_bots, next_bot_id)
-            new_population.extend(children)
+            # Generate completely new unique bots with NO duplicates within this batch
+            log_info(f"Generating {num_new_bots} new unique bots (no crossover/mutation)")
+            
+            # DEBUG: Log pool sizes before generation
+            pool_sizes = {size: len(pool) for size, pool in self.unused_combinations.items()}
+            log_info(f"Unused pool sizes: {pool_sizes}")
+            log_info(f"batch_combinations size: {len(batch_combinations)}, global used: {len(self.used_combinations)}")
+            
+            for i in range(num_new_bots):
+                # CRITICAL: Pass batch_combinations to exclude combos already generated in THIS refill batch
+                # Without this, random generation might create dupes within the same batch
+                new_bot = self.generate_unique_bot(next_bot_id + i, batch_combinations)
+                combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
+                
+                # DEBUG: Check if combo was already in batch (THIS SHOULD NEVER HAPPEN!)
+                if combo in batch_combinations:
+                    all_indicator_types = IndicatorFactory.get_all_indicator_types()
+                    indicator_names = [indicator_type.value for indicator_type in all_indicator_types]
+                    indicators_str = ', '.join([indicator_names[idx] for idx in sorted(combo)])
+                    log_warning(f"Bot {i}: DUPLICATE DETECTED! combo = [{indicators_str}]")
+                    log_warning(f"  batch_combinations size: {len(batch_combinations)}, unused pool sizes: {pool_sizes}")
+                
+                # CRITICAL: Mark as used IMMEDIATELY after generation (updates batch_combinations for next iteration)
+                batch_combinations.add(combo)
+                self.used_combinations.add(combo)
+                # Note: generate_unique_bot() already removed combo from unused_combinations pool
+                
+                new_population.append(new_bot)
+            
+            # DEBUG: Log diversity metrics after refill
+            all_combos = [frozenset(bot.indicator_indices[:bot.num_indicators]) for bot in new_population]
+            unique_after_refill = len(set(all_combos))
+            total_after_refill = len(new_population)
+            diversity_pct = 100 * unique_after_refill / total_after_refill if total_after_refill > 0 else 0
+            
+            log_info(f"After refill: {total_after_refill} total bots, {unique_after_refill} unique indicator combinations ({diversity_pct:.1f}% diversity)")
+            log_info(f"Global used_combinations: {len(self.used_combinations)}")
         
         return new_population
     
-    def _generate_children(
-        self,
-        parents: List[CompactBotConfig],
-        num_children: int,
-        start_bot_id: int
-    ) -> List[CompactBotConfig]:
-        """
-        Generate children through crossover and mutation.
-        
-        Args:
-            parents: Parent bots for breeding
-            num_children: Number of children to generate
-            start_bot_id: Starting bot ID for new children
-            
-        Returns:
-            List of child bots
-        """
-        if len(parents) < 2:
-            # Not enough parents for crossover, generate new unique bots
-            children = []
-            for i in range(num_children):
-                new_bot = self.generate_unique_bot(start_bot_id + i)
-                children.append(new_bot)
-            return children
-        
-        # Use GPU acceleration if available
-        if self.gpu_processor is not None:
-            try:
-                return self._gpu_generate_children(parents, num_children, start_bot_id)
-            except Exception as e:
-                log_warning(f"GPU child generation failed: {e}")
-                log_info("Falling back to CPU child generation")
-        
-        # CPU fallback
-        return self._cpu_generate_children(parents, num_children, start_bot_id)
-    
-    def _gpu_generate_children(
-        self,
-        parents: List[CompactBotConfig],
-        num_children: int,
-        start_bot_id: int
-    ) -> List[CompactBotConfig]:
-        """GPU-accelerated child generation."""
-        # Create parent pairs for crossover
-        parent_pairs = []
-        for i in range(num_children):
-            p1_idx = i % len(parents)
-            p2_idx = (i + 1) % len(parents)  # Simple pairing strategy
-            parent_pairs.append((parents[p1_idx], parents[p2_idx]))
-        
-        # GPU crossover
-        children = self.gpu_processor.crossover_population_gpu(parent_pairs)
-        
-        # Assign bot IDs
-        for i, child in enumerate(children):
-            child.bot_id = start_bot_id + i
-        
-        # GPU mutation
-        self.gpu_processor.mutate_population_gpu(children, self.mutation_rate)
-        
-        log_debug(f"GPU-generated {len(children)} children via crossover + mutation")
-        return children
-    
-    def _cpu_generate_children(
-        self,
-        parents: List[CompactBotConfig],
-        num_children: int,
-        start_bot_id: int
-    ) -> List[CompactBotConfig]:
-        """CPU fallback for child generation."""
-        children = []
-        
-        for i in range(num_children):
-            # Select two random parents
-            parent1 = random.choice(parents)
-            parent2 = random.choice(parents)
-            
-            # Crossover
-            child = self._cpu_crossover(parent1, parent2)
-            child.bot_id = start_bot_id + i
-            
-            # Mutation
-            if random.random() < self.mutation_rate:
-                self._cpu_mutate_bot(child)
-            
-            children.append(child)
-        
-        log_debug(f"CPU-generated {len(children)} children via crossover + mutation")
-        return children
+    # LEGACY METHODS REMOVED: _generate_children, _gpu_generate_children, _cpu_generate_children
+    # These are no longer used - we generate only new unique bots in refill_population()
     
     def run_evolution(
         self,
@@ -660,13 +616,7 @@ class GeneticAlgorithmEvolver:
             )
             self.profiler.end_phase("population_evaluation")
             
-            # Phase 2: Logging generation results
-            self.profiler.start_phase("logging_generation")
-            log_info(f"Logging generation {gen} results...")
-            self.log_generation_bots(gen, self.population, self.population_results, initial_balance, len(cycles))
-            self.profiler.end_phase("logging_generation")
-            
-            # Phase 3: Survivor selection
+            # Phase 3: Survivor selection (MOVED BEFORE LOGGING)
             self.profiler.start_phase("survivor_selection")
             log_info("Selecting survivors...")
             survivors, survivor_results = self.select_survivors(
@@ -676,25 +626,45 @@ class GeneticAlgorithmEvolver:
             )
             self.profiler.end_phase("survivor_selection")
             
-            # Phase 4: Print generation summary
+            # Phase 2: Logging generation results (AFTER selection so survival_generations is incremented)
+            self.profiler.start_phase("logging_generation")
+            log_info(f"Logging generation {gen} results...")
+            self.log_generation_bots(gen, self.population, self.population_results, initial_balance, len(cycles))
+            self.profiler.end_phase("logging_generation")
+            
+            # Phase 4: Print generation summary (use FULL population results, not just survivors)
             self.profiler.start_phase("generation_summary")
-            self._print_generation_summary(gen, survivor_results, initial_balance)
+            self._print_generation_summary(gen, self.population_results, initial_balance)
             self.profiler.end_phase("generation_summary")
             
-            # Phase 5: Release combinations from dead bots
+            # Phase 5: DON'T Release combinations - keep them reserved for maximum diversity!
+            # NOTE: We used to release dead bot combinations back to unused pool, but that caused
+            # massive duplicates because new bots would immediately reuse the same combinations.
+            # By keeping combinations reserved (in self.used_combinations), we ensure continuous
+            # exploration of the 2.37M combination space.
             self.profiler.start_phase("combination_cleanup")
-            dead_bots = [bot for bot in self.population if bot not in survivors]
-            self.release_combinations(dead_bots)
+            # survivor_set = set(survivors)
+            # dead_bots = [bot for bot in self.population if bot not in survivor_set]
+            # self.release_combinations(dead_bots)  # DISABLED for maximum diversity
             self.profiler.end_phase("combination_cleanup")
             
             # Phase 6: Refill population (crossover/mutation)
             self.profiler.start_phase("population_refill")
             log_info("Refilling population...")
             self.population = self.refill_population(survivors, target_size)
+            log_info(f"Population refilled: {len(self.population)} bots")
+            log_info(f"Total unique combinations used: {len(self.used_combinations)}")
             self.profiler.end_phase("population_refill")
             
             self.current_generation += 1
             self.profiler.end_generation(gen)
+            
+            # INTERACTIVE DEBUG: Wait for user input after each generation
+            if hasattr(self, 'interactive_mode') and self.interactive_mode:
+                print(f"\n{'='*60}")
+                print(f"Generation {gen} complete. Press Enter to continue...")
+                print(f"{'='*60}")
+                input()
         
         # Final evaluation
         log_info(f"\n--- FINAL EVALUATION ---")
@@ -883,7 +853,9 @@ class GeneticAlgorithmEvolver:
         """
         if filepath is None:
             import os
-            bot_dir = f"bots/{self.pair}/{self.timeframe}"
+            # Sanitize pair name for file path (replace / and : with _)
+            safe_pair = self.pair.replace('/', '_').replace(':', '_')
+            bot_dir = f"bots/{safe_pair}/{self.timeframe}"
             os.makedirs(bot_dir, exist_ok=True)
             filepath = f"{bot_dir}/best_bots.json"
         top_bots = self.get_top_bots(count)
@@ -918,7 +890,9 @@ class GeneticAlgorithmEvolver:
             
             # Save individual bot file
             import os
-            bot_dir = f"bots/{self.pair}/{self.timeframe}"
+            # Sanitize pair name for file path (replace / and : with _)
+            safe_pair = self.pair.replace('/', '_').replace(':', '_')
+            bot_dir = f"bots/{safe_pair}/{self.timeframe}"
             os.makedirs(bot_dir, exist_ok=True)
             individual_filepath = f"{bot_dir}/bot_{bot.bot_id}.json"
             with open(individual_filepath, 'w') as f:

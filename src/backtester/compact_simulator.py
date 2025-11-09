@@ -22,6 +22,7 @@ from pathlib import Path
 import time
 import threading
 import concurrent.futures
+from tqdm import tqdm
 
 from ..bot_generator.compact_generator import CompactBotConfig, COMPACT_BOT_SIZE
 from ..utils.validation import log_info, log_error, log_debug, log_warning
@@ -82,6 +83,13 @@ class CompactBacktester:
         self.initial_balance = initial_balance
         self.target_chunk_seconds = target_chunk_seconds  # Target processing time per chunk
         
+        # Get GPU device info for memory calculations
+        self.device = self.ctx.devices[0]
+        self.global_mem_size = self.device.global_mem_size
+        self.local_mem_size = self.device.local_mem_size
+        self.max_work_group_size = self.device.max_work_group_size
+        self.compute_units = self.device.max_compute_units
+        
         # Memory tracking
         self.memory_usage: Dict[str, int] = {}
         
@@ -91,9 +99,14 @@ class CompactBacktester:
         # Compile both kernels
         self._compile_kernels()
         
+        # Calculate optimal chunk size based on GPU memory
+        self.optimal_chunk_days = None  # Will be set during backtest_bots
+        
         log_info("CompactBacktester initialized (two-kernel precomputed strategy)")
         log_info(f"  - Kernel 1: Precompute {self.NUM_INDICATORS} indicators")
         log_info(f"  - Kernel 2: Backtest with signal generation")
+        log_info(f"  - GPU Memory: {self.global_mem_size / (1024**3):.2f} GB")
+        log_info(f"  - Compute Units: {self.compute_units}")
     
     def __del__(self):
         """Cleanup OpenCL resources."""
@@ -166,76 +179,319 @@ class CompactBacktester:
         cycles: List[Tuple[int, int]]
     ) -> List[BacktestResult]:
         """
-        Backtest bots using batched approach for GPU memory management.
-        
-        Process bots in batches to avoid GPU memory exhaustion while maintaining
-        single-pass data processing for accurate cycle handling.
+        Backtest bots using data chunking within each cycle.
+
+        Strategy:
+        - Each cycle is independent with its own data range
+        - Within each cycle, chunk the data into smaller pieces that fit GPU memory
+        - Process all bots against each data chunk
+        - Aggregate results across data chunks for each cycle
+        - Aggregate results across cycles for each bot
         """
         num_bots = len(bots)
         num_bars = len(ohlcv_data)
         num_cycles = len(cycles)
-        
-        log_info(f"Backtesting {num_bots} bots against {num_bars} bars with {num_cycles} cycles")
-        
-        # === BOT BATCHING FOR GPU MEMORY MANAGEMENT ===
-        # Calculate optimal batch size based on GPU memory
-        batch_size = self._calculate_optimal_bot_batch_size(num_bots)
-        log_info(f"Using bot batching: {batch_size} bots per batch")
-        
-        all_results = []
-        
-        # Precompute indicators once for the entire dataset
-        indicators_buffer = self._precompute_indicators(ohlcv_data)
-        
-        # Process bots in batches
-        for batch_start in range(0, num_bots, batch_size):
-            batch_end = min(batch_start + batch_size, num_bots)
-            bot_batch = bots[batch_start:batch_end]
-            
-            log_debug(f"Processing bot batch {batch_start//batch_size + 1}: bots {batch_start}-{batch_end-1}")
-            
-            # Run backtest kernel for this batch
-            batch_results = self._run_backtest_kernel_direct(bot_batch, ohlcv_data, indicators_buffer, cycles)
-            
-            # Adjust bot IDs back to original indices
-            for i, result in enumerate(batch_results):
-                result.bot_id = bots[batch_start + i].bot_id
-            
-            all_results.extend(batch_results)
-        
-        # Cleanup
-        indicators_buffer.release()
-        
-        log_info(f"Completed batched backtesting: {len(all_results)} results generated")
-        return all_results
 
-    def _calculate_optimal_bot_batch_size(self, total_bots: int) -> int:
+        # Find optimal data chunk size if not already done
+        if not hasattr(self, '_optimal_data_chunk_bars'):
+            self._optimal_data_chunk_bars = self._find_optimal_data_chunk_size(bots)
+
+        # Process each cycle independently with progress tracking
+        all_cycle_results = []
+
+        print(f"\n[BACKTEST] Testing {num_bots:,} bots against {num_bars:,} bars ({num_cycles} cycles)")
+        print(f"[BACKTEST] Using {self._optimal_data_chunk_bars/1440:.1f} day chunks")
+
+        with tqdm(total=num_cycles, desc="Processing cycles", unit="cycle", position=0) as cycle_pbar:
+            for cycle_idx, (cycle_start, cycle_end) in enumerate(cycles):
+                cycle_data = ohlcv_data[cycle_start:cycle_end]
+                cycle_bars = len(cycle_data)
+
+                # Chunk this cycle's data
+                data_chunks = self._chunk_cycle_data(cycle_data, self._optimal_data_chunk_bars)
+                num_chunks = len(data_chunks)
+
+                # Update cycle progress bar with chunk info
+                cycle_pbar.set_description(f"Cycle {cycle_idx + 1}/{num_cycles} ({num_chunks} chunks)")
+
+                # Process all bots against each data chunk with nested progress bar
+                cycle_chunk_results = []
+                with tqdm(total=num_chunks, desc="  Chunks", unit="chunk", position=1, leave=False) as chunk_pbar:
+                    for chunk_idx, chunk_info in enumerate(data_chunks):
+                        chunk_data = chunk_info['data']
+                        chunk_cycles = chunk_info['cycles']
+
+                        # Precompute indicators for this chunk
+                        indicators_buffer = self._precompute_indicators(chunk_data)
+
+                        # Run ALL bots against this data chunk
+                        chunk_results = self._run_backtest_kernel_direct(
+                            bots,
+                            chunk_data,
+                            indicators_buffer,
+                            chunk_cycles
+                        )
+
+                        # Cleanup
+                        indicators_buffer.release()
+
+                        # Store results for this chunk
+                        cycle_chunk_results.append(chunk_results)
+                        chunk_pbar.update(1)
+
+                # Aggregate results across data chunks for this cycle
+                cycle_aggregated = self._aggregate_data_chunks(cycle_chunk_results, num_bots)
+
+                # Mark which cycle these results are from
+                for result in cycle_aggregated:
+                    result.cycle_id = cycle_idx
+
+                all_cycle_results.append(cycle_aggregated)
+                cycle_pbar.update(1)
+
+        # Aggregate results across cycles for each bot
+        final_results = self._aggregate_cycle_results(all_cycle_results, num_bots, num_cycles)
+
+        print("[OK] Backtesting completed successfully!")
+        return final_results
+        
+        log_info(f"Completed cycle-based backtesting: {len(final_results)} results generated")
+        return final_results
+
+    def _find_optimal_data_chunk_size(self, test_bots: List[CompactBotConfig]) -> int:
         """
-        Calculate optimal bot batch size based on GPU memory constraints.
+        Calculate optimal data chunk size based on GPU memory constraints.
         
-        Strategy: Keep GPU memory usage under safe limits while maximizing throughput.
+        Uses GPU device info to compute maximum bars that fit in memory.
+        The formula provides a theoretical maximum, then applies aggressive safety margins
+        since OpenCL drivers, workgroups, and runtime consume significant overhead.
+        
+        For reference on Intel UHD 630 (3.19 GB):
+        - Theoretical max: ~10,000 days
+        - After 85% safety margin: ~1,500 days
+        - Clamped to 5 days due to actual driver overhead
+        
+        Future GPUs with more memory (e.g., 8GB, 16GB) will automatically benefit from
+        larger chunk sizes up to the conservative limit, reducing chunk count.
         """
-        # Conservative estimate: each bot needs ~256 bytes for processing
-        # GPU memory available for bot processing: ~2GB
-        memory_per_bot_bytes = 256
-        available_memory_bytes = 2 * 1024 * 1024 * 1024  # 2GB
+        num_bots = len(test_bots)
+        bars_per_day = 1440
         
-        max_bots_by_memory = available_memory_bytes // memory_per_bot_bytes
+        log_info(f"Calculating optimal data chunk size for {num_bots} bots...")
+        log_info(f"  GPU Global Memory: {self.global_mem_size / (1024**3):.2f} GB")
+        log_info(f"  GPU Compute Units: {self.compute_units}")
         
-        # Also consider work group limitations
-        max_bots_by_workgroup = 512  # Intel UHD work group size
+        # Memory calculation:
         
-        # Use the smaller constraint
-        optimal_batch_size = min(max_bots_by_memory, max_bots_by_workgroup)
+        bytes_per_bot_config = 128
+        bytes_per_bar_ohlcv = 5 * 4  # 5 columns × 4 bytes
+        bytes_per_bar_indicators = 50 * 4  # 50 indicators × 4 bytes
+        bytes_per_result = 864  # Result struct size
         
-        # Ensure reasonable bounds
-        optimal_batch_size = max(100, min(optimal_batch_size, total_bots))
+        # Fixed overhead
+        bots_memory = num_bots * bytes_per_bot_config
+        results_memory = num_bots * bytes_per_result
+        cycles_memory = 1024  # Small fixed overhead
+        overhead_memory = 100 * 1024 * 1024  # 100 MB safety margin
         
-        log_debug(f"Bot batch sizing: Memory allows {max_bots_by_memory} bots, workgroups allow {max_bots_by_workgroup} bots")
-        log_debug(f"Selected batch size: {optimal_batch_size} bots")
+        # Available memory for data
+        available_memory = self.global_mem_size - bots_memory - results_memory - cycles_memory - overhead_memory
         
-        return optimal_batch_size
-    
+        # Memory per bar
+        bytes_per_bar = bytes_per_bar_ohlcv + bytes_per_bar_indicators
+        
+        # Calculate max bars
+        max_bars = int(available_memory / bytes_per_bar)
+        
+        # Convert to days and apply aggressive safety margin
+        # GPU drivers, workgroups, and OpenCL runtime consume significant memory
+        # The theoretical calculation significantly underestimates actual usage
+        max_days = max_bars / bars_per_day
+        safe_days = int(max_days * 0.15)  # 85% safety margin (only use 15% of theoretical)
+        
+        # Conservative clamp for stability across different GPU architectures
+        # This limit will scale with more powerful GPUs but stays safe for current hardware
+        # Tested on Intel UHD 630 (3.19 GB): 5 days works, 30 days fails
+        if safe_days > 5:
+            safe_days = 5  # Conservative limit validated on Intel UHD 630
+        safe_days = max(1, safe_days)  # At least 1 day
+        
+        optimal_bars = safe_days * bars_per_day
+        
+        log_info(f"  Clamped to conservative: {safe_days} days ({optimal_bars} bars)")
+        
+        return optimal_bars
+
+    def _chunk_cycle_data(
+        self,
+        cycle_data: np.ndarray,
+        chunk_size_bars: int
+    ) -> List[Dict]:
+        """
+        Split cycle data into chunks of specified size.
+        Each chunk will be processed with all bots.
+        """
+        chunks = []
+        total_bars = len(cycle_data)
+        
+        # Add overlap for indicator lookback
+        overlap_bars = 200  # For SMA(200) and other indicators
+        
+        chunk_start = 0
+        chunk_id = 0
+        
+        while chunk_start < total_bars:
+            # Calculate chunk end
+            chunk_end = min(chunk_start + chunk_size_bars, total_bars)
+            
+            # Extract chunk with lookback
+            data_start = max(0, chunk_start - overlap_bars)
+            chunk_data_slice = cycle_data[data_start:chunk_end]
+            
+            # Adjust cycle to account for lookback
+            cycle_offset = chunk_start - data_start
+            cycle_length = chunk_end - chunk_start
+            
+            chunks.append({
+                'id': chunk_id,
+                'data': chunk_data_slice,
+                'cycles': [(cycle_offset, cycle_offset + cycle_length)],
+                'global_start': chunk_start,
+                'global_end': chunk_end
+            })
+            
+            chunk_id += 1
+            chunk_start = chunk_end  # No overlap in processing, only for indicators
+        
+        return chunks
+
+    def _aggregate_data_chunks(
+        self,
+        chunk_results: List[List[BacktestResult]],
+        num_bots: int
+    ) -> List[BacktestResult]:
+        """
+        Aggregate results from multiple data chunks within a single cycle.
+        Sum up trades and metrics across chunks for each bot.
+        """
+        aggregated = []
+        
+        for bot_idx in range(num_bots):
+            # Collect this bot's results from all chunks
+            bot_chunk_results = [chunks[bot_idx] for chunks in chunk_results]
+            
+            # Sum trades across chunks
+            total_trades = sum(r.total_trades for r in bot_chunk_results)
+            total_wins = sum(r.winning_trades for r in bot_chunk_results)
+            total_losses = sum(r.losing_trades for r in bot_chunk_results)
+            
+            # Average metrics (weighted by number of trades if needed)
+            if total_trades > 0:
+                # Weight by trades in each chunk
+                avg_win = sum(
+                    r.avg_win * r.winning_trades for r in bot_chunk_results if r.winning_trades > 0
+                ) / total_wins if total_wins > 0 else 0.0
+                
+                avg_loss = sum(
+                    r.avg_loss * r.losing_trades for r in bot_chunk_results if r.losing_trades > 0
+                ) / total_losses if total_losses > 0 else 0.0
+                
+                win_rate = total_wins / total_trades if total_trades > 0 else 0.0
+            else:
+                avg_win = 0.0
+                avg_loss = 0.0
+                win_rate = 0.0
+            
+            # Take worst drawdown and average other metrics
+            max_drawdown = max(r.max_drawdown for r in bot_chunk_results)
+            avg_sharpe = sum(r.sharpe_ratio for r in bot_chunk_results) / len(bot_chunk_results)
+            avg_profit_factor = sum(r.profit_factor for r in bot_chunk_results) / len(bot_chunk_results)
+            
+            # Use last chunk's final balance
+            final_balance = bot_chunk_results[-1].final_balance
+            
+            result = BacktestResult(
+                bot_id=bot_chunk_results[0].bot_id,
+                total_trades=total_trades,
+                winning_trades=total_wins,
+                losing_trades=total_losses,
+                per_cycle_trades=[],
+                per_cycle_wins=[],
+                per_cycle_pnl=[],
+                total_pnl=sum(r.total_pnl for r in bot_chunk_results),
+                max_drawdown=max_drawdown,
+                sharpe_ratio=avg_sharpe,
+                win_rate=win_rate,
+                avg_win=avg_win,
+                avg_loss=avg_loss,
+                profit_factor=avg_profit_factor,
+                max_consecutive_wins=max(r.max_consecutive_wins for r in bot_chunk_results),
+                max_consecutive_losses=max(r.max_consecutive_losses for r in bot_chunk_results),
+                final_balance=final_balance
+            )
+            
+            aggregated.append(result)
+        
+        return aggregated
+
+    def _aggregate_cycle_results(
+        self,
+        all_cycle_results: List[List[BacktestResult]],
+        num_bots: int,
+        num_cycles: int
+    ) -> List[BacktestResult]:
+        """
+        Aggregate results from multiple cycles for each bot.
+        
+        all_cycle_results[cycle_idx][bot_idx] = result for bot_idx in cycle_idx
+        Returns: List of BacktestResult with combined metrics across all cycles
+        """
+        log_info(f"Aggregating results from {num_cycles} cycles for {num_bots} bots")
+        
+        final_results = []
+        
+        for bot_idx in range(num_bots):
+            # Collect this bot's results from all cycles
+            bot_cycle_results = [cycle_results[bot_idx] for cycle_results in all_cycle_results]
+            
+            # Combine metrics across cycles
+            total_trades = sum(r.total_trades for r in bot_cycle_results)
+            total_wins = sum(r.winning_trades for r in bot_cycle_results)
+            total_losses = sum(r.losing_trades for r in bot_cycle_results)
+            
+            # Average metrics across cycles
+            avg_win = sum(r.avg_win for r in bot_cycle_results) / num_cycles
+            avg_loss = sum(r.avg_loss for r in bot_cycle_results) / num_cycles
+            avg_win_rate = sum(r.win_rate for r in bot_cycle_results) / num_cycles
+            avg_profit_factor = sum(r.profit_factor for r in bot_cycle_results) / num_cycles
+            avg_max_drawdown = sum(r.max_drawdown for r in bot_cycle_results) / num_cycles
+            avg_sharpe = sum(r.sharpe_ratio for r in bot_cycle_results) / num_cycles
+            
+            # Create aggregated result
+            aggregated = BacktestResult(
+                bot_id=bot_cycle_results[0].bot_id,
+                total_trades=total_trades,
+                winning_trades=total_wins,
+                losing_trades=total_losses,
+                per_cycle_trades=[r.total_trades for r in bot_cycle_results],
+                per_cycle_wins=[r.winning_trades for r in bot_cycle_results],
+                per_cycle_pnl=[r.total_pnl for r in bot_cycle_results],
+                total_pnl=sum(r.total_pnl for r in bot_cycle_results),
+                max_drawdown=avg_max_drawdown,
+                sharpe_ratio=avg_sharpe,
+                win_rate=avg_win_rate,
+                avg_win=avg_win,
+                avg_loss=avg_loss,
+                profit_factor=avg_profit_factor,
+                max_consecutive_wins=max(r.max_consecutive_wins for r in bot_cycle_results),
+                max_consecutive_losses=max(r.max_consecutive_losses for r in bot_cycle_results),
+                final_balance=bot_cycle_results[-1].final_balance  # Use last cycle's final balance
+            )
+            
+            final_results.append(aggregated)
+        
+        return final_results
+
     def _calculate_optimal_data_chunk_size(
         self,
         ohlcv_data: np.ndarray,
@@ -457,50 +713,30 @@ class CompactBacktester:
         batch_chunks: List[Dict]
     ) -> List[BacktestResult]:
         """
-        Process ALL chunks simultaneously for maximum GPU utilization.
+        Process chunks sequentially for GPU stability.
         
-        No progress bar - optimized for speed.
+        GPU operations must be serialized to avoid resource conflicts.
         """
         batch_results = []
         
-        # For maximum parallelism, process all chunks simultaneously
-        max_concurrent = len(batch_chunks)
-        
-        log_debug(f"Running {max_concurrent} simultaneous workloads for maximum GPU utilization")
-        
-        def process_single_workload(chunk):
-            """Process one chunk as an independent workload."""
-            
-            chunk_id = chunk['id']
-            chunk_data = chunk['data']
-            chunk_cycles = chunk['cycles']
-            indicators_buffer = chunk['indicators_buffer']
-            
-            # Run the backtest kernel for this workload
-            chunk_results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles)
-            
-            # Add chunk metadata to results
-            for result in chunk_results:
-                result.chunk_id = chunk_id
-                result.chunk_bars = len(chunk_data)
-            
-            return chunk_results
-        
-        # Process all chunks in parallel using threading
-        # Each thread runs a separate GPU kernel workload
-        # Collect ALL results at the end to avoid interruptions during processing
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent) as executor:
-            # Submit all workloads - they will run simultaneously
-            workload_futures = [executor.submit(process_single_workload, chunk) for chunk in batch_chunks]
-            
-            # Wait for ALL workloads to complete, then collect results
-            # This eliminates interruptions during processing and maximizes GPU utilization
-            concurrent.futures.wait(workload_futures, return_when=concurrent.futures.ALL_COMPLETED)
-            
-            # Now collect all results at once
-            for future in workload_futures:
-                workload_results = future.result()
-                batch_results.extend(workload_results)
+        # Process chunks sequentially with progress tracking
+        with tqdm(total=len(batch_chunks), desc="Processing chunks", unit="chunk") as pbar:
+            for chunk in batch_chunks:
+                chunk_id = chunk['id']
+                chunk_data = chunk['data']
+                chunk_cycles = chunk['cycles']
+                indicators_buffer = chunk['indicators_buffer']
+                
+                # Run the backtest kernel for this chunk
+                chunk_results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles)
+                
+                # Add chunk metadata to results
+                for result in chunk_results:
+                    result.chunk_id = chunk_id
+                    result.chunk_bars = len(chunk_data)
+                
+                batch_results.extend(chunk_results)
+                pbar.update(1)
         
         return batch_results
     
@@ -1091,351 +1327,6 @@ class CompactBacktester:
         log_debug(f"  Theoretical maximum: {theoretical_max} bots (accounts for OHLCV/indicators buffer memory)")
         
         return theoretical_max
-    
-    def _run_backtest_gpu_minimal(
-        self,
-        bots: List[CompactBotConfig],
-        ohlcv_data: np.ndarray,
-        indicators_buffer: cl.Buffer,
-        cycles: List[Tuple[int, int]]
-    ) -> List[BacktestResult]:
-        """
-        Run backtest with adaptive batch sizing based on GPU capabilities.
-        Uses parallel processing for better performance with large populations.
-        """
-        num_bots = len(bots)
-        all_results = []
-        
-        # Calculate theoretical maximum batch size
-        theoretical_max = self._calculate_theoretical_max_batch_size(ohlcv_data, cycles)
-        log_info(f"Theoretical maximum batch size: {theoretical_max} bots")
-        
-        # Find optimal batch size by testing progressively larger batches
-        optimal_size = self._find_optimal_batch_size(bots, ohlcv_data, indicators_buffer, cycles, theoretical_max)
-        
-        log_info(f"Using optimal batch size of {optimal_size} bots for GPU backtesting")
-        
-        # CRITICAL SAFETY CHECK: If optimal batch size is too small, data is too large for GPU
-        if optimal_size <= 10:
-            log_error(f"CRITICAL: Optimal batch size is too small ({optimal_size} bots) - data size is too large for GPU")
-            log_error(f"Current setup: {len(ohlcv_data)} bars × {len(cycles)} cycles = {len(ohlcv_data) * len(cycles):,} operations per bot")
-            log_error("This will cause infinite kernel failures and system instability")
-            log_error("SOLUTION: Reduce data size by:")
-            log_error("  1. Reduce days per cycle (recommended: 1-7 days)")
-            log_error("  2. Reduce cycles per generation (recommended: 5-10 cycles)")
-            log_error("  3. Use smaller population size")
-            raise RuntimeError(f"Data size too large for GPU processing (optimal batch size: {optimal_size})")
-        
-        # Process all bots using parallel batch processing for better throughput
-        log_info(f"Processing {num_bots} bots in parallel batches of {optimal_size}")
-        
-        # Create batches
-        batches = []
-        for batch_start in range(0, num_bots, optimal_size):
-            batch_end = min(batch_start + optimal_size, num_bots)
-            batch_bots = bots[batch_start:batch_end]
-            batches.append((batch_bots, batch_start))
-        
-        # Use thread pool for parallel processing
-        # Limit concurrent batches to avoid overwhelming the GPU
-        max_concurrent_batches = min(4, len(batches))  # Max 4 concurrent batches
-        
-        log_info(f"Processing {len(batches)} batches with up to {max_concurrent_batches} concurrent batches")
-        
-        # Use a lock to ensure GPU operations are serialized
-        gpu_lock = threading.Lock()
-        
-        def process_batch_with_lock(batch_bots, ohlcv_data, indicators_buffer, cycles, batch_start):
-            with gpu_lock:
-                return self._run_backtest_batch_adaptive(batch_bots, ohlcv_data, indicators_buffer, cycles, batch_start)
-        
-        with tqdm(total=num_bots, desc="Backtesting bots", unit="bot") as pbar:
-            with concurrent.futures.ThreadPoolExecutor(max_workers=max_concurrent_batches) as executor:
-                # Submit all batches for parallel execution
-                future_to_batch = {
-                    executor.submit(process_batch_with_lock, batch_bots, ohlcv_data, indicators_buffer, cycles, batch_start): (batch_bots, batch_start)
-                    for batch_bots, batch_start in batches
-                }
-                
-                # Collect results as they complete
-                for future in concurrent.futures.as_completed(future_to_batch):
-                    batch_bots, batch_start = future_to_batch[future]
-                    try:
-                        batch_results = future.result()
-                        all_results.extend(batch_results)
-                        pbar.update(len(batch_results))
-                    except Exception as e:
-                        log_error(f"Batch starting at bot {batch_start} failed: {e}")
-                        raise
-        
-        log_info(f"Completed GPU backtesting: {len(all_results)} bots processed in {len(batches)} parallel batches")
-        return all_results
-    
-    def _find_optimal_batch_size(
-        self,
-        bots: List[CompactBotConfig],
-        ohlcv_data: np.ndarray,
-        indicators_buffer: cl.Buffer,
-        cycles: List[Tuple[int, int]],
-        theoretical_max: int
-    ) -> int:
-        """
-        Find the optimal batch size by testing progressively larger batches.
-        Starts from small sizes and works up to find the maximum that works.
-        """
-        # Generate test sizes starting from small and working up to theoretical max and beyond
-        test_sizes = []
-        max_test_size = min(len(bots), 10000)  # Test up to 10,000 bots maximum
-
-        # Start from small sizes and work up
-        current = 50  # Start with small batch
-        while current <= max_test_size and len(test_sizes) < 15:  # Limit to 15 test sizes max
-            test_sizes.append(current)
-            if current >= max_test_size:
-                break
-            # Increase by 25-50% each time
-            increment = max(1, current // 3)
-            current += increment
-
-        # Ensure we include theoretical_max if it's not already in the list
-        if theoretical_max not in test_sizes and theoretical_max <= max_test_size:
-            test_sizes.append(theoretical_max)
-
-        # Ensure we test at least some sizes above theoretical max
-        if max_test_size > theoretical_max and theoretical_max * 2 not in test_sizes:
-            test_sizes.append(min(theoretical_max * 2, max_test_size))
-
-        # Remove duplicates and sort
-        test_sizes = sorted(list(set(test_sizes)))
-
-        # Allow more tests for wider range (increased from 12)
-        if len(test_sizes) > 20:
-            # Keep more samples, especially higher ones
-            indices = [0, len(test_sizes)-1]
-            step = (len(test_sizes) - 1) // 18
-            for i in range(step, len(test_sizes)-1, step):
-                indices.append(i)
-            test_sizes = [test_sizes[i] for i in sorted(set(indices))]
-
-        log_debug(f"Comprehensive stress testing batch sizes: {test_sizes} (theoretical max: {theoretical_max}, max test: {max_test_size})")
-
-        # Don't test sizes larger than total bots
-        test_sizes = [s for s in test_sizes if s <= len(bots)]
-
-        if not test_sizes:
-            return 1
-
-        optimal_size = 1
-        successful_sizes = []
-
-        with tqdm(total=len(test_sizes), desc="Finding optimal batch size", unit="test") as pbar:
-            for test_size in test_sizes:
-                test_bots = bots[:test_size]
-
-                # MULTIPLE TEST RUNS: Run the same batch size multiple times to catch
-                # intermittent failures and memory fragmentation issues
-                test_runs = 3  # Run each size 3 times
-                all_runs_passed = True
-
-                for run in range(test_runs):
-                    try:
-                        log_debug(f"Stress testing batch size {test_size} run {run+1}/{test_runs}...")
-                        start_time = time.time()
-
-                        # Use threading with timeout to prevent hanging
-                        import threading
-                        result = [None]
-                        exception = [None]
-                        
-                        def run_test():
-                            try:
-                                result[0] = self._run_backtest_batch_adaptive(
-                                    test_bots,
-                                    ohlcv_data,
-                                    indicators_buffer,
-                                    cycles,
-                                    0  # Test batch
-                                )
-                            except Exception as e:
-                                exception[0] = e
-                        
-                        test_thread = threading.Thread(target=run_test)
-                        test_thread.start()
-                        test_thread.join(timeout=30)  # 30 second timeout
-                        
-                        if test_thread.is_alive():
-                            log_debug(f"Batch size {test_size} run {run+1} timed out after 30 seconds")
-                            all_runs_passed = False
-                            break
-                        elif exception[0]:
-                            raise exception[0]
-                        
-                        elapsed = time.time() - start_time
-                        log_debug(f"Batch size {test_size} run {run+1} passed ({elapsed:.2f}s)")
-
-                    except cl.RuntimeError as e:
-                        if "OUT_OF_RESOURCES" in str(e):
-                            log_debug(f"Batch size {test_size} run {run+1} failed with OUT_OF_RESOURCES")
-                            all_runs_passed = False
-                            break  # Stop testing this size
-                        else:
-                            log_debug(f"Batch size {test_size} run {run+1} failed with unexpected error: {e}")
-                            all_runs_passed = False
-                            break
-
-                if all_runs_passed:
-                    optimal_size = test_size
-                    successful_sizes.append(test_size)
-                    log_debug(f"Batch size {test_size} passed all {test_runs} test runs")
-                else:
-                    log_debug(f"Batch size {test_size} failed - stopping at this size")
-                    break  # Stop at first size that fails
-
-                pbar.update(1)
-
-        # SAFETY CHECK: If no sizes worked, fail fast
-        if not successful_sizes:
-            log_error("CRITICAL: No batch sizes passed GPU testing - data is too large for this GPU")
-            log_error(f"Tested sizes: {test_sizes}")
-            log_error("This configuration will cause infinite kernel failures")
-            return 1  # Return 1 to trigger the safety check above
-
-        # APPLY MODERATE SAFETY MARGIN: Use 70% of the maximum successful size to account for
-        # real-world complexity factors not captured in testing (reduced from 50%)
-        if successful_sizes:
-            max_successful = max(successful_sizes)
-            safety_margin = int(max_successful * 0.7)  # 30% safety margin
-            final_optimal = max(1, safety_margin)
-
-            log_info(f"Optimal batch size found: {final_optimal} bots (with 30% safety margin from max successful: {max_successful})")
-            log_info(f"Tested up to {max_test_size} bots, successful sizes: {successful_sizes}")
-        else:
-            final_optimal = 1
-            log_warning("No batch sizes passed testing, using minimum size of 1")
-
-        return final_optimal
-    
-    def _run_backtest_batch_adaptive(
-        self,
-        batch_bots: List[CompactBotConfig],
-        ohlcv_data: np.ndarray,
-        indicators_buffer: cl.Buffer,
-        cycles: List[Tuple[int, int]],
-        bot_id_offset: int
-    ) -> List[BacktestResult]:
-        """
-        Run backtest kernel for a batch of bots with adaptive sizing.
-        """
-        num_bots = len(batch_bots)
-        num_bars = len(ohlcv_data)
-        num_cycles = len(cycles)
-        
-        # Serialize bot configs for this batch
-        bot_configs_raw = self._serialize_bots(batch_bots)
-        
-        bots_buf = cl.Buffer(
-            self.ctx,
-            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
-            hostbuf=bot_configs_raw
-        )
-        
-        # OHLCV buffer
-        ohlcv_flat = ohlcv_data.astype(np.float32)
-        
-        ohlcv_buf = cl.Buffer(
-            self.ctx,
-            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
-            hostbuf=ohlcv_flat
-        )
-        
-        # Cycles buffers
-        cycle_starts = np.array([c[0] for c in cycles], dtype=np.int32)
-        cycle_ends = np.array([c[1] for c in cycles], dtype=np.int32)
-        
-        cycle_starts_buf = cl.Buffer(
-            self.ctx,
-            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
-            hostbuf=cycle_starts
-        )
-        
-        cycle_ends_buf = cl.Buffer(
-            self.ctx,
-            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
-            hostbuf=cycle_ends
-        )
-        
-        # Results buffer: base 64 bytes + per-cycle arrays (MAX_CYCLES × 12 bytes)
-        MAX_CYCLES = 100
-        RESULT_BASE = 64
-        results_bytes = (RESULT_BASE + (MAX_CYCLES * 12)) * num_bots
-        
-        results_buf = cl.Buffer(
-            self.ctx,
-            cl.mem_flags.WRITE_ONLY,
-            size=results_bytes
-        )
-        
-        # Execute backtest kernel for this batch
-        kernel = self._backtest_kernel
-        global_size = (num_bots,)
-        local_size = None  # Let OpenCL choose optimal work group size
-        
-        try:
-            kernel(
-                self.queue,
-                global_size,
-                local_size,
-                bots_buf,                          # Bot configs
-                ohlcv_buf,                         # OHLCV data
-                indicators_buffer,                 # Precomputed indicators
-                cycle_starts_buf,                  # Cycle starts
-                cycle_ends_buf,                    # Cycle ends
-                np.int32(num_cycles),              # Number of cycles
-                np.int32(num_bars),                # Number of bars
-                np.float32(self.initial_balance),  # Initial balance
-                results_buf                        # Results output
-            )
-            
-            self.queue.finish()
-            
-        except cl.RuntimeError as e:
-            log_error(f"Backtest kernel execution failed for batch of {num_bots} bots: {e}")
-            # Cleanup on error
-            bots_buf.release()
-            ohlcv_buf.release()
-            cycle_starts_buf.release()
-            cycle_ends_buf.release()
-            results_buf.release()
-            raise
-        except Exception as e:
-            log_error(f"Unexpected error in backtest kernel for batch of {num_bots} bots: {e}")
-            # Cleanup on error
-            bots_buf.release()
-            ohlcv_buf.release()
-            cycle_starts_buf.release()
-            cycle_ends_buf.release()
-            results_buf.release()
-            raise
-        
-        # Read results
-        results_raw = np.empty(results_bytes, dtype=np.uint8)
-        cl.enqueue_copy(self.queue, results_raw, results_buf)
-        
-        # Parse results and adjust bot IDs
-        results = self._parse_results(results_raw, num_bots)
-        
-        # Adjust bot IDs to account for batch offset
-        for i, result in enumerate(results):
-            result.bot_id = batch_bots[i].bot_id
-        
-        # Clean up buffers
-        bots_buf.release()
-        ohlcv_buf.release()
-        cycle_starts_buf.release()
-        cycle_ends_buf.release()
-        results_buf.release()
-        
-        return results
     
     def _serialize_bots(self, bots: List[CompactBotConfig]) -> np.ndarray:
         """Serialize bots to raw bytes matching OpenCL struct."""

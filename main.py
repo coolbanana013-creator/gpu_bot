@@ -11,6 +11,8 @@ import numpy as np
 from typing import Optional
 import pyopencl as cl
 import time
+import json
+import os
 
 from src.utils.validation import (
     validate_int, validate_float, validate_pair, validate_timeframe,
@@ -186,67 +188,76 @@ def get_mode1_parameters() -> dict:
     print("MODE 1: GENETIC ALGORITHM CONFIGURATION")
     print("-"*60 + "\n")
     
+    # Load last run defaults if available
+    last_defaults = {}
+    if os.path.exists('last_run_config.json'):
+        try:
+            with open('last_run_config.json', 'r') as f:
+                last_defaults = json.load(f)
+        except:
+            pass
+    
     params = {}
     
     # Trading pair
     params['pair'] = get_user_input(
         "Trading pair (e.g., BTC/USDT)",
-        DEFAULT_TRADING_PAIR,
+        last_defaults.get('pair', DEFAULT_TRADING_PAIR),
         lambda x: validate_pair(x)
     )
     
     # Initial balance
     params['initial_balance'] = get_user_input(
         "Initial balance (USDT)",
-        DEFAULT_INITIAL_BALANCE,
+        last_defaults.get('initial_balance', DEFAULT_INITIAL_BALANCE),
         lambda x: validate_float(float(x), "initial_balance", strict_positive=True)
     )
     
     # Population size
     params['population'] = get_user_input(
         "Population size (1,000-1,000,000)",
-        DEFAULT_POPULATION,
+        last_defaults.get('population', DEFAULT_POPULATION),
         lambda x: validate_int(int(x), "population", min_val=1000, max_val=1000000)
     )
     
     # Generations
     params['generations'] = get_user_input(
         "Number of generations (1-100)",
-        DEFAULT_GENERATIONS,
+        last_defaults.get('generations', DEFAULT_GENERATIONS),
         lambda x: validate_int(int(x), "generations", min_val=1, max_val=100)
     )
     
     # Cycles
     params['cycles'] = get_user_input(
         "Cycles per generation (1-100)",
-        DEFAULT_CYCLES,
+        last_defaults.get('cycles', DEFAULT_CYCLES),
         lambda x: validate_int(int(x), "cycles", min_val=1, max_val=100)
     )
     
     # Backtest days
     params['backtest_days'] = get_user_input(
         "Days per backtest cycle (1-365)",
-        DEFAULT_BACKTEST_DAYS,
+        last_defaults.get('backtest_days', DEFAULT_BACKTEST_DAYS),
         lambda x: validate_int(int(x), "backtest_days", min_val=1, max_val=365)
     )
     
     # Timeframe
     params['timeframe'] = get_user_input(
         "Timeframe (1m/5m/15m/30m/1h/4h/1d)",
-        "1m",
+        last_defaults.get('timeframe', "15m"),
         lambda x: validate_timeframe(x)
     )
     
     # Leverage range (NEW: min and max)
     params['min_leverage'] = get_user_input(
         "Min leverage (1-25x)",
-        1,
+        last_defaults.get('min_leverage', 1),
         lambda x: validate_int(int(x), "min_leverage", min_val=1, max_val=25)
     )
     
     params['max_leverage'] = get_user_input(
         f"Max leverage ({params['min_leverage']}-25x)",
-        10,
+        last_defaults.get('max_leverage', 1),
         lambda x: validate_int(int(x), "max_leverage", 
                               min_val=params['min_leverage'], max_val=25)
     )
@@ -254,13 +265,13 @@ def get_mode1_parameters() -> dict:
     # Indicators per bot
     params['min_indicators'] = get_user_input(
         "Min indicators per bot (1-8)",
-        DEFAULT_MIN_INDICATORS,
+        last_defaults.get('min_indicators', 1),
         lambda x: validate_int(int(x), "min_indicators", min_val=1, max_val=8)
     )
     
     params['max_indicators'] = get_user_input(
         f"Max indicators per bot ({params['min_indicators']}-8)",
-        DEFAULT_MAX_INDICATORS,
+        last_defaults.get('max_indicators', 5),
         lambda x: validate_int(int(x), "max_indicators", 
                               min_val=params['min_indicators'], max_val=8)
     )
@@ -268,32 +279,40 @@ def get_mode1_parameters() -> dict:
     # Risk strategies per bot
     params['min_risk_strategies'] = get_user_input(
         "Min risk strategies per bot (1-15)",
-        DEFAULT_MIN_RISK_STRATEGIES,
+        last_defaults.get('min_risk_strategies', 1),
         lambda x: validate_int(int(x), "min_risk_strategies", min_val=1, max_val=15)
     )
     
     params['max_risk_strategies'] = get_user_input(
         f"Max risk strategies per bot ({params['min_risk_strategies']}-15)",
-        DEFAULT_MAX_RISK_STRATEGIES,
-        lambda x: validate_int(int(x), "max_risk_strategies",
+        last_defaults.get('max_risk_strategies', 5),
+        lambda x: validate_int(int(x), "max_risk_strategies", 
                               min_val=params['min_risk_strategies'], max_val=15)
-    )
-    
-    # Random seed
+    )    # Random seed
     use_seed = get_user_input(
         "Use random seed for reproducibility? (y/n)",
-        "y",
+        last_defaults.get('use_seed', "y"),
         lambda x: x if x.lower() in ['y', 'n'] else (_ for _ in ()).throw(ValueError("Must be 'y' or 'n'"))
     )
     
     if use_seed and use_seed.lower() == 'y':
         params['random_seed'] = get_user_input(
             "Random seed",
-            DEFAULT_RANDOM_SEED,
+            last_defaults.get('random_seed', 42),
             lambda x: validate_int(int(x), "random_seed", min_val=0)
         )
     else:
         params['random_seed'] = None
+    
+    params['use_seed'] = use_seed
+    
+    # Interactive mode for debugging
+    interactive = get_user_input(
+        "Enable interactive mode (pause after each generation)? (y/n)",
+        "n",
+        lambda x: x if x.lower() in ['y', 'n'] else (_ for _ in ()).throw(ValueError("Must be 'y' or 'n'"))
+    )
+    params['interactive_mode'] = (interactive and interactive.lower() == 'y')
     
     return params
 
@@ -317,7 +336,8 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
     
     try:
         # Calculate total days needed
-        fetcher = DataFetcher()
+        from src.utils.config import EXCHANGE_TYPE
+        fetcher = DataFetcher(exchange_type=EXCHANGE_TYPE)
         total_days = fetcher.calculate_required_days(
             params['backtest_days'],
             params['cycles']
@@ -390,11 +410,16 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         evolver = GeneticAlgorithmEvolver(
             bot_generator=bot_generator,
             backtester=backtester,
-            pair="xbtusdtm",
-            timeframe="1m",
+            pair=params['pair'],
+            timeframe=params['timeframe'],
             gpu_context=gpu_context,
             gpu_queue=gpu_queue
         )
+        
+        # Enable interactive mode for debugging (set via environment variable or param)
+        if params.get('interactive_mode', False):
+            evolver.interactive_mode = True
+            print("Interactive mode enabled - will pause after each generation")
         
         init_time = time.time() - init_start
         print(f"Component initialization completed in {init_time:.3f}s")
@@ -427,6 +452,13 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         print("\n" + "="*60)
         print("GENETIC ALGORITHM - COMPLETE")
         print("="*60 + "\n")
+        
+        # Save params as defaults for next run
+        try:
+            with open('last_run_config.json', 'w') as f:
+                json.dump(params, f, indent=2)
+        except:
+            pass
         
     except KeyboardInterrupt:
         log_warning("\n\nExecution interrupted by user")
@@ -484,7 +516,7 @@ def get_mode4_parameters() -> dict:
     import glob
     
     # List available saved bots
-    bot_files = glob.glob("bots/xbtusdtm/1m/bot_*.json")
+    bot_files = glob.glob(f"bots/xbtusdtm/{params['timeframe']}/bot_*.json")
     if bot_files:
         print(f"\nAvailable saved bots: {len(bot_files)}")
         for i, filename in enumerate(sorted(bot_files), 1):
@@ -560,7 +592,8 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
     try:
         # Step 1: Fetch data for date range
         log_info("Step 1/4: Fetching market data...")
-        fetcher = DataFetcher()
+        from src.utils.config import EXCHANGE_TYPE
+        fetcher = DataFetcher(exchange_type=EXCHANGE_TYPE)
         
         # Calculate days between dates
         start = datetime.strptime(params['start_date'], "%Y-%m-%d")

@@ -33,6 +33,45 @@ class CompactBotConfig:
     leverage: int
     survival_generations: int = 0  # Track how many generations this bot survived
     
+    def __post_init__(self):
+        """Ensure survival_generations is valid."""
+        try:
+            sg = int(self.survival_generations)
+            # Strict validation: should be in range [0, 100]
+            if sg < 0 or sg > 100:  # Any invalid value gets reset to 0
+                sg = 0
+        except (ValueError, TypeError, OverflowError, AttributeError):
+            sg = 0
+        self.survival_generations = sg
+    
+    def __deepcopy__(self, memo):
+        """Override deepcopy to ensure survival_generations is properly preserved."""
+        # Create a new instance with all fields copied
+        import copy
+        new_bot = CompactBotConfig(
+            bot_id=self.bot_id,
+            num_indicators=self.num_indicators,
+            indicator_indices=copy.deepcopy(self.indicator_indices, memo),
+            indicator_params=copy.deepcopy(self.indicator_params, memo),
+            risk_strategy_bitmap=self.risk_strategy_bitmap,
+            tp_multiplier=self.tp_multiplier,
+            sl_multiplier=self.sl_multiplier,
+            leverage=self.leverage,
+            survival_generations=self.survival_generations  # Preserve the value, __post_init__ will validate
+        )
+        memo[id(self)] = new_bot
+        return new_bot
+    
+    def __eq__(self, other):
+        """Compare bots by bot_id for equality."""
+        if not isinstance(other, CompactBotConfig):
+            return NotImplemented
+        return self.bot_id == other.bot_id
+    
+    def __hash__(self):
+        """Hash based on bot_id for set operations."""
+        return hash(self.bot_id)
+    
     def to_dict(self) -> dict:
         """Convert to JSON-serializable dict."""
         return {
@@ -97,6 +136,7 @@ class CompactBotGenerator:
         self.min_leverage = min_leverage
         self.max_leverage = max_leverage
         self.random_seed = random_seed
+        self._rng = np.random.RandomState(random_seed)  # Dedicated RNG instance
         
         # Compile kernel
         self._compile_kernel()
@@ -166,15 +206,22 @@ class CompactBotGenerator:
         return param_ranges
     
     def generate_population(self) -> List[CompactBotConfig]:
-        """Generate population of compact bots on GPU."""
+        """Generate population of compact bots on GPU with maximum parallelization."""
         log_info(f"Generating {self.population_size} compact bots on GPU...")
+        
+        # Get optimal work group size
+        device = self.ctx.devices[0]
+        max_work_group_size = device.max_work_group_size
+        # Use maximum work group size for better GPU utilization
+        work_group_size = min(512, max_work_group_size)  # Use 512 or device max
+        
+        log_info(f"GPU: {device.name} - Using work group size: {work_group_size}/{max_work_group_size}")
         
         # Prepare parameter ranges
         param_ranges = self._create_param_ranges()
         
-        # Generate random seeds
-        np.random.seed(self.random_seed)
-        seeds = np.random.randint(0, 2**31, size=self.population_size, dtype=np.uint32)
+        # Generate random seeds using dedicated RNG
+        seeds = self._rng.randint(0, 2**31, size=self.population_size, dtype=np.uint32)
         
         # Create OpenCL buffers
         bot_configs_buf = cl.Buffer(
@@ -195,14 +242,19 @@ class CompactBotGenerator:
             hostbuf=seeds
         )
         
-        # Execute kernel
+        # Execute kernel with optimized work group size for maximum parallelization
         kernel = self.program.generate_compact_bots
-        global_size = (self.population_size,)
+        
+        # Round up global size to be multiple of work group size for optimal GPU utilization
+        global_size = ((self.population_size + work_group_size - 1) // work_group_size) * work_group_size
+        local_size = work_group_size
+        
+        log_info(f"Launching GPU kernel: {global_size} work items, {local_size} per group ({global_size//local_size} groups)")
         
         kernel(
             self.queue,
-            global_size,
-            None,
+            (global_size,),
+            (local_size,),
             bot_configs_buf,
             param_ranges_buf,
             seeds_buf,
@@ -215,6 +267,7 @@ class CompactBotGenerator:
         )
         
         self.queue.finish()
+        log_info(f"GPU kernel completed - processing results...")
         
         # Read results
         bot_configs_raw = np.empty(self.population_size * COMPACT_BOT_SIZE, dtype=np.uint8)
@@ -240,8 +293,8 @@ class CompactBotGenerator:
         # Prepare parameter ranges
         param_ranges = self._create_param_ranges()
         
-        # Generate random seed
-        seed = np.random.randint(0, 2**31, dtype=np.uint32)
+        # Generate random seed using dedicated RNG to ensure unique bots
+        seed = self._rng.randint(0, 2**31, dtype=np.uint32)
         seeds = np.array([seed], dtype=np.uint32)
         
         # Create OpenCL buffers for single bot
@@ -329,7 +382,8 @@ class CompactBotGenerator:
                 risk_strategy_bitmap=int(bot_struct['risk_strategy_bitmap']),
                 tp_multiplier=float(bot_struct['tp_multiplier']),
                 sl_multiplier=float(bot_struct['sl_multiplier']),
-                leverage=int(bot_struct['leverage'])
+                leverage=int(bot_struct['leverage']),
+                survival_generations=0  # New bots start with 0
             )
             bots.append(bot)
         

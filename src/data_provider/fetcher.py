@@ -27,31 +27,46 @@ from ..utils.config import (
 
 class DataFetcher:
     """
-    Fetches OHLCV data from Kucoin Futures API with smart caching.
+    Fetches OHLCV data from Kucoin Spot API with smart caching.
     Uses parallel fetching for improved performance.
+    Data is organized by pair/timeframe: data/{pair}/{timeframe}/{date}.parquet
     """
     
-    def __init__(self, data_dir: str = DATA_DIR, max_workers: int = 4):
+    def __init__(self, data_dir: str = DATA_DIR, max_workers: int = 4, exchange_type: str = 'spot'):
         """
         Initialize DataFetcher.
         
         Args:
             data_dir: Directory to store/load data files
             max_workers: Maximum number of parallel fetch threads
+            exchange_type: 'spot' or 'futures'
         """
         self.data_dir = Path(data_dir)
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.max_workers = max_workers
+        self.exchange_type = exchange_type
         
-        # Initialize Kucoin exchange (futures)
+        # Initialize Kucoin exchange
         try:
-            self.exchange = ccxt.kucoinfutures({
-                'enableRateLimit': True,
-                'options': {
-                    'defaultType': 'future',
-                }
-            })
-            log_info("Initialized Kucoin Futures API connection")
+            if exchange_type == 'spot':
+                self.exchange = ccxt.kucoin({
+                    'enableRateLimit': True,
+                    'options': {
+                        'defaultType': 'spot',
+                    }
+                })
+                log_info("Initialized Kucoin Spot API connection")
+            else:
+                self.exchange = ccxt.kucoinfutures({
+                    'enableRateLimit': True,
+                    'options': {
+                        'defaultType': 'swap',
+                    }
+                })
+                log_info("Initialized Kucoin Futures API connection")
+            
+            # Load markets to ensure symbols are available
+            self.exchange.load_markets()
         except Exception as e:
             log_error(f"Failed to initialize Kucoin API: {e}")
             raise RuntimeError(f"Cannot initialize Kucoin API: {e}")
@@ -59,6 +74,7 @@ class DataFetcher:
     def _get_file_path(self, pair: str, timeframe: str, date: datetime) -> Path:
         """
         Generate file path for a given pair, timeframe, and date.
+        Organized structure: data/{pair}/{timeframe}/{date}.parquet
         
         Args:
             pair: Trading pair (e.g., "BTC/USDT")
@@ -68,14 +84,18 @@ class DataFetcher:
         Returns:
             Path to the data file
         """
-        pair_str = pair.replace('/', '_').lower()
+        # Sanitize pair for directory name (e.g., "BTC/USDT" -> "BTC_USDT")
+        pair_dir = pair.replace('/', '_').replace(':', '_').upper()
+        
+        # Create directory structure: data/BTC_USDT/1m/
+        pair_timeframe_dir = self.data_dir / pair_dir / timeframe
+        pair_timeframe_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Filename: 2025-11-09.parquet
         date_str = date.strftime('%Y-%m-%d')
-        filename = DATA_FILE_PATTERN.format(
-            pair=pair_str,
-            timeframe=timeframe,
-            date=date_str
-        )
-        return self.data_dir / filename
+        filename = DATA_FILE_PATTERN.format(date=date_str)
+        
+        return pair_timeframe_dir / filename
     
     def _file_exists(self, file_path: Path) -> bool:
         """Check if data file exists and is valid."""
@@ -179,7 +199,7 @@ class DataFetcher:
                 log_warning(f"Empty DataFrame for {pair} {timeframe} on {date.strftime('%Y-%m-%d')}")
                 return None
             
-            log_info(f"Fetched {len(df)} candles for {pair} {timeframe} on {date.strftime('%Y-%m-%d')}")
+            log_debug(f"Fetched {len(df)} candles for {pair} {timeframe} on {date.strftime('%Y-%m-%d')}")
             return df
             
         except ccxt.NetworkError as e:
@@ -243,7 +263,7 @@ class DataFetcher:
         timeframe = validate_timeframe(timeframe)
         total_days = validate_int(total_days, "total_days", min_val=1, max_val=1000)
         
-        # Default to yesterday (exclude today's incomplete data)
+        # Default to today (KuCoin has current data available)
         if end_date is None:
             end_date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         
@@ -267,45 +287,60 @@ class DataFetcher:
         cached_count = len(file_paths)
         missing_count = len(dates_to_fetch)
         if missing_count == 0:
-            log_info(f"All {cached_count} data files are already cached - no downloading needed")
+            log_info(f"[OK] All {cached_count} data file(s) already cached - no downloading needed")
         else:
-            log_info(f"Data cache status: {cached_count} files cached, {missing_count} files missing")
+            cache_pct = 100 * cached_count / total_days if total_days > 0 else 0
+            log_info(f"[CACHE] {cached_count}/{total_days} files cached ({cache_pct:.1f}%), {missing_count} need download")
         
         # Fetch missing data
         if dates_to_fetch:
-            log_info(f"Fetching {missing_count} missing days using {self.max_workers} parallel threads...")
+            log_info(f"[DOWNLOAD] Fetching {missing_count} missing day(s) using {self.max_workers} parallel threads...")
             
             # Use parallel fetching for better performance
-            fetched_data = self._fetch_missing_data_parallel(dates_to_fetch)
+            fetched_data = self._fetch_missing_data_parallel(dates_to_fetch, pair, timeframe)
             
             # Save all fetched data
+            saved_count = 0
             for date, df in fetched_data:
                 if df is not None and not df.empty:
                     file_path = self._get_file_path(pair, timeframe, date)
                     self._save_data(df, file_path)
                     file_paths.append(file_path)
+                    saved_count += 1
                 else:
                     raise RuntimeError(f"Failed to fetch data for {date.strftime('%Y-%m-%d')}: No data returned")
+            
+            log_info(f"[OK] Downloaded and saved {saved_count} new file(s)")
         
-        log_info(f"Data fetching complete: {len(file_paths)} files available")
+        # Sort file paths by date (ascending - oldest first)
+        file_paths.sort()
+        
+        if not file_paths:
+            raise RuntimeError(f"No data available for {pair} {timeframe}")
+        
+        log_info(f"Data ready: {len(file_paths)} file(s) total ({cached_count} from cache, {missing_count} newly downloaded)")
         return file_paths
     
-    def _fetch_missing_data_parallel(self, dates_to_fetch: List[Tuple[datetime, Path]]) -> List[Tuple[datetime, pd.DataFrame]]:
+    def _fetch_missing_data_parallel(self, dates_to_fetch: List[Tuple[datetime, Path]], pair: str, timeframe: str) -> List[Tuple[datetime, pd.DataFrame]]:
         """
-        Fetch missing data in parallel using thread pool.
+        Fetch missing data in parallel using ThreadPoolExecutor.
         
         Args:
             dates_to_fetch: List of (date, file_path) tuples
+            pair: Trading pair (original case-sensitive format)
+            timeframe: Timeframe string
             
         Returns:
             List of (date, dataframe) tuples
         """
         results = []
+        total_to_fetch = len(dates_to_fetch)
+        completed = 0
         
         with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
             # Submit all fetch tasks
             future_to_date = {
-                executor.submit(self._fetch_single_date_with_retry, date, file_path): (date, file_path)
+                executor.submit(self._fetch_single_date_with_retry, date, file_path, pair, timeframe): (date, file_path)
                 for date, file_path in dates_to_fetch
             }
             
@@ -316,7 +351,8 @@ class DataFetcher:
                     df = future.result()
                     if df is not None and not df.empty:
                         results.append((date, df))
-                        log_debug(f"Successfully fetched data for {date.strftime('%Y-%m-%d')} ({len(df)} candles)")
+                        completed += 1
+                        log_info(f"[{completed}/{total_to_fetch}] Downloaded {len(df)} candles for {date.strftime('%Y-%m-%d')}")
                     else:
                         log_error(f"No data returned for {date.strftime('%Y-%m-%d')}")
                 except Exception as e:
@@ -324,20 +360,19 @@ class DataFetcher:
         
         return results
     
-    def _fetch_single_date_with_retry(self, date: datetime, file_path: Path) -> Optional[pd.DataFrame]:
+    def _fetch_single_date_with_retry(self, date: datetime, file_path: Path, pair: str, timeframe: str) -> Optional[pd.DataFrame]:
         """
         Fetch data for a single date with retry logic.
         
         Args:
             date: Date to fetch
             file_path: Expected file path (for context)
+            pair: Trading pair (original case-sensitive format)
+            timeframe: Timeframe string
             
         Returns:
             DataFrame or None if failed
         """
-        pair = file_path.name.split('_')[0]  # Extract pair from filename
-        timeframe = file_path.name.split('_')[1]  # Extract timeframe from filename
-        
         return self._fetch_ohlcv_for_date(pair, timeframe, date)
         
         # Sort file paths by date (ascending)

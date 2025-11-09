@@ -111,7 +111,10 @@ class GPULoggingProcessor:
         num_bots = len(data_arrays['bot_ids'])
 
         # Calculate buffer size (BotData struct + per-cycle data)
-        bot_data_size = 4 * 6 + 4 * 6 + 8  # ints and floats + indicator indices
+        # BotData struct: generation(4) + bot_id(4) + num_indicators(4) + leverage(4) + total_trades(4) + 
+        #                total_pnl(4) + win_rate(4) + final_balance(4) + fitness_score(4) + sharpe_ratio(4) + 
+        #                max_drawdown(4) + indicator_indices[8](8) = 52 bytes
+        bot_data_size = 4 * 11 + 8  # 11 ints (44 bytes) + 8 indicator indices = 52 bytes
         per_cycle_size = num_cycles * 3 * 4  # 3 floats per cycle
         record_size = bot_data_size + per_cycle_size
         total_size = num_bots * record_size
@@ -130,7 +133,7 @@ class GPULoggingProcessor:
         kernel = self.kernels['serialize_binary']
         kernel.set_args(
             buffers['bot_ids'], buffers['num_indicators'], buffers['indicator_indices'],
-            buffers['leverages'], buffers['survival_generations'], buffers['total_pnls'],
+            buffers['leverages'], buffers['total_pnls'],
             buffers['win_rates'], buffers['total_trades'], buffers['final_balances'],
             buffers['fitness_scores'], buffers['sharpe_ratios'], buffers['max_drawdowns'],
             buffers['per_cycle_trades'], buffers['per_cycle_pnls'], buffers['per_cycle_winrates'],
@@ -149,6 +152,12 @@ class GPULoggingProcessor:
         """Format binary data to CSV string on CPU."""
         output_buffer, record_size = binary_data
         num_bots = len(bots)
+        
+        # DEBUG: Log actual bot.survival_generations values before CSV creation
+        import sys
+        if generation == 0:  # Only log for first generation
+            sg_values = [getattr(bot, 'survival_generations', 0) for bot in bots[:10]]
+            print(f"[DEBUG CSV] generation_0: First 10 bot survival_generations = {sg_values}", file=sys.stderr)
 
         # Get indicator names for mapping
         all_indicator_types = IndicatorFactory.get_all_indicator_types()
@@ -158,13 +167,15 @@ class GPULoggingProcessor:
         header = [
             'Generation', 'BotID', 'ProfitPct', 'WinRate', 'TotalTrades', 'FinalBalance',
             'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
-            'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles', 'IndicatorsUsed'
+            'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles', 'IndicatorsUsed',
+            'IndicatorParams'  # NEW: Add indicator parameters column
         ]
         for i in range(num_cycles):
-            header.extend([f'Cycle{i}_Trades', f'Cycle{i}_ProfitPct', f'Cycle{i}_WinRate'])
+            header.extend([f'Cycle{i}_Trades', f'Cycle{i}_ProfitPct', f'Cycle{i}_TotalPnL', f'Cycle{i}_WinRate'])
         csv_lines = [';'.join(header)]
 
         # Process each bot's binary data
+        debug_count = 0
         for bot_idx in range(num_bots):
             bot = bots[bot_idx]
             result = results[bot_idx]
@@ -177,16 +188,29 @@ class GPULoggingProcessor:
             bot_data_offset = 0
             generation_val = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
             bot_data_offset += 4
-            bot_id = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
+            bot_id_from_binary = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
             bot_data_offset += 4
             num_indicators = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
             bot_data_offset += 4
             leverage = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
             bot_data_offset += 4
-            survival_generations = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
+            
+            # DEBUG: Log first 5 bots to check binary integrity
+            if debug_count < 5:
+                debug_count += 1
+                import sys
+                binary_hex = ' '.join(f'{b:02x}' for b in data_view[:32])  # First 32 bytes in hex
+                print(f"[DEBUG] bot_idx={bot_idx}, bot.bot_id={bot.bot_id}, binary_bot_id={bot_id_from_binary}, binary_hex={binary_hex}", file=sys.stderr)
+            
+            # NOTE: survival_generations NOT in binary buffer - read directly from bot object
+            # This ensures it's always accurate and not corrupted by binary serialization
+            survival_generations = max(0, getattr(bot, 'survival_generations', 0))
+            bot_id = bot.bot_id  # Use the correct bot_id from bot object, not binary
+            
+            # Extract total_trades (int) - this was being skipped, causing offset misalignment!
+            total_trades_val = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
             bot_data_offset += 4
-            total_trades = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.int32)[0]
-            bot_data_offset += 4
+            
             total_pnl = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
             bot_data_offset += 4
             win_rate = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
@@ -215,27 +239,62 @@ class GPULoggingProcessor:
                 bot_data_offset += 4
                 per_cycle_data.extend([trades, pnl, winrate])
 
+            # Calculate AVERAGES across cycles for main columns
+            avg_profit_pct = 0.0
+            avg_win_rate = 0.0
+            avg_total_trades = 0
+            avg_total_pnl = 0.0
+            avg_sharpe_ratio = 0.0
+            avg_max_drawdown = 0.0
+            
+            if num_cycles > 0:
+                # Average across all cycles
+                cycle_pnls = result.per_cycle_pnl if hasattr(result, 'per_cycle_pnl') and result.per_cycle_pnl else []
+                cycle_trades = result.per_cycle_trades if hasattr(result, 'per_cycle_trades') and result.per_cycle_trades else []
+                cycle_wins = result.per_cycle_wins if hasattr(result, 'per_cycle_wins') and result.per_cycle_wins else []
+                
+                # Calculate averages
+                avg_total_pnl = sum(cycle_pnls) / num_cycles if cycle_pnls else 0.0
+                avg_total_trades = int(sum(cycle_trades) / num_cycles) if cycle_trades else 0
+                total_wins = sum(cycle_wins)
+                total_trades_sum = sum(cycle_trades)
+                
+                avg_profit_pct = (avg_total_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
+                avg_win_rate = total_wins / total_trades_sum if total_trades_sum > 0 else 0.0
+                avg_sharpe_ratio = result.sharpe_ratio  # Already an aggregate metric
+                avg_max_drawdown = result.max_drawdown  # Worst case across all cycles
+
             # Format as CSV row
-            profit_pct = (total_pnl / initial_balance) * 100
             indicators_used = [indicator_names[idx] for idx in bot.indicator_indices[:bot.num_indicators] if idx < len(indicator_names)]
             indicators_str = ', '.join(indicators_used)
+            
+            # Format indicator parameters
+            params_list = []
+            for i in range(bot.num_indicators):
+                ind_name = indicator_names[bot.indicator_indices[i]] if bot.indicator_indices[i] < len(indicator_names) else f"Ind{bot.indicator_indices[i]}"
+                params = bot.indicator_params[i]
+                # Format as: IndicatorName(param0, param1, param2)
+                params_str = f"{ind_name}({params[0]:.1f},{params[1]:.1f},{params[2]:.1f})"
+                params_list.append(params_str)
+            indicator_params_str = ' | '.join(params_list)
 
             row = [
                 str(generation),
                 str(bot_id),
-                f"{profit_pct:.2f}".replace('.', ','),
-                f"{win_rate:.4f}".replace('.', ','),
-                str(total_trades),
+                f"{avg_profit_pct:.2f}".replace('.', ','),
+                f"{avg_win_rate:.4f}".replace('.', ','),
+                str(avg_total_trades),
                 f"{final_balance:.2f}".replace('.', ','),
                 f"{fitness_score:.2f}".replace('.', ','),
-                f"{sharpe_ratio:.2f}".replace('.', ','),
-                f"{max_drawdown:.4f}".replace('.', ','),
+                f"{avg_sharpe_ratio:.2f}".replace('.', ','),
+                f"{avg_max_drawdown:.4f}".replace('.', ','),
                 str(survival_generations),
                 str(num_indicators),
                 str(leverage),
-                f"{total_pnl:.2f}".replace('.', ','),
+                f"{avg_total_pnl:.2f}".replace('.', ','),
                 str(num_cycles),
-                indicators_str
+                indicators_str,
+                indicator_params_str  # Add indicator parameters
             ]
 
             # Add per-cycle data
@@ -249,6 +308,7 @@ class GPULoggingProcessor:
                 row.extend([
                     str(c_trades),
                     f"{c_profit_pct:.2f}".replace('.', ','),
+                    f"{c_pnl:.2f}".replace('.', ','),  # Add TotalPnL for each cycle
                     f"{c_winrate:.4f}".replace('.', ',')
                 ])
 
@@ -264,13 +324,8 @@ class GPULoggingProcessor:
         bot_ids = np.array([bot.bot_id for bot in bots], dtype=np.int32)
         num_indicators = np.array([bot.num_indicators for bot in bots], dtype=np.int32)
         leverages = np.array([bot.leverage for bot in bots], dtype=np.int32)
-        survival_generations = np.array([bot.survival_generations for bot in bots], dtype=np.int32)
-
-        # Indicator indices (pad to 8 per bot)
-        indicator_indices = np.zeros((num_bots, 8), dtype=np.uint8)
-        for i, bot in enumerate(bots):
-            indicator_indices[i, :bot.num_indicators] = bot.indicator_indices[:bot.num_indicators]
-
+        # NOTE: survival_generations NOT sent to GPU - read from bot objects during CSV formatting
+        
         # Results data
         total_pnls = np.array([r.total_pnl for r in results], dtype=np.float32)
         win_rates = np.array([r.win_rate for r in results], dtype=np.float32)
@@ -284,6 +339,12 @@ class GPULoggingProcessor:
         per_cycle_trades = np.zeros(num_bots * num_cycles, dtype=np.float32)
         per_cycle_pnls = np.zeros(num_bots * num_cycles, dtype=np.float32)
         per_cycle_winrates = np.zeros(num_bots * num_cycles, dtype=np.float32)
+
+        # Indicator indices (8 bytes per bot)
+        indicator_indices = np.zeros((num_bots, 8), dtype=np.uint8)
+        for i, bot in enumerate(bots):
+            for j in range(min(8, len(bot.indicator_indices))):
+                indicator_indices[i, j] = bot.indicator_indices[j]
 
         for i, result in enumerate(results):
             # Safely extract per-cycle data
@@ -305,7 +366,7 @@ class GPULoggingProcessor:
             'num_indicators': num_indicators,
             'indicator_indices': indicator_indices.flatten(),
             'leverages': leverages,
-            'survival_generations': survival_generations,
+            # NOTE: survival_generations NOT included - read from bot objects during formatting
             'total_pnls': total_pnls,
             'win_rates': win_rates,
             'total_trades': total_trades,
@@ -383,19 +444,19 @@ class GPULoggingProcessor:
         header_kernel.set_args(header_buf, np.int32(num_cycles))
         cl.enqueue_nd_range_kernel(self.queue, header_kernel, (1,), None)
 
-        # Generate CSV rows
-        csv_kernel = self.kernels['serialize_csv']
-        csv_kernel.set_args(
+        # Use the binary serialization kernel (CSV formatting is done on CPU from binary data)
+        binary_kernel = self.kernels['serialize_binary']
+        binary_kernel.set_args(
             buffers['bot_ids'], buffers['num_indicators'], buffers['indicator_indices'],
-            buffers['leverages'], buffers['survival_generations'], buffers['total_pnls'],
+            buffers['leverages'], buffers['total_pnls'],
             buffers['win_rates'], buffers['total_trades'], buffers['final_balances'],
             buffers['fitness_scores'], buffers['sharpe_ratios'], buffers['max_drawdowns'],
             buffers['per_cycle_trades'], buffers['per_cycle_pnls'], buffers['per_cycle_winrates'],
-            output_buf, offsets_buf,
+            output_buf,
             np.int32(num_bots), np.int32(num_cycles), np.int32(generation), np.float32(initial_balance)
         )
 
-        cl.enqueue_nd_range_kernel(self.queue, csv_kernel, (num_bots,), None)
+        cl.enqueue_nd_range_kernel(self.queue, binary_kernel, (num_bots,), None)
 
         # Read results
         cl.enqueue_copy(self.queue, output_buffer, output_buf)

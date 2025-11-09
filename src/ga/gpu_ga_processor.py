@@ -286,7 +286,8 @@ class GPUGAProcessor:
                     risk_strategy_bitmap=child_metadata[1],
                     tp_multiplier=child_multipliers[0],
                     sl_multiplier=child_multipliers[1],
-                    leverage=child_metadata[2]
+                    leverage=child_metadata[2],
+                    survival_generations=0  # New children start with 0
                 )
                 children.append(child)
 
@@ -317,7 +318,8 @@ class GPUGAProcessor:
             risk_strategy_bitmap=0,
             tp_multiplier=0.0,
             sl_multiplier=0.0,
-            leverage=1
+            leverage=1,
+            survival_generations=0  # New children start with 0
         )
 
         min_ind = min(parent1.num_indicators, parent2.num_indicators)

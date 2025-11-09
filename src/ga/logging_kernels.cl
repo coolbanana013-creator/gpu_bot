@@ -10,7 +10,8 @@ typedef struct {
     int bot_id;
     int num_indicators;
     int leverage;
-    int survival_generations;
+    // NOTE: survival_generations removed - will be read directly from Python bot objects
+    // This avoids binary serialization corruption issues
     int total_trades;
     float total_pnl;
     float win_rate;
@@ -27,7 +28,7 @@ __kernel void serialize_bot_data_binary(
     __global const int* num_indicators,             // Number of indicators per bot
     __global const unsigned char* indicator_indices, // Indicator indices (8 per bot)
     __global const int* leverages,                  // Leverage values
-    __global const int* survival_generations,       // Survival generations
+    // NOTE: survival_generations parameter removed - not written to binary buffer
     __global const float* total_pnls,               // Total PnL values
     __global const float* win_rates,                // Win rates
     __global const int* total_trades,               // Total trades
@@ -60,7 +61,7 @@ __kernel void serialize_bot_data_binary(
     bot_data.bot_id = bot_ids[bot_idx];
     bot_data.num_indicators = num_indicators[bot_idx];
     bot_data.leverage = leverages[bot_idx];
-    bot_data.survival_generations = survival_generations[bot_idx];
+    // survival_generations NOT written to buffer - read from Python objects instead
     bot_data.total_trades = total_trades[bot_idx];
     bot_data.total_pnl = total_pnls[bot_idx];
     bot_data.win_rate = win_rates[bot_idx];
