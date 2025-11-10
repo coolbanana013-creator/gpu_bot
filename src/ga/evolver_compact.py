@@ -492,20 +492,6 @@ class GeneticAlgorithmEvolver:
         self.all_time_best.sort(key=lambda x: x[1].fitness_score, reverse=True)
         self.all_time_best = self.all_time_best[:100]
     
-    # LEGACY METHODS REMOVED: _cpu_mutate_bot, _cpu_crossover
-    # These are no longer used as we generate only new unique bots instead of offspring
-    
-    def release_combinations(self, dead_bots: List[CompactBotConfig]):
-        """
-        DEPRECATED: No longer used (per-generation uniqueness only).
-        Release indicator combinations from eliminated bots.
-        Returns combinations to the unused pool for recycling.
-        """
-        # NOTE: This method is no longer called.
-        # We use per-generation uniqueness, not global tracking.
-        # Combinations are automatically available for reuse in next generation.
-        pass
-    
     def generate_unique_bot(self, bot_id: int, excluded_combinations: set = None) -> CompactBotConfig:
         """
         Generate a bot with a GUARANTEED unique indicator combination.
@@ -667,9 +653,6 @@ class GeneticAlgorithmEvolver:
         
         return new_population
     
-    # LEGACY METHODS REMOVED: _generate_children, _gpu_generate_children, _cpu_generate_children
-    # These are no longer used - we generate only new unique bots in refill_population()
-    
     def run_evolution(
         self,
         num_generations: int,
@@ -792,14 +775,14 @@ class GeneticAlgorithmEvolver:
         # Calculate averages across all survivors
         avg_pnl = np.mean([r.total_pnl for r in results])
         avg_pnl_pct = (avg_pnl / initial_balance) * 100
-        avg_winrate = np.mean([r.win_rate for r in results])
+        avg_winrate = np.mean([r.win_rate for r in results])  # Already stored as percentage (0-100)
         avg_trades = np.mean([r.total_trades for r in results])
         avg_sharpe = np.mean([r.sharpe_ratio for r in results])
         max_pnl = max([r.total_pnl for r in results])
         
         # Print compact summary showing survivors
         print(f"Gen {gen}: {survivor_count} survivors | "
-              f"Avg: {avg_pnl_pct:+.1f}% profit, {avg_winrate:.1%} WR, "
+              f"Avg: {avg_pnl_pct:+.1f}% profit, {avg_winrate:.1f}% WR, "
               f"{avg_trades:.0f} trades, {avg_sharpe:.2f} Sharpe | "
               f"Best: ${max_pnl:.2f}")
     
@@ -1023,39 +1006,6 @@ class GeneticAlgorithmEvolver:
             json.dump(results_data, f, indent=2)
         
         log_info(f"\nSaved top {len(top_bots)} bots to {filepath} and individual files")
-    
-    def print_top_bots(self, count: int = 10, initial_balance: float = 10000.0):
-        """Print top bots to console."""
-        top_bots = self.get_top_bots(count)
-        
-        if not top_bots:
-            log_info("No bots to display")
-            return
-        
-        log_info(f"\n{'='*80}")
-        log_info(f"TOP {len(top_bots)} BOTS (All-Time Best)")
-        log_info(f"{'='*80}\n")
-        
-        for rank, (bot, result) in enumerate(top_bots, 1):
-            profit_pct = (result.total_pnl / initial_balance) * 100
-            log_info(f"Rank #{rank}")
-            log_info(f"  Bot ID: {bot.bot_id}")
-            log_info(f"  Fitness Score: {result.fitness_score:.2f}")
-            log_info(f"  Total PnL: ${result.total_pnl:.2f}")
-            log_info(f"  Profit %: {profit_pct:+.2f}%")
-            log_info(f"  Final Balance: ${result.final_balance:.2f}")
-            log_info(f"  Win Rate: {result.win_rate:.2%}")
-            log_info(f"  Total Trades: {result.total_trades}")
-            log_info(f"  Sharpe Ratio: {result.sharpe_ratio:.2f}")
-            log_info(f"  Max Drawdown: {result.max_drawdown:.2%}")
-            log_info(f"  Indicators: {bot.num_indicators}")
-            log_info(f"  Leverage: {bot.leverage}x")
-            log_info("")
-    
-    def print_current_generation(self, initial_balance: float = 10000.0):
-        """DEPRECATED: Detailed per-bot printing removed to reduce output noise."""
-        # This function intentionally does nothing - detailed logging removed
-        pass
     
     def shutdown(self):
         """Shutdown GPU processors."""

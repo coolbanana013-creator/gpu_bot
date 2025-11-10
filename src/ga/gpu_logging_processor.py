@@ -275,35 +275,39 @@ class GPULoggingProcessor:
             avg_win_rate = 0.0
             avg_total_trades = 0
             avg_total_pnl = 0.0
-            avg_sharpe_ratio = 0.0
-            avg_max_drawdown = 0.0
+            avg_sharpe_ratio = sharpe_ratio
+            avg_max_drawdown = max_drawdown
             all_cycles_positive = False
             all_cycles_have_trades = False
             
             if num_cycles > 0:
-                # Average across all cycles
-                cycle_pnls = result.per_cycle_pnl if hasattr(result, 'per_cycle_pnl') and result.per_cycle_pnl else []
-                cycle_trades = result.per_cycle_trades if hasattr(result, 'per_cycle_trades') and result.per_cycle_trades else []
-                cycle_wins = result.per_cycle_wins if hasattr(result, 'per_cycle_wins') and result.per_cycle_wins else []
+                # Extract cycle data from per_cycle_data (format: [trades, pnl, winrate] × num_cycles)
+                cycle_pnls = []
+                cycle_trades = []
+                cycle_winrates = []
+                
+                for c in range(num_cycles):
+                    idx = c * 3
+                    cycle_trades.append(per_cycle_data[idx])
+                    cycle_pnls.append(per_cycle_data[idx + 1])
+                    cycle_winrates.append(per_cycle_data[idx + 2])
                 
                 # Calculate averages
                 avg_total_pnl = sum(cycle_pnls) / num_cycles if cycle_pnls else 0.0
                 avg_total_trades = int(sum(cycle_trades) / num_cycles) if cycle_trades else 0
-                total_wins = sum(cycle_wins)
+                
+                # Calculate total wins from cycle data
+                total_wins = sum(int(cycle_trades[c] * cycle_winrates[c]) for c in range(num_cycles))
                 total_trades_sum = sum(cycle_trades)
                 
                 avg_profit_pct = (avg_total_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
                 avg_win_rate = total_wins / total_trades_sum if total_trades_sum > 0 else 0.0
-                avg_sharpe_ratio = result.sharpe_ratio  # Already an aggregate metric
-                avg_max_drawdown = result.max_drawdown  # Worst case across all cycles
                 
                 # Check if ALL cycles have positive profit percentage
-                if cycle_pnls:
-                    all_cycles_positive = all((pnl / initial_balance) * 100 > 0 for pnl in cycle_pnls)
+                all_cycles_positive = all((pnl / initial_balance) * 100 > 0 for pnl in cycle_pnls)
                 
                 # Check if ALL cycles have at least 1 trade
-                if cycle_trades:
-                    all_cycles_have_trades = all(trades > 0 for trades in cycle_trades)
+                all_cycles_have_trades = all(trades > 0 for trades in cycle_trades)
 
             # Format as CSV row
             indicators_used = [indicator_names[idx] for idx in bot.indicator_indices[:bot.num_indicators] if idx < len(indicator_names)]
@@ -535,71 +539,7 @@ class GPULoggingProcessor:
 
         self.file_executor.submit(write_task)
 
-    def _log_first_bot_details(self, bot: CompactBotConfig, result: BacktestResult, 
-                                 initial_balance: float, num_cycles: int, 
-                                 output_dir: str, generation: int):
-        """
-        DEPRECATED: No longer used. First bot details are not logged separately.
-        All bot information is available in the generation CSV files.
-        """
-        return
-        
-        # OLD CODE (disabled to remove extra log files)
-        log_file = os.path.join(output_dir, f"generation_{generation}_bot_{bot.bot_id}_details.txt")
-        
-        try:
-            with open(log_file, 'w', encoding='utf-8') as f:
-                f.write(f"=== BOT {bot.bot_id} DETAILED VERIFICATION LOG ===\n")
-                f.write(f"Generation: {generation}\n")
-                f.write(f"Leverage: {bot.leverage}x\n")
-                f.write(f"Number of Indicators: {bot.num_indicators}\n")
-                f.write(f"Initial Balance: ${initial_balance:.2f}\n\n")
-                
-                f.write(f"=== AGGREGATE RESULTS ===\n")
-                f.write(f"Total Trades (all cycles): {result.total_trades}\n")
-                f.write(f"Winning Trades: {result.winning_trades}\n")
-                f.write(f"Losing Trades: {result.losing_trades}\n")
-                f.write(f"Total PnL: ${result.total_pnl:.2f}\n")
-                f.write(f"Win Rate: {result.win_rate:.4f}\n")
-                f.write(f"Final Balance: ${result.final_balance:.2f}\n")
-                f.write(f"Fitness Score: {result.fitness_score:.2f}\n")
-                f.write(f"Sharpe Ratio: {result.sharpe_ratio:.2f}\n")
-                f.write(f"Max Drawdown: {result.max_drawdown:.4f}\n\n")
-                
-                f.write(f"=== PER-CYCLE BREAKDOWN ===\n")
-                cycle_pnls = result.per_cycle_pnl if hasattr(result, 'per_cycle_pnl') and result.per_cycle_pnl else []
-                cycle_trades = result.per_cycle_trades if hasattr(result, 'per_cycle_trades') and result.per_cycle_trades else []
-                cycle_wins = result.per_cycle_wins if hasattr(result, 'per_cycle_wins') and result.per_cycle_wins else []
-                
-                for i in range(min(num_cycles, len(cycle_pnls))):
-                    trades = cycle_trades[i] if i < len(cycle_trades) else 0
-                    pnl = cycle_pnls[i] if i < len(cycle_pnls) else 0.0
-                    wins = cycle_wins[i] if i < len(cycle_wins) else 0
-                    profit_pct = (pnl / initial_balance) * 100 if initial_balance > 0 else 0.0
-                    win_rate = wins / trades if trades > 0 else 0.0
-                    
-                    f.write(f"\nCycle {i}:\n")
-                    f.write(f"  Trades: {trades}\n")
-                    f.write(f"  Wins: {wins}\n")
-                    f.write(f"  PnL: ${pnl:.2f}\n")
-                    f.write(f"  Profit %: {profit_pct:.2f}%\n")
-                    f.write(f"  Win Rate: {win_rate:.4f}\n")
-                
-                # Calculate verification metrics
-                f.write(f"\n=== VERIFICATION CHECKS ===\n")
-                total_cycle_trades = sum(cycle_trades) if cycle_trades else 0
-                f.write(f"Sum of per-cycle trades: {total_cycle_trades}\n")
-                f.write(f"Aggregate total trades: {result.total_trades}\n")
-                f.write(f"Match: {total_cycle_trades == result.total_trades}\n\n")
-                
-                avg_pnl = sum(cycle_pnls) / num_cycles if cycle_pnls else 0.0
-                f.write(f"Average per-cycle PnL: ${avg_pnl:.2f}\n")
-                f.write(f"Aggregate total PnL: ${result.total_pnl:.2f}\n")
-                f.write(f"Match: {abs(avg_pnl - result.total_pnl) < 0.01}\n")
-                
-            log_info(f"First bot details logged to {log_file}")
-        except Exception as e:
-            log_error(f"Failed to log first bot details: {e}")
+
 
     def shutdown(self):
         """Shutdown the logging processor."""

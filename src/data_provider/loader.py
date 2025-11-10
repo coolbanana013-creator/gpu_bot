@@ -18,7 +18,7 @@ from ..utils.config import (
     OHLCV_COLUMNS, TIMEFRAME_TO_MS, DATA_GAP_TOLERANCE,
     MIN_DATA_POINTS_PER_DAY, MAX_INDICATOR_LOOKBACK
 )
-from .gpu_processor import GPUDataProcessor
+# GPUDataProcessor moved to deprecated/ folder (GPU validation disabled)
 
 
 class DataLoader:
@@ -61,16 +61,8 @@ class DataLoader:
         self.data: Optional[pd.DataFrame] = None
         self.cycle_ranges: List[Tuple[int, int]] = []
         
-        # Initialize GPU processor if requested
+        # GPU processing disabled (always failed) - using CPU validation only
         self.gpu_processor = None
-        if use_gpu_processing and gpu_context is not None and gpu_queue is not None:
-            try:
-                self.gpu_processor = GPUDataProcessor(gpu_context, gpu_queue)
-                log_info("Initialized GPU-accelerated data processing")
-            except Exception as e:
-                log_warning(f"Failed to initialize GPU data processor: {e}")
-                log_warning("Falling back to CPU processing")
-                self.gpu_processor = None
     
     def load_all_data(self) -> pd.DataFrame:
         """
@@ -132,11 +124,8 @@ class DataLoader:
         
         log_info(f"Loaded total of {len(self.data)} candles")
         
-        # Validate and clean data (GPU-accelerated if available)
-        if self.gpu_processor is not None:
-            self._validate_and_clean_data_gpu()
-        else:
-            self._validate_data()
+        # Validate data (CPU only)
+        self._validate_data()
         
         return self.data
     
@@ -213,66 +202,6 @@ class DataLoader:
             raise RuntimeError(f"Data contains {invalid_count} invalid price rows")
         
         log_info("Data validation passed")
-    
-    def _validate_and_clean_data_gpu(self) -> None:
-        """
-        Data validation using CPU (GPU validation always fails).
-        """
-        log_info("Validating data integrity")
-        self._validate_data()
-        return
-        
-        # OLD GPU CODE (disabled - always fails)
-        log_info("Performing GPU-accelerated data validation and cleaning")
-        
-        try:
-            # Convert DataFrame to numpy array for GPU processing
-            data_array = self.data[OHLCV_COLUMNS].values
-            
-            # Process data on GPU
-            processed_data, valid_flags, stats = self.gpu_processor.validate_and_clean_data(
-                data_array,
-                min_price=1e-8,    # Minimum valid price
-                max_price=1e6,     # Maximum valid price  
-                min_volume=1e-8,   # Minimum valid volume
-                max_gap_size=5     # Interpolate gaps of 5 candles or less
-            )
-            
-            # Update DataFrame with processed data
-            self.data[OHLCV_COLUMNS] = processed_data[:, 1:]  # Skip timestamp column
-            self.data['valid'] = valid_flags.astype(bool)
-            
-            # Log statistics
-            log_info(f"GPU processing complete:")
-            log_info(f"  Data quality score: {stats['data_quality_score']:.1%}")
-            log_info(f"  Mean return: {stats['mean_return']:.4f}")
-            log_info(f"  Mean volume: {stats['mean_volume']:.2f}")
-            log_info(f"  Gaps found: {stats['total_gaps']}")
-            log_info(f"  Invalid candles: {stats['total_invalids']}")
-            
-            # Check if data quality is acceptable
-            if stats['data_quality_score'] < 0.95:
-                log_warning(f"Data quality score {stats['data_quality_score']:.1%} is below 95% threshold")
-            
-            # Remove invalid candles if any
-            invalid_count = (valid_flags == 0).sum()
-            if invalid_count > 0:
-                log_warning(f"Removing {invalid_count} invalid candles")
-                self.data = self.data[valid_flags == 1].reset_index(drop=True)
-            
-            log_info("GPU data validation and cleaning completed successfully")
-            
-        except Exception as e:
-            log_error(f"GPU data processing failed: {e}")
-            log_warning("Falling back to CPU validation")
-            self._validate_data()
-    
-    def validate_data_cpu_only(self):
-        """
-        Validate data using CPU only (GPU validation always fails).
-        """
-        log_info("Validating data integrity")
-        self._validate_data()
     
     def generate_cycle_ranges(
         self,
