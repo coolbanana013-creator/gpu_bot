@@ -1,22 +1,3 @@
-"""Check for duplicate indicator combinations in generation 4."""
-import pandas as pd
-
-df = pd.read_csv('logs/generation_4.csv', sep=';')
-indicators = df['IndicatorsUsed']
-
-print(f'Total bots in generation 4: {len(indicators)}')
-print(f'Unique indicator combinations: {indicators.nunique()}')
-
-dups = indicators[indicators.duplicated(keep=False)]
-if len(dups) > 0:
-    print(f'\n❌ DUPLICATES FOUND: {len(dups)} bots with duplicate combinations')
-    print('\nDuplicate combinations:')
-    for combo in dups.unique():
-        count = (indicators == combo).sum()
-        print(f'  "{combo}" appears {count} times')
-else:
-    print('\n✅ NO DUPLICATES - All bots have unique indicator combinations!')
-
-# Check diversity percentage
-diversity_pct = (indicators.nunique() / len(indicators)) * 100
-print(f'\nDiversity: {diversity_pct:.2f}%')
+version https://git-lfs.github.com/spec/v1
+oid sha256:5b234fc3b344e94b7ba2f376ab2764b86de4139d3ebaaa074161659a34c78c1a
+size 860
