@@ -297,7 +297,16 @@ def get_mode1_parameters() -> dict:
         last_defaults.get('max_risk_strategies', 5),
         lambda x: validate_int(int(x), "max_risk_strategies", 
                               min_val=params['min_risk_strategies'], max_val=15)
-    )    # Random seed
+    )
+    
+    # Data chunk size for GPU processing
+    params['data_chunk_days'] = get_user_input(
+        "Data chunk size in days (1-365, affects GPU memory usage)",
+        last_defaults.get('data_chunk_days', 100),
+        lambda x: validate_int(int(x), "data_chunk_days", min_val=1, max_val=365)
+    )
+    
+    # Random seed
     use_seed = get_user_input(
         "Use random seed for reproducibility? (y/n)",
         last_defaults.get('use_seed', "y"),
@@ -424,7 +433,8 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             gpu_context=gpu_context,
             gpu_queue=gpu_queue,
             initial_balance=params['initial_balance'],
-            target_chunk_seconds=1.0  # Smooth 1-second chunk processing
+            target_chunk_seconds=1.0,  # Smooth 1-second chunk processing
+            data_chunk_days=params['data_chunk_days']
         )
         
         evolver = GeneticAlgorithmEvolver(
@@ -714,7 +724,8 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
             gpu_context=gpu_context,
             gpu_queue=gpu_queue,
             initial_balance=params['initial_balance'],
-            target_chunk_seconds=1.0  # Smooth 1-second chunk processing
+            target_chunk_seconds=1.0,  # Smooth 1-second chunk processing
+            data_chunk_days=params.get('data_chunk_days', 100)  # Use default 100 if not specified
         )
         
         results = backtester.backtest_bots(
