@@ -414,23 +414,15 @@ class GeneticAlgorithmEvolver:
             if passes_all_cycles:
                 profitable_pairs.append((bot, result))
         
-        # If no bots passed criteria, relax to just overall positive total PnL
+        # STRICT CRITERIA ONLY - No relaxation
         if not profitable_pairs:
-            log_warning(f"SURVIVAL FILTER: {eliminated_no_trades} cycles with no trades, {eliminated_negative_cycle} cycles with negative profit")
-            log_warning("No bots passed all-cycles-profitable criteria, relaxing to overall positive PnL")
-            for bot, result in zip(population, results):
-                profit_pct = (result.total_pnl / initial_balance) * 100
-                if profit_pct > 0:
-                    profitable_pairs.append((bot, result))
+            log_error(f"SURVIVAL FILTER: {eliminated_no_trades} cycles with no trades, {eliminated_negative_cycle} cycles with negative profit, 0 bots passed")
+            log_error("No bots met strict criteria: ALL cycles must have trades AND positive profit")
+            log_error("Generating completely new population for next generation")
+            # Return empty survivors - refill_population will generate all new bots
+            return [], []
         
-        # If still no profitable bots, keep the most profitable
-        if not profitable_pairs:
-            all_pairs = list(zip(population, results))
-            all_pairs.sort(key=lambda x: x[1].total_pnl, reverse=True)
-            profitable_pairs = [all_pairs[0]]
-            log_warning("No bots with positive profit, keeping most profitable")
-        else:
-            log_info(f"SURVIVAL FILTER: {eliminated_no_trades} cycles with no trades, {eliminated_negative_cycle} cycles with negative profit, {len(profitable_pairs)} bots passed (all cycles profitable)")
+        log_info(f"SURVIVAL FILTER: {eliminated_no_trades} cycles with no trades, {eliminated_negative_cycle} cycles with negative profit, {len(profitable_pairs)} bots passed (ALL cycles profitable)")
         
         # Step 2: Sort by fitness score (best first)
         profitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
