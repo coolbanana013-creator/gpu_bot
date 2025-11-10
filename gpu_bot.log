@@ -30145,3 +30145,87 @@ Saved top 100 bots to bots/BTC_USDT/1m/best_bots.json and individual files
 2025-11-09 23:28:40,554 - src.utils.validation - INFO -   Indicators: 2
 2025-11-09 23:28:40,554 - src.utils.validation - INFO -   Leverage: 20x
 2025-11-09 23:28:40,555 - src.utils.validation - INFO - 
+2025-11-09 23:32:26,133 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-09 23:32:26,310 - src.utils.validation - INFO - ============================================================
+2025-11-09 23:32:26,311 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-09 23:32:26,312 - src.utils.validation - INFO - ============================================================
+2025-11-09 23:32:26,312 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-09 23:32:26,313 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-09 23:32:26,314 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-09 23:32:26,314 - src.utils.validation - INFO - Compute Units: 80
+2025-11-09 23:32:26,314 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-09 23:32:26,315 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-09 23:32:26,315 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-09 23:32:26,315 - src.utils.validation - INFO - ============================================================
+
+2025-11-09 23:33:00,466 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-09 23:33:00,476 - src.utils.validation - INFO - Initialized Kucoin Spot API connection
+2025-11-09 23:33:02,659 - src.utils.validation - INFO - Fetching 840 days of BTC/USDT 1m data ending 2025-11-09
+2025-11-09 23:33:04,695 - src.utils.validation - INFO - [OK] All 840 data file(s) already cached - no downloading needed
+2025-11-09 23:33:04,696 - src.utils.validation - INFO - Data ready: 840 file(s) total (840 from cache, 0 newly downloaded)
+2025-11-09 23:33:04,698 - src.utils.validation - INFO - Set random seed to 42
+2025-11-09 23:33:04,715 - src.utils.validation - INFO - Compiled GPU data processing kernels
+2025-11-09 23:33:04,716 - src.utils.validation - INFO - Initialized GPU-accelerated data processing
+2025-11-09 23:33:04,716 - src.utils.validation - INFO - Loading 840 data files in parallel
+2025-11-09 23:33:06,099 - src.utils.validation - INFO - Loaded total of 1209660 candles
+2025-11-09 23:33:06,100 - src.utils.validation - INFO - Performing GPU-accelerated data validation and cleaning
+2025-11-09 23:33:06,216 - src.utils.validation - INFO - GPU data processing complete: 83.3% quality score
+2025-11-09 23:33:06,217 - src.utils.validation - ERROR - GPU data processing failed: Columns must be same length as key
+2025-11-09 23:33:06,218 - src.utils.validation - WARNING - Falling back to CPU validation
+2025-11-09 23:33:06,218 - src.utils.validation - INFO - Validating data integrity
+2025-11-09 23:33:06,357 - src.utils.validation - INFO - Data validation passed
+2025-11-09 23:33:06,426 - src.utils.validation - INFO - Generating 100 non-overlapping cycle ranges (7 days each)
+2025-11-09 23:33:06,428 - src.utils.validation - INFO - Successfully generated 100 non-overlapping cycle ranges
+2025-11-09 23:33:06,435 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-09 23:33:06,436 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-09 23:33:06,436 - src.utils.validation - INFO -   Population: 1000000 bots
+2025-11-09 23:33:06,436 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-09 23:33:06,436 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-09 23:33:06,436 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-09 23:33:06,443 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-09 23:33:06,447 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-09 23:33:06,451 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-09 23:33:06,452 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-09 23:33:06,452 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-09 23:33:06,452 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-09 23:33:06,452 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-09 23:33:06,453 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-09 23:33:06,461 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-09 23:33:06,461 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-09 23:33:06,461 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-09 23:33:06,465 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-09 23:33:06,466 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-09 23:33:06,466 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-09 23:33:06,466 - src.utils.validation - INFO -   Pre-computing 1-indicator combinations...
+2025-11-09 23:33:06,466 - src.utils.validation - INFO -     50 combinations available
+2025-11-09 23:33:06,467 - src.utils.validation - INFO -   Pre-computing 2-indicator combinations...
+2025-11-09 23:33:06,467 - src.utils.validation - INFO -     1,225 combinations available
+2025-11-09 23:33:06,468 - src.utils.validation - INFO -   Pre-computing 3-indicator combinations...
+2025-11-09 23:33:06,474 - src.utils.validation - INFO -     19,600 combinations available
+2025-11-09 23:33:06,474 - src.utils.validation - INFO -   Pre-computing 4-indicator combinations...
+2025-11-09 23:33:06,754 - src.utils.validation - INFO -     230,300 combinations available
+2025-11-09 23:33:06,754 - src.utils.validation - INFO -   Pre-computing 5-indicator combinations...
+2025-11-09 23:33:16,008 - src.utils.validation - INFO -     2,118,760 combinations available
+2025-11-09 23:33:16,043 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-09 23:33:16,044 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-09 23:33:16,044 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-09 23:33:16,045 - src.utils.validation - INFO -   Pre-computed combination pools: 2369935 total combinations
+2025-11-09 23:33:16,046 - src.utils.validation - INFO - 
+Starting Evolution: 5 generations, 100 cycles
+2025-11-09 23:33:16,047 - src.utils.validation - INFO - Evolution profiler started
+2025-11-09 23:33:16,048 - src.utils.validation - INFO - Generating initial population...
+2025-11-09 23:33:16,048 - src.utils.validation - INFO - Generating 1000000 compact bots on GPU...
+2025-11-09 23:33:16,101 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-09 23:33:16,217 - src.utils.validation - INFO - Launching GPU kernel: 1000448 work items, 512 per group (1954 groups)
+2025-11-09 23:33:16,324 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-09 23:33:32,964 - src.utils.validation - INFO - [OK] Generated 1000000 compact bots (128 bytes each)
+2025-11-09 23:33:34,866 - src.utils.validation - INFO - Initial population: 1000000 bots, 345625 unique (34.6% natural diversity)
+2025-11-09 23:33:34,867 - src.utils.validation - INFO - Note: Combinations can be reused across generations (no global tracking)
+2025-11-09 23:33:35,082 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-09 23:33:35,082 - src.utils.validation - INFO - Evaluating 1000000 bots...
+2025-11-09 23:33:35,083 - src.utils.validation - INFO - Using optimal chunk size based on previous testing
+2025-11-09 23:33:35,084 - src.utils.validation - INFO -   Workload: 1000000 bots × 100 cycles
+2025-11-09 23:33:35,088 - src.utils.validation - INFO -   => Chunk size: 100 days (144,000 bars)
+2025-11-09 23:33:35,088 - src.utils.validation - INFO -   => Note: Safety factor applied - actual overlapping cycles may vary per chunk
