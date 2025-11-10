@@ -142,10 +142,6 @@ class GPULoggingProcessor:
 
         csv_file = os.path.join(output_dir, f"generation_{generation}.csv")
         self._write_csv_async(csv_file, csv_data)
-        
-        # Log detailed trades for first bot for verification
-        if len(bots) > 0 and len(results) > 0:
-            self._log_first_bot_details(bots[0], results[0], initial_balance, num_cycles, output_dir, generation)
 
     def _serialize_bot_data_gpu(self, data_arrays, generation, initial_balance, num_cycles):
         """Serialize bot data to binary format using GPU."""
@@ -542,7 +538,13 @@ class GPULoggingProcessor:
     def _log_first_bot_details(self, bot: CompactBotConfig, result: BacktestResult, 
                                  initial_balance: float, num_cycles: int, 
                                  output_dir: str, generation: int):
-        """Log detailed per-cycle information for the first bot for verification."""
+        """
+        DEPRECATED: No longer used. First bot details are not logged separately.
+        All bot information is available in the generation CSV files.
+        """
+        return
+        
+        # OLD CODE (disabled to remove extra log files)
         log_file = os.path.join(output_dir, f"generation_{generation}_bot_{bot.bot_id}_details.txt")
         
         try:

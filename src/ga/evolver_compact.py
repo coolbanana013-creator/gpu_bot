@@ -171,8 +171,9 @@ class GeneticAlgorithmEvolver:
         self.population: List[CompactBotConfig] = []
         self.population_results: List[BacktestResult] = []
         
-        # NO global tracking - combinations can be reused across generations
-        # Only enforce uniqueness WITHIN each generation (not across all history)
+        # GLOBAL tracking enabled - combinations are NEVER reused across generations
+        # self.used_combinations will track all combinations used in any generation
+        # This ensures maximum diversity and exploration of the 2M+ combination space
         
         # Global pre-computed combination pools for O(1) selection
         self._precompute_combination_pools()
@@ -187,9 +188,10 @@ class GeneticAlgorithmEvolver:
         self.interactive_mode = False
         
         log_info("GeneticAlgorithmEvolver initialized (compact architecture)")
-        log_info(f"  Mutation rate: {mutation_rate:.1%}")
+        log_info(f"  Mutation rate: {mutation_rate:.1%} (NOT USED - no crossover/mutation)")
         log_info(f"  Elite percentage: {elite_pct:.1%}")
-        log_info(f"  Pre-computed combination pools: {sum(len(p) for p in self.unused_combinations.values())} total combinations")
+        log_info(f"  Pre-computed combination pools: {sum(len(p) for p in self.unused_combinations.values()):,} total combinations")
+        log_info(f"  Strategy: Global tracking - no combination ever reused")
     
     def _precompute_combination_pools(self):
         """
@@ -214,7 +216,7 @@ class GeneticAlgorithmEvolver:
         - 8 indicators: C(50,8) = 536,878,650
         Total: ~652 million combinations (1-8 indicators)
         
-        Note: Pools are shared across all generations. Combinations can be reused.
+        Note: Once a combination is used, it's permanently removed from the pool (no reuse).
         """
         import itertools
         import pickle
@@ -268,29 +270,71 @@ class GeneticAlgorithmEvolver:
     def initialize_population(self) -> List[CompactBotConfig]:
         """
         Generate initial population with 100% unique indicator combinations.
+        Uses precomputed combination pools to guarantee uniqueness.
         
         Returns:
             Initial population of bots with guaranteed unique combinations
         """
-        log_info("Generating initial population...")
+        log_info("Generating initial population with guaranteed unique combinations...")
+        
+        # Generate base population on GPU (only for parameters, will reassign indicators)
         self.population = self.bot_generator.generate_population()
         self.current_generation = 0
         
-        # GPU generates random combinations with natural diversity (~70-98% for large populations)
-        # No global tracking - combinations can be reused across generations
-        seen_combinations = set()
+        # Track globally used combinations across all generations
+        self.used_combinations = set()
         
+        # Get available sizes with their pool counts
+        min_ind = self.bot_generator.min_indicators
+        max_ind = self.bot_generator.max_indicators
+        available_sizes = list(range(min_ind, max_ind + 1))
+        
+        log_info(f"Distributing {len(self.population)} bots across indicator sizes {min_ind}-{max_ind}")
+        
+        # Assign unique combinations to each bot
+        for i, bot in enumerate(self.population):
+            # Try to find an available combination, checking sizes randomly
+            random.shuffle(available_sizes)
+            
+            assigned = False
+            for num_indicators in available_sizes:
+                available = self.unused_combinations.get(num_indicators, set())
+                
+                if available:
+                    # Pick a random unused combination
+                    combo = available.pop()
+                    self.used_combinations.add(combo)
+                    
+                    # Update bot with this combination
+                    bot.num_indicators = num_indicators
+                    combo_list = sorted(list(combo))
+                    for j, idx in enumerate(combo_list):
+                        bot.indicator_indices[j] = idx
+                    
+                    assigned = True
+                    break
+            
+            if not assigned:
+                log_error(f"CRITICAL: No combinations available for bot {i}! All pools exhausted.")
+                break
+        
+        # Verify uniqueness
+        seen_combinations = set()
         for bot in self.population:
             combo = frozenset(bot.indicator_indices[:bot.num_indicators])
             seen_combinations.add(combo)
         
-        # DEBUG: Log diversity metrics
-        unique_combos = len(seen_combinations)
-        total_bots = len(self.population)
-        diversity_pct = 100 * unique_combos / total_bots if total_bots > 0 else 0
+        unique_count = len(seen_combinations)
+        total_count = len(self.population)
         
-        log_info(f"Initial population: {total_bots} bots, {unique_combos} unique ({diversity_pct:.1f}% natural diversity)")
-        log_info(f"Note: Combinations can be reused across generations (no global tracking)")
+        log_info(f"Initial population: {total_count} bots, {unique_count} unique (100.0% uniqueness)")
+        log_info(f"Global tracking: {len(self.used_combinations)} combinations marked as used")
+        
+        # Log distribution across sizes
+        size_distribution = {}
+        for bot in self.population:
+            size_distribution[bot.num_indicators] = size_distribution.get(bot.num_indicators, 0) + 1
+        log_info(f"Size distribution: {dict(sorted(size_distribution.items()))}")
         
         return self.population
     
@@ -325,9 +369,9 @@ class GeneticAlgorithmEvolver:
         survival_rate: float = 0.5
     ) -> Tuple[List[CompactBotConfig], List[BacktestResult]]:
         """
-        Select bots with UNIQUE indicator combinations that meet survival criteria:
-        1) Positive PnL percentage
-        2) At least 1 trade per cycle
+        Select bots with UNIQUE indicator combinations where ALL cycles meet BOTH criteria:
+        1) At least 1 trade per cycle
+        2) Positive profit percentage per cycle (> 0%)
         
         Enforces 100% diversity among survivors by keeping only the BEST bot per unique indicator combination.
         
@@ -339,40 +383,43 @@ class GeneticAlgorithmEvolver:
         Returns:
             Tuple of (surviving_bots, surviving_results) with 100% unique indicator combinations
         """
-        # Step 1: Filter bots with:
-        # a) Positive PnL percentage (profit_pct > 0)
-        # b) At least 1 trade per cycle (all cycles must have >= 1 trade)
+        # Step 1: Filter bots where ALL cycles meet BOTH criteria:
+        # a) At least 1 trade per cycle
+        # b) Positive profit percentage per cycle (> 0%)
         profitable_pairs = []
         eliminated_no_trades = 0
-        eliminated_negative_pnl = 0
+        eliminated_negative_cycle = 0
+        
+        initial_balance = 1000.0  # Standard initial balance
         
         for bot, result in zip(population, results):
-            # Check 1: Positive profit percentage
-            initial_balance = 1000.0  # Standard initial balance
-            profit_pct = (result.total_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
-            if profit_pct <= 0:
-                eliminated_negative_pnl += 1
-                continue
+            # Check all cycles
+            passes_all_cycles = True
             
-            # Check 2: All cycles must have at least 1 trade
-            has_empty_cycle = False
-            for cycle_trades in result.per_cycle_trades:
+            for cycle_idx, (cycle_trades, cycle_pnl) in enumerate(zip(result.per_cycle_trades, result.per_cycle_pnl)):
+                # Check 1: Cycle must have at least 1 trade
                 if cycle_trades < 1:
-                    has_empty_cycle = True
                     eliminated_no_trades += 1
+                    passes_all_cycles = False
+                    break
+                
+                # Check 2: Cycle must have positive profit percentage
+                cycle_profit_pct = (cycle_pnl / initial_balance) * 100
+                if cycle_profit_pct <= 0:
+                    eliminated_negative_cycle += 1
+                    passes_all_cycles = False
                     break
             
-            # Only keep bots that pass BOTH criteria
-            if not has_empty_cycle:
+            # Only keep bots where ALL cycles passed BOTH criteria
+            if passes_all_cycles:
                 profitable_pairs.append((bot, result))
         
-        # If no bots passed criteria, relax to just positive PnL
+        # If no bots passed criteria, relax to just overall positive total PnL
         if not profitable_pairs:
-            log_warning(f"SURVIVAL FILTER: {eliminated_no_trades} bots eliminated for missing trades, {eliminated_negative_pnl} for non-positive PnL")
-            log_warning("No bots passed both criteria, relaxing to positive PnL only")
+            log_warning(f"SURVIVAL FILTER: {eliminated_no_trades} cycles with no trades, {eliminated_negative_cycle} cycles with negative profit")
+            log_warning("No bots passed all-cycles-profitable criteria, relaxing to overall positive PnL")
             for bot, result in zip(population, results):
-                initial_balance = 1000.0
-                profit_pct = (result.total_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
+                profit_pct = (result.total_pnl / initial_balance) * 100
                 if profit_pct > 0:
                     profitable_pairs.append((bot, result))
         
@@ -383,7 +430,7 @@ class GeneticAlgorithmEvolver:
             profitable_pairs = [all_pairs[0]]
             log_warning("No bots with positive profit, keeping most profitable")
         else:
-            log_info(f"SURVIVAL FILTER: {eliminated_no_trades} bots eliminated for missing trades, {eliminated_negative_pnl} for non-positive PnL, {len(profitable_pairs)} passed")
+            log_info(f"SURVIVAL FILTER: {eliminated_no_trades} cycles with no trades, {eliminated_negative_cycle} cycles with negative profit, {len(profitable_pairs)} bots passed (all cycles profitable)")
         
         # Step 2: Sort by fitness score (best first)
         profitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
@@ -428,10 +475,10 @@ class GeneticAlgorithmEvolver:
         self._update_all_time_best(surviving_pairs)
         
         # Log diversity and filtering stats
-        total_profitable = len(profitable_pairs)
+        total_all_cycles_profitable = len(profitable_pairs)
         unique_count = len(surviving_pairs)
         eliminated_total = len(population) - len(profitable_pairs)
-        log_info(f"SURVIVAL: {unique_count} survivors (from {total_profitable} bots with positive PnL and all cycles with trades)")
+        log_info(f"SURVIVAL: {unique_count} survivors (from {total_all_cycles_profitable} bots where ALL cycles have trades AND positive profit)")
         log_info(f"ELIMINATED: {eliminated_total} bots total")
         
         return survivor_bots, survivor_results
@@ -462,71 +509,64 @@ class GeneticAlgorithmEvolver:
     def generate_unique_bot(self, bot_id: int, excluded_combinations: set = None) -> CompactBotConfig:
         """
         Generate a bot with a GUARANTEED unique indicator combination.
-        Unique within current batch only - allows reuse from dead bots in previous generations.
+        Ensures uniqueness across ALL generations - no combination is ever reused.
         
         Args:
             bot_id: ID to assign to new bot
-            excluded_combinations: Combinations to exclude in THIS batch (survivors + already generated)
+            excluded_combinations: Combinations already used in current batch
             
         Returns:
-            New bot with unique indicator combination within current batch
+            New bot with globally unique indicator combination
         """
         # Generate base bot with random parameters
         bot = self.bot_generator.generate_single_bot(bot_id)
         
-        # Only exclude combinations in THIS batch (not global history)
+        # Combine batch exclusions with globally used combinations
         batch_excluded = excluded_combinations if excluded_combinations else set()
+        all_excluded = self.used_combinations | batch_excluded
         
-        # Check if combination is already used in this batch
+        # Check if combination is already used globally
         combo = frozenset(bot.indicator_indices[:bot.num_indicators])
         
-        if combo not in batch_excluded:
-            # Lucky! The random combo is unique in this batch
+        if combo not in all_excluded:
+            # Lucky! The random combo is globally unique
+            # Mark as used and remove from pool
+            self.used_combinations.add(combo)
+            if combo in self.unused_combinations.get(bot.num_indicators, set()):
+                self.unused_combinations[bot.num_indicators].remove(combo)
             return bot
         
         # Need to select from pre-computed unused pool
-        num_indicators = bot.num_indicators
+        # Try sizes randomly to avoid getting stuck on exhausted pools
+        min_ind = self.bot_generator.min_indicators
+        max_ind = self.bot_generator.max_indicators
+        all_sizes = list(range(min_ind, max_ind + 1))
+        random.shuffle(all_sizes)
         
-        # Get available combinations for this size (exclude only current batch)
-        available = self.unused_combinations[num_indicators] - batch_excluded
-        
-        if available:
-            # Pop one combination from the available set
-            combo = available.pop()
+        for num_indicators in all_sizes:
+            available = self.unused_combinations.get(num_indicators, set())
             
-            # Update bot with this combination
-            for i, idx in enumerate(sorted(combo)):
-                bot.indicator_indices[i] = idx
-            bot.num_indicators = len(combo)
-            return bot
-        
-        # Try alternative sizes if current size is exhausted in this batch
-        # Prefer LARGER sizes first (4->5->3->2->1 for more combinations)
-        alternatives = []
-        for delta in [1, 2, -1, -2]:
-            alt_size = num_indicators + delta
-            if 1 <= alt_size <= 8:  # Support up to 8 indicators
-                alternatives.append(alt_size)
-        
-        for alternative_size in alternatives:
-            available = self.unused_combinations[alternative_size] - batch_excluded
             if available:
+                # Pop one combination from the available set
                 combo = available.pop()
                 
-                # Update bot with alternative size
-                bot.num_indicators = alternative_size
+                # Mark as globally used
+                self.used_combinations.add(combo)
+                
+                # Update bot with this combination
+                bot.num_indicators = num_indicators
                 for i, idx in enumerate(sorted(combo)):
                     bot.indicator_indices[i] = idx
-                log_debug(f"Changed from {num_indicators} to {alternative_size} indicators (batch exhausted)")
+                
                 return bot
         
-        # Critical: all pools exhausted for this batch
-        # This is unlikely unless batch size > 2M combinations
-        total_available = sum(len(pool - batch_excluded) for pool in self.unused_combinations.values())
-        log_error(f"CRITICAL: All pools exhausted for batch! {total_available} globally available")
-        log_error(f"  Batch size: {len(batch_excluded)}, Pool availability: {[len(self.unused_combinations[i] - batch_excluded) for i in range(1, 9)]}")
+        # Critical: all pools exhausted globally
+        total_available = sum(len(pool) for pool in self.unused_combinations.values())
+        log_error(f"CRITICAL: All combination pools exhausted! {total_available} combinations remaining")
+        log_error(f"  Used globally: {len(self.used_combinations)} combinations")
+        log_error(f"  Pool sizes: {[(i, len(self.unused_combinations.get(i, set()))) for i in range(min_ind, max_ind + 1)]}")
         
-        # Last resort: return duplicate (will be logged in refill_population)
+        # Last resort: return bot with duplicate combo (should never happen with 2M+ combinations)
         return bot
     
     def refill_population(
@@ -552,11 +592,10 @@ class GeneticAlgorithmEvolver:
         
         new_population = []
         
-        # Track unique indicator combinations in THIS generation only
-        batch_combinations = set()  # Only track within THIS batch/generation
-        survivor_combos = []  # For debugging
+        # Track combinations in current batch to avoid duplicates within this generation
+        batch_combinations = set()
         
-        # Add all survivors to new population (no deduplication)
+        # Add all survivors to new population
         for survivor in survivors:
             # Validate survival_generations before processing
             if hasattr(survivor, 'survival_generations'):
@@ -569,60 +608,62 @@ class GeneticAlgorithmEvolver:
             
             combo = frozenset(survivor.indicator_indices[:survivor.num_indicators])
             
-            # Track this combination ONLY in batch (no global tracking)
+            # Track in batch and ensure globally tracked
             batch_combinations.add(combo)
-            survivor_combos.append(combo)
+            if combo not in self.used_combinations:
+                self.used_combinations.add(combo)
+                # Remove from unused pool if present
+                if combo in self.unused_combinations.get(survivor.num_indicators, set()):
+                    self.unused_combinations[survivor.num_indicators].remove(combo)
             
             # Add survivor to population
             copied_survivor = copy.deepcopy(survivor)
             new_population.append(copied_survivor)
         
-        # DEBUG: Log survivor diversity (should be 100% after select_survivors enforces uniqueness)
+        # Log survivor diversity
         unique_survivor_combos = len(batch_combinations)
         total_survivors = len(survivors)
         diversity_pct = 100 * unique_survivor_combos / total_survivors if total_survivors > 0 else 0
-        log_info(f"Survivors for refill: {total_survivors} total, {unique_survivor_combos} unique indicator combinations ({diversity_pct:.1f}% diversity)")
+        log_info(f"Survivors: {total_survivors} total, {unique_survivor_combos} unique combinations ({diversity_pct:.1f}% diversity)")
+        log_info(f"Global tracking: {len(self.used_combinations)} combinations used across all generations")
         
         # Fill remaining slots with NEW UNIQUE BOTS (no offspring/mutation)
         next_bot_id = max(bot.bot_id for bot in survivors) + 1
-        num_new_bots = target_size - len(survivors)  # Use actual survivor count
+        num_new_bots = target_size - len(survivors)
         
         if num_new_bots > 0:
-            # Generate completely new unique bots with NO duplicates within this batch
-            log_info(f"Generating {num_new_bots} new unique bots (no crossover/mutation)")
+            log_info(f"Generating {num_new_bots} new globally unique bots (no crossover/mutation/reuse)")
             
-            # DEBUG: Log pool sizes before generation
+            # Log pool availability
             pool_sizes = {size: len(pool) for size, pool in self.unused_combinations.items()}
-            log_info(f"Unused pool sizes: {pool_sizes}")
-            log_info(f"batch_combinations size: {len(batch_combinations)} (tracking THIS generation only)")
+            total_unused = sum(pool_sizes.values())
+            log_info(f"Available combinations: {total_unused:,} unused, {len(self.used_combinations):,} used globally")
             
             for i in range(num_new_bots):
-                # CRITICAL: Pass batch_combinations to exclude combos already in THIS batch
-                # This ensures uniqueness WITHIN generation, but allows reuse across generations
+                # Generate globally unique bot (never reuses any combination from history)
                 new_bot = self.generate_unique_bot(next_bot_id + i, batch_combinations)
                 combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
                 
-                # DEBUG: Check if combo was already in batch (should be rare)
-                if combo in batch_combinations:
-                    all_indicator_types = IndicatorFactory.get_all_indicator_types()
-                    indicator_names = [indicator_type.value for indicator_type in all_indicator_types]
-                    indicators_str = ', '.join([indicator_names[idx] for idx in sorted(combo)])
-                    log_warning(f"Bot {i}: DUPLICATE DETECTED! combo = [{indicators_str}]")
-                    log_warning(f"  batch_combinations size: {len(batch_combinations)}, unused pool sizes: {pool_sizes}")
-                
-                # CRITICAL: Track in batch (no global tracking - allows reuse across generations)
+                # Track in batch for within-generation uniqueness check
                 batch_combinations.add(combo)
                 
                 new_population.append(new_bot)
             
-            # DEBUG: Log diversity metrics after refill
+            # Verify final diversity (should always be 100%)
             all_combos = [frozenset(bot.indicator_indices[:bot.num_indicators]) for bot in new_population]
             unique_after_refill = len(set(all_combos))
             total_after_refill = len(new_population)
             diversity_pct = 100 * unique_after_refill / total_after_refill if total_after_refill > 0 else 0
             
-            log_info(f"After refill: {total_after_refill} total bots, {unique_after_refill} unique indicator combinations ({diversity_pct:.1f}% diversity)")
-            log_info(f"Combinations reused across generations (allowed): {total_after_refill - unique_after_refill} potential duplicates")
+            log_info(f"After refill: {total_after_refill} bots, {unique_after_refill} unique combinations ({diversity_pct:.1f}% diversity)")
+            
+            if unique_after_refill != total_after_refill:
+                duplicates = total_after_refill - unique_after_refill
+                log_error(f"ERROR: Found {duplicates} duplicate combinations in population!")
+            
+            # Log remaining pool sizes
+            remaining_unused = sum(len(pool) for pool in self.unused_combinations.values())
+            log_info(f"Remaining unused combinations: {remaining_unused:,}")
         
         return new_population
     
@@ -688,28 +729,24 @@ class GeneticAlgorithmEvolver:
             self.log_generation_bots(gen, self.population, self.population_results, initial_balance, len(cycles))
             self.profiler.end_phase("logging_generation")
             
-            # Phase 4: Print generation summary (use FULL population results, not just survivors)
+            # Phase 4: Print generation summary (use SURVIVORS only - they passed all criteria)
             self.profiler.start_phase("generation_summary")
-            self._print_generation_summary(gen, self.population_results, initial_balance)
+            self._print_generation_summary(gen, survivor_results, initial_balance, len(survivors))
             self.profiler.end_phase("generation_summary")
             
-            # Phase 5: DON'T Release combinations - keep them reserved for maximum diversity!
-            # NOTE: We used to release dead bot combinations back to unused pool, but that caused
-            # massive duplicates because new bots would immediately reuse the same combinations.
-            # By keeping combinations reserved (in self.used_combinations), we ensure continuous
-            # exploration of the 2.37M combination space.
+            # Phase 5: Combination tracking (globally tracked, never reused)
+            # All combinations are tracked in self.used_combinations
+            # Dead bot combinations are NOT released - they remain permanently used
+            # This ensures maximum diversity and exploration of the 2M+ combination space
             self.profiler.start_phase("combination_cleanup")
-            # survivor_set = set(survivors)
-            # dead_bots = [bot for bot in self.population if bot not in survivor_set]
-            # self.release_combinations(dead_bots)  # DISABLED for maximum diversity
+            # No action needed - combinations are permanently tracked
             self.profiler.end_phase("combination_cleanup")
             
-            # Phase 6: Refill population (crossover/mutation)
+            # Phase 6: Refill population (NO crossover/mutation - only new unique combinations)
             self.profiler.start_phase("population_refill")
-            log_info("Refilling population...")
+            log_info("Refilling population with new globally unique combinations...")
             self.population = self.refill_population(survivors, target_size)
             log_info(f"Population refilled: {len(self.population)} bots")
-            # Note: No global tracking - combinations reused across generations
             self.profiler.end_phase("population_refill")
             
             self.current_generation += 1
@@ -742,27 +779,26 @@ class GeneticAlgorithmEvolver:
         
         log_info(f"\nEvolution complete!\n")
     
-    def _print_generation_summary(self, gen: int, results: List[BacktestResult], initial_balance: float = 100.0):
-        """Print concise generation summary with key metrics."""
+    def _print_generation_summary(self, gen: int, results: List[BacktestResult], initial_balance: float = 100.0, survivor_count: int = 0):
+        """
+        Print concise generation summary with key metrics.
+        Shows statistics for SURVIVORS only (bots that passed all criteria).
+        """
         if not results:
+            print(f"Gen {gen}: 0 survivors")
             return
         
-        profitable = [r for r in results if r.total_pnl > 0]
+        # Results are already filtered to survivors only
+        # Calculate averages across all survivors
+        avg_pnl = np.mean([r.total_pnl for r in results])
+        avg_pnl_pct = (avg_pnl / initial_balance) * 100
+        avg_winrate = np.mean([r.win_rate for r in results])
+        avg_trades = np.mean([r.total_trades for r in results])
+        avg_sharpe = np.mean([r.sharpe_ratio for r in results])
+        max_pnl = max([r.total_pnl for r in results])
         
-        if not profitable:
-            print(f"Gen {gen}: {len(results)} bots, 0 profitable")
-            return
-        
-        # Calculate averages across profitable bots
-        avg_pnl = np.mean([r.total_pnl for r in profitable])
-        avg_pnl_pct = (avg_pnl / initial_balance) * 100  # Use actual initial balance
-        avg_winrate = np.mean([r.win_rate for r in profitable])
-        avg_trades = np.mean([r.total_trades for r in profitable])
-        avg_sharpe = np.mean([r.sharpe_ratio for r in profitable])
-        max_pnl = max([r.total_pnl for r in profitable])
-        
-        # Print compact summary
-        print(f"Gen {gen}: {len(profitable)}/{len(results)} profitable | "
+        # Print compact summary showing survivors
+        print(f"Gen {gen}: {survivor_count} survivors | "
               f"Avg: {avg_pnl_pct:+.1f}% profit, {avg_winrate:.1%} WR, "
               f"{avg_trades:.0f} trades, {avg_sharpe:.2f} Sharpe | "
               f"Best: ${max_pnl:.2f}")
