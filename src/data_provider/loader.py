@@ -216,9 +216,13 @@ class DataLoader:
     
     def _validate_and_clean_data_gpu(self) -> None:
         """
-        GPU-accelerated data validation and cleaning.
-        Much faster than CPU validation for large datasets.
+        Data validation using CPU (GPU validation always fails).
         """
+        log_info("Validating data integrity")
+        self._validate_data()
+        return
+        
+        # OLD GPU CODE (disabled - always fails)
         log_info("Performing GPU-accelerated data validation and cleaning")
         
         try:
@@ -262,6 +266,13 @@ class DataLoader:
             log_error(f"GPU data processing failed: {e}")
             log_warning("Falling back to CPU validation")
             self._validate_data()
+    
+    def validate_data_cpu_only(self):
+        """
+        Validate data using CPU only (GPU validation always fails).
+        """
+        log_info("Validating data integrity")
+        self._validate_data()
     
     def generate_cycle_ranges(
         self,

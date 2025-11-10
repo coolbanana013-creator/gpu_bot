@@ -209,6 +209,8 @@ class GeneticAlgorithmEvolver:
         Note: Pools are shared across all generations. Combinations can be reused.
         """
         import itertools
+        import pickle
+        import os
         
         self.unused_combinations = {}
         available_indicators = list(range(50))
@@ -217,6 +219,19 @@ class GeneticAlgorithmEvolver:
         min_ind = self.bot_generator.min_indicators
         max_ind = self.bot_generator.max_indicators
         
+        # Try to load from cache first
+        cache_file = f"cache/indicator_combinations_{min_ind}_{max_ind}.pkl"
+        if os.path.exists(cache_file):
+            try:
+                log_info(f"  Loading pre-computed combinations from cache...")
+                with open(cache_file, 'rb') as f:
+                    self.unused_combinations = pickle.load(f)
+                log_info(f"  Loaded {sum(len(v) for v in self.unused_combinations.values()):,} combinations from cache")
+                return
+            except Exception as e:
+                log_warning(f"  Failed to load cache: {e}, recomputing...")
+        
+        # Pre-compute combinations
         for num_indicators in range(min_ind, max_ind + 1):
             log_info(f"  Pre-computing {num_indicators}-indicator combinations...")
             combos = set(
@@ -225,6 +240,15 @@ class GeneticAlgorithmEvolver:
             )
             self.unused_combinations[num_indicators] = combos
             log_info(f"    {len(combos):,} combinations available")
+        
+        # Save to cache
+        try:
+            os.makedirs('cache', exist_ok=True)
+            with open(cache_file, 'wb') as f:
+                pickle.dump(self.unused_combinations, f)
+            log_info(f"  Saved combinations to cache: {cache_file}")
+        except Exception as e:
+            log_warning(f"  Failed to save cache: {e}")
     
     def initialize_population(self) -> List[CompactBotConfig]:
         """
@@ -860,22 +884,49 @@ class GeneticAlgorithmEvolver:
         
         return top_bots
     
-    def save_top_bots(self, filepath: str = None, count: int = TOP_BOTS_COUNT):
+    def save_top_bots(self, filepath: str = None, count: int = TOP_BOTS_COUNT, filter_all_profitable: bool = True):
         """
         Save top bots to file and individual bot files.
+        Only saves bots where all cycles are profitable.
         
         Args:
-            filepath: Output file path (if None, uses bot directory)
+            filepath: Output file path (if None, uses bot directory with timestamp)
             count: Number of top bots to save
+            filter_all_profitable: If True, only save bots where all cycles are profitable
         """
+        import os
+        from datetime import datetime
+        
+        # Create run-specific directory with timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        safe_pair = self.pair.replace('/', '_').replace(':', '_')
+        bot_dir = f"bots/{safe_pair}/{self.timeframe}/run_{timestamp}"
+        os.makedirs(bot_dir, exist_ok=True)
+        
         if filepath is None:
-            import os
-            # Sanitize pair name for file path (replace / and : with _)
-            safe_pair = self.pair.replace('/', '_').replace(':', '_')
-            bot_dir = f"bots/{safe_pair}/{self.timeframe}"
-            os.makedirs(bot_dir, exist_ok=True)
             filepath = f"{bot_dir}/best_bots.json"
+            
         top_bots = self.get_top_bots(count)
+        
+        # Filter bots: only keep those where ALL cycles are profitable
+        if filter_all_profitable:
+            filtered_bots = []
+            for bot, result in top_bots:
+                # Check if bot has per-cycle results
+                if hasattr(result, 'per_cycle_results') and result.per_cycle_results:
+                    all_profitable = all(
+                        cycle_result.get('pnl', 0) > 0 
+                        for cycle_result in result.per_cycle_results
+                    )
+                    if all_profitable:
+                        filtered_bots.append((bot, result))
+                else:
+                    # If no per-cycle data, use overall profitability
+                    if result.total_pnl > 0:
+                        filtered_bots.append((bot, result))
+            
+            top_bots = filtered_bots
+            log_info(f"Filtered to {len(top_bots)} bots where all cycles are profitable")
         
         results_data = {
             'total_generations': self.current_generation,

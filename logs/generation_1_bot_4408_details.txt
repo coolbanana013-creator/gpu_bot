@@ -1,0 +1,97 @@
+=== BOT 4408 DETAILED VERIFICATION LOG ===
+Generation: 1
+Leverage: 80x
+Number of Indicators: 5
+Initial Balance: $1000.00
+
+=== AGGREGATE RESULTS ===
+Total Trades (all cycles): 1021
+Winning Trades: 184
+Losing Trades: 837
+Total PnL: $93.57
+Win Rate: 18.0215
+Final Balance: $1093.57
+Fitness Score: 9.36
+Sharpe Ratio: 0.00
+Max Drawdown: 0.0000
+
+=== PER-CYCLE BREAKDOWN ===
+
+Cycle 0:
+  Trades: 1
+  Wins: 1
+  PnL: $0.06
+  Profit %: 0.01%
+  Win Rate: 1.0000
+
+Cycle 1:
+  Trades: 1
+  Wins: 1
+  PnL: $0.06
+  Profit %: 0.01%
+  Win Rate: 1.0000
+
+Cycle 2:
+  Trades: 84
+  Wins: 14
+  PnL: $-0.52
+  Profit %: -0.05%
+  Win Rate: 0.1667
+
+Cycle 3:
+  Trades: 144
+  Wins: 21
+  PnL: $12.85
+  Profit %: 1.29%
+  Win Rate: 0.1458
+
+Cycle 4:
+  Trades: 124
+  Wins: 30
+  PnL: $23.35
+  Profit %: 2.33%
+  Win Rate: 0.2419
+
+Cycle 5:
+  Trades: 148
+  Wins: 24
+  PnL: $-1.49
+  Profit %: -0.15%
+  Win Rate: 0.1622
+
+Cycle 6:
+  Trades: 132
+  Wins: 26
+  PnL: $14.22
+  Profit %: 1.42%
+  Win Rate: 0.1970
+
+Cycle 7:
+  Trades: 112
+  Wins: 21
+  PnL: $14.07
+  Profit %: 1.41%
+  Win Rate: 0.1875
+
+Cycle 8:
+  Trades: 136
+  Wins: 20
+  PnL: $16.64
+  Profit %: 1.66%
+  Win Rate: 0.1471
+
+Cycle 9:
+  Trades: 139
+  Wins: 26
+  PnL: $14.34
+  Profit %: 1.43%
+  Win Rate: 0.1871
+
+=== VERIFICATION CHECKS ===
+Sum of per-cycle trades: 1021
+Aggregate total trades: 1021
+Match: True
+
+Average per-cycle PnL: $9.36
+Aggregate total PnL: $93.57
+Match: False

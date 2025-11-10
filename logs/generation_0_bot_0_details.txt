@@ -5,13 +5,13 @@ Number of Indicators: 2
 Initial Balance: $1000.00
 
 === AGGREGATE RESULTS ===
-Total Trades (all cycles): 233
-Winning Trades: 62
-Losing Trades: 171
-Total PnL: $-129.69
-Win Rate: 26.6094
-Final Balance: $870.31
-Fitness Score: -12.97
+Total Trades (all cycles): 18
+Winning Trades: 2
+Losing Trades: 16
+Total PnL: $-46.58
+Win Rate: 11.1111
+Final Balance: $953.42
+Fitness Score: -4.66
 Sharpe Ratio: 0.00
 Max Drawdown: 0.0000
 
@@ -34,694 +34,64 @@ Cycle 1:
 Cycle 2:
   Trades: 1
   Wins: 1
-  PnL: $0.61
-  Profit %: 0.06%
+  PnL: $2.36
+  Profit %: 0.24%
   Win Rate: 1.0000
 
 Cycle 3:
-  Trades: 3
+  Trades: 1
   Wins: 0
-  PnL: $-5.00
-  Profit %: -0.50%
+  PnL: $-1.47
+  Profit %: -0.15%
   Win Rate: 0.0000
 
 Cycle 4:
+  Trades: 3
+  Wins: 0
+  PnL: $-8.42
+  Profit %: -0.84%
+  Win Rate: 0.0000
+
+Cycle 5:
   Trades: 0
   Wins: 0
   PnL: $0.00
   Profit %: 0.00%
   Win Rate: 0.0000
-
-Cycle 5:
-  Trades: 1
-  Wins: 1
-  PnL: $6.15
-  Profit %: 0.62%
-  Win Rate: 1.0000
 
 Cycle 6:
   Trades: 1
   Wins: 1
-  PnL: $2.53
-  Profit %: 0.25%
-  Win Rate: 1.0000
-
-Cycle 7:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 8:
-  Trades: 5
-  Wins: 1
-  PnL: $1.44
-  Profit %: 0.14%
-  Win Rate: 0.2000
-
-Cycle 9:
-  Trades: 1
-  Wins: 1
-  PnL: $2.88
-  Profit %: 0.29%
-  Win Rate: 1.0000
-
-Cycle 10:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 11:
-  Trades: 1
-  Wins: 1
-  PnL: $5.75
-  Profit %: 0.58%
-  Win Rate: 1.0000
-
-Cycle 12:
-  Trades: 1
-  Wins: 1
-  PnL: $0.68
-  Profit %: 0.07%
-  Win Rate: 1.0000
-
-Cycle 13:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 14:
-  Trades: 3
-  Wins: 0
-  PnL: $-54.80
-  Profit %: -5.48%
-  Win Rate: 0.0000
-
-Cycle 15:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 16:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 17:
-  Trades: 3
-  Wins: 0
-  PnL: $-9.80
-  Profit %: -0.98%
-  Win Rate: 0.0000
-
-Cycle 18:
-  Trades: 3
-  Wins: 0
-  PnL: $-8.93
-  Profit %: -0.89%
-  Win Rate: 0.0000
-
-Cycle 19:
-  Trades: 4
-  Wins: 2
-  PnL: $15.69
-  Profit %: 1.57%
-  Win Rate: 0.5000
-
-Cycle 20:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 21:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 22:
-  Trades: 3
-  Wins: 1
-  PnL: $1.13
-  Profit %: 0.11%
-  Win Rate: 0.3333
-
-Cycle 23:
-  Trades: 3
-  Wins: 0
-  PnL: $-8.51
-  Profit %: -0.85%
-  Win Rate: 0.0000
-
-Cycle 24:
-  Trades: 5
-  Wins: 1
-  PnL: $-11.54
-  Profit %: -1.15%
-  Win Rate: 0.2000
-
-Cycle 25:
-  Trades: 1
-  Wins: 1
-  PnL: $7.07
-  Profit %: 0.71%
-  Win Rate: 1.0000
-
-Cycle 26:
-  Trades: 3
-  Wins: 1
-  PnL: $-7.48
-  Profit %: -0.75%
-  Win Rate: 0.3333
-
-Cycle 27:
-  Trades: 3
-  Wins: 1
-  PnL: $-2.66
-  Profit %: -0.27%
-  Win Rate: 0.3333
-
-Cycle 28:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 29:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 30:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 31:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 32:
-  Trades: 7
-  Wins: 1
-  PnL: $-21.42
-  Profit %: -2.14%
-  Win Rate: 0.1429
-
-Cycle 33:
-  Trades: 1
-  Wins: 1
-  PnL: $3.77
-  Profit %: 0.38%
-  Win Rate: 1.0000
-
-Cycle 34:
-  Trades: 3
-  Wins: 0
-  PnL: $-9.91
-  Profit %: -0.99%
-  Win Rate: 0.0000
-
-Cycle 35:
-  Trades: 5
-  Wins: 1
-  PnL: $-15.23
-  Profit %: -1.52%
-  Win Rate: 0.2000
-
-Cycle 36:
-  Trades: 1
-  Wins: 1
-  PnL: $4.68
-  Profit %: 0.47%
-  Win Rate: 1.0000
-
-Cycle 37:
-  Trades: 7
-  Wins: 0
-  PnL: $-23.78
-  Profit %: -2.38%
-  Win Rate: 0.0000
-
-Cycle 38:
-  Trades: 3
-  Wins: 1
-  PnL: $-6.12
-  Profit %: -0.61%
-  Win Rate: 0.3333
-
-Cycle 39:
-  Trades: 4
-  Wins: 1
-  PnL: $14.95
-  Profit %: 1.49%
-  Win Rate: 0.2500
-
-Cycle 40:
-  Trades: 7
-  Wins: 0
-  PnL: $-23.90
-  Profit %: -2.39%
-  Win Rate: 0.0000
-
-Cycle 41:
-  Trades: 1
-  Wins: 1
-  PnL: $5.53
-  Profit %: 0.55%
-  Win Rate: 1.0000
-
-Cycle 42:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 43:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 44:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 45:
-  Trades: 1
-  Wins: 0
-  PnL: $-0.66
-  Profit %: -0.07%
-  Win Rate: 0.0000
-
-Cycle 46:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 47:
-  Trades: 8
-  Wins: 1
-  PnL: $6.75
-  Profit %: 0.68%
-  Win Rate: 0.1250
-
-Cycle 48:
-  Trades: 4
-  Wins: 0
-  PnL: $-15.73
-  Profit %: -1.57%
-  Win Rate: 0.0000
-
-Cycle 49:
-  Trades: 1
-  Wins: 1
-  PnL: $8.28
-  Profit %: 0.83%
-  Win Rate: 1.0000
-
-Cycle 50:
-  Trades: 8
-  Wins: 2
-  PnL: $7.27
-  Profit %: 0.73%
-  Win Rate: 0.2500
-
-Cycle 51:
-  Trades: 3
-  Wins: 0
-  PnL: $-10.32
-  Profit %: -1.03%
-  Win Rate: 0.0000
-
-Cycle 52:
-  Trades: 1
-  Wins: 1
-  PnL: $1.88
-  Profit %: 0.19%
-  Win Rate: 1.0000
-
-Cycle 53:
-  Trades: 7
-  Wins: 3
-  PnL: $17.22
-  Profit %: 1.72%
-  Win Rate: 0.4286
-
-Cycle 54:
-  Trades: 1
-  Wins: 1
-  PnL: $0.38
-  Profit %: 0.04%
-  Win Rate: 1.0000
-
-Cycle 55:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 56:
-  Trades: 7
-  Wins: 2
-  PnL: $15.42
-  Profit %: 1.54%
-  Win Rate: 0.2857
-
-Cycle 57:
-  Trades: 1
-  Wins: 1
-  PnL: $49.97
-  Profit %: 5.00%
-  Win Rate: 1.0000
-
-Cycle 58:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 59:
-  Trades: 1
-  Wins: 1
-  PnL: $0.32
-  Profit %: 0.03%
-  Win Rate: 1.0000
-
-Cycle 60:
-  Trades: 1
-  Wins: 0
-  PnL: $-0.65
-  Profit %: -0.06%
-  Win Rate: 0.0000
-
-Cycle 61:
-  Trades: 5
-  Wins: 1
-  PnL: $-14.62
-  Profit %: -1.46%
-  Win Rate: 0.2000
-
-Cycle 62:
-  Trades: 3
-  Wins: 1
-  PnL: $-4.09
-  Profit %: -0.41%
-  Win Rate: 0.3333
-
-Cycle 63:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 64:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 65:
-  Trades: 4
-  Wins: 2
-  PnL: $20.43
-  Profit %: 2.04%
-  Win Rate: 0.5000
-
-Cycle 66:
-  Trades: 3
-  Wins: 1
-  PnL: $-5.69
-  Profit %: -0.57%
-  Win Rate: 0.3333
-
-Cycle 67:
-  Trades: 5
-  Wins: 0
-  PnL: $-16.81
-  Profit %: -1.68%
-  Win Rate: 0.0000
-
-Cycle 68:
-  Trades: 2
-  Wins: 2
-  PnL: $28.72
-  Profit %: 2.87%
-  Win Rate: 1.0000
-
-Cycle 69:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 70:
-  Trades: 5
-  Wins: 0
-  PnL: $-17.64
-  Profit %: -1.76%
-  Win Rate: 0.0000
-
-Cycle 71:
-  Trades: 1
-  Wins: 1
-  PnL: $49.97
-  Profit %: 5.00%
-  Win Rate: 1.0000
-
-Cycle 72:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 73:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 74:
-  Trades: 5
-  Wins: 1
-  PnL: $-13.15
-  Profit %: -1.31%
-  Win Rate: 0.2000
-
-Cycle 75:
-  Trades: 3
-  Wins: 1
-  PnL: $-5.86
-  Profit %: -0.59%
-  Win Rate: 0.3333
-
-Cycle 76:
-  Trades: 3
-  Wins: 1
-  PnL: $-1.33
-  Profit %: -0.13%
-  Win Rate: 0.3333
-
-Cycle 77:
-  Trades: 4
-  Wins: 2
-  PnL: $-5.15
-  Profit %: -0.52%
-  Win Rate: 0.5000
-
-Cycle 78:
-  Trades: 3
-  Wins: 1
-  PnL: $-5.82
-  Profit %: -0.58%
-  Win Rate: 0.3333
-
-Cycle 79:
-  Trades: 2
-  Wins: 2
-  PnL: $4.33
-  Profit %: 0.43%
-  Win Rate: 1.0000
-
-Cycle 80:
-  Trades: 3
-  Wins: 3
-  PnL: $11.95
-  Profit %: 1.19%
-  Win Rate: 1.0000
-
-Cycle 81:
-  Trades: 3
-  Wins: 1
-  PnL: $-4.00
-  Profit %: -0.40%
-  Win Rate: 0.3333
-
-Cycle 82:
-  Trades: 2
-  Wins: 2
-  PnL: $2.74
-  Profit %: 0.27%
-  Win Rate: 1.0000
-
-Cycle 83:
-  Trades: 3
-  Wins: 1
-  PnL: $-4.76
-  Profit %: -0.48%
-  Win Rate: 0.3333
-
-Cycle 84:
-  Trades: 3
-  Wins: 1
-  PnL: $-5.71
-  Profit %: -0.57%
-  Win Rate: 0.3333
-
-Cycle 85:
-  Trades: 1
-  Wins: 1
-  PnL: $49.97
-  Profit %: 5.00%
-  Win Rate: 1.0000
-
-Cycle 86:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 87:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 88:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 89:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 90:
-  Trades: 1
-  Wins: 1
-  PnL: $1.65
+  PnL: $1.74
   Profit %: 0.17%
   Win Rate: 1.0000
 
-Cycle 91:
+Cycle 7:
+  Trades: 5
+  Wins: 0
+  PnL: $-17.79
+  Profit %: -1.78%
+  Win Rate: 0.0000
+
+Cycle 8:
   Trades: 3
   Wins: 0
-  PnL: $-8.43
-  Profit %: -0.84%
+  PnL: $-9.04
+  Profit %: -0.90%
   Win Rate: 0.0000
 
-Cycle 92:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 93:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 94:
-  Trades: 3
-  Wins: 1
-  PnL: $-5.56
-  Profit %: -0.56%
-  Win Rate: 0.3333
-
-Cycle 95:
+Cycle 9:
   Trades: 4
   Wins: 0
-  PnL: $-15.73
-  Profit %: -1.57%
-  Win Rate: 0.0000
-
-Cycle 96:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
-  Win Rate: 0.0000
-
-Cycle 97:
-  Trades: 7
-  Wins: 1
-  PnL: $-14.46
-  Profit %: -1.45%
-  Win Rate: 0.1429
-
-Cycle 98:
-  Trades: 2
-  Wins: 0
-  PnL: $-7.88
-  Profit %: -0.79%
-  Win Rate: 0.0000
-
-Cycle 99:
-  Trades: 0
-  Wins: 0
-  PnL: $0.00
-  Profit %: 0.00%
+  PnL: $-13.95
+  Profit %: -1.40%
   Win Rate: 0.0000
 
 === VERIFICATION CHECKS ===
-Sum of per-cycle trades: 233
-Aggregate total trades: 233
+Sum of per-cycle trades: 18
+Aggregate total trades: 18
 Match: True
 
-Average per-cycle PnL: $-1.30
-Aggregate total PnL: $-129.69
+Average per-cycle PnL: $-4.66
+Aggregate total PnL: $-46.58
 Match: False

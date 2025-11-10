@@ -198,15 +198,20 @@ class GPULoggingProcessor:
         all_indicator_types = IndicatorFactory.get_all_indicator_types()
         indicator_names = [indicator_type.value for indicator_type in all_indicator_types]
 
-        # Build CSV header
+        # Build CSV header - Reorganized: Averages, Totals, Config, Cycle Details
         header = [
-            'AllCyclesPositive',  # NEW: First column - true/false for all cycles profitable
-            'AllCyclesHaveTrades',  # NEW: Second column - true/false for all cycles having at least 1 trade
-            'Generation', 'BotID', 'ProfitPct', 'WinRate', 'TotalTrades', 'FinalBalance',
-            'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
+            # Filters
+            'AllCyclesPositive', 'AllCyclesHaveTrades',
+            # IDs
+            'Generation', 'BotID', 'SurvivedGenerations',
+            # Averages (per cycle)
+            'AvgProfitPct', 'AvgWinRate', 'AvgTradesPerCycle',
+            'FitnessScore', 'SharpeRatio', 'AvgDrawdown',
+            # Totals (across all cycles)
+            'TotalPnL', 'TotalTrades', 'FinalBalance',
+            # Configuration
             'NumIndicators', 'Leverage', 'TPMultiplier', 'SLMultiplier', 'RiskStrategies',
-            'TotalPnL', 'NumCycles', 'IndicatorsUsed',
-            'IndicatorParams'  # NEW: Add indicator parameters column
+            'NumCycles', 'IndicatorsUsed', 'IndicatorParams'
         ]
         for i in range(num_cycles):
             header.extend([f'Cycle{i}_Trades', f'Cycle{i}_ProfitPct', f'Cycle{i}_TotalPnL', f'Cycle{i}_WinRate'])
@@ -322,27 +327,33 @@ class GPULoggingProcessor:
             risk_strategies_str = decode_risk_strategies(bot.risk_strategy_bitmap)
 
             row = [
-                str(all_cycles_positive).lower(),  # NEW: First column - true/false
-                str(all_cycles_have_trades).lower(),  # NEW: Second column - true/false
+                # Filters
+                str(all_cycles_positive).lower(),
+                str(all_cycles_have_trades).lower(),
+                # IDs
                 str(generation),
                 str(bot_id),
+                str(survival_generations),
+                # Averages
                 f"{avg_profit_pct:.2f}".replace('.', ','),
                 f"{avg_win_rate:.4f}".replace('.', ','),
                 str(avg_total_trades),
-                f"{final_balance:.2f}".replace('.', ','),
                 f"{fitness_score:.2f}".replace('.', ','),
                 f"{avg_sharpe_ratio:.2f}".replace('.', ','),
                 f"{avg_max_drawdown:.4f}".replace('.', ','),
-                str(survival_generations),
+                # Totals
+                f"{avg_total_pnl:.2f}".replace('.', ','),
+                str(total_trades_sum),
+                f"{final_balance:.2f}".replace('.', ','),
+                # Configuration
                 str(num_indicators),
                 str(leverage),
-                f"{bot.tp_multiplier:.2f}".replace('.', ','),  # NEW: TP multiplier
-                f"{bot.sl_multiplier:.2f}".replace('.', ','),  # NEW: SL multiplier
-                risk_strategies_str,  # NEW: Risk strategies
-                f"{avg_total_pnl:.2f}".replace('.', ','),
+                f"{bot.tp_multiplier:.2f}".replace('.', ','),
+                f"{bot.sl_multiplier:.2f}".replace('.', ','),
+                risk_strategies_str,
                 str(num_cycles),
                 indicators_str,
-                indicator_params_str  # Add indicator parameters
+                indicator_params_str
             ]
 
             # Add per-cycle data

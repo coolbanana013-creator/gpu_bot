@@ -34583,3 +34583,288 @@ Starting Evolution: 5 generations, 100 cycles
 2025-11-10 21:02:49,237 - src.utils.validation - INFO - 
 --- GENERATION 0 ---
 2025-11-10 21:02:49,237 - src.utils.validation - INFO - Evaluating 1000000 bots...
+2025-11-10 21:23:43,154 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-10 21:23:43,301 - src.utils.validation - INFO - ============================================================
+2025-11-10 21:23:43,301 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-10 21:23:43,301 - src.utils.validation - INFO - ============================================================
+2025-11-10 21:23:43,301 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-10 21:23:43,301 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-10 21:23:43,302 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-10 21:23:43,302 - src.utils.validation - INFO - Compute Units: 80
+2025-11-10 21:23:43,302 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-10 21:23:43,302 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-10 21:23:43,302 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-10 21:23:43,302 - src.utils.validation - INFO - ============================================================
+
+2025-11-10 21:24:22,025 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-10 21:24:22,032 - src.utils.validation - INFO - Initialized Kucoin Spot API connection
+2025-11-10 21:24:24,214 - src.utils.validation - INFO - Fetching 84 days of BTC/USDT 1m data ending 2025-11-10
+2025-11-10 21:24:24,822 - src.utils.validation - INFO - [OK] All 84 data file(s) already cached - no downloading needed
+2025-11-10 21:24:24,822 - src.utils.validation - INFO - Data ready: 84 file(s) total (84 from cache, 0 newly downloaded)
+2025-11-10 21:24:24,823 - src.utils.validation - INFO - Set random seed to 42
+2025-11-10 21:24:24,855 - src.utils.validation - INFO - Compiled GPU data processing kernels
+2025-11-10 21:24:24,856 - src.utils.validation - INFO - Initialized GPU-accelerated data processing
+2025-11-10 21:24:24,856 - src.utils.validation - INFO - Loading 84 data files in parallel
+2025-11-10 21:24:25,172 - src.utils.validation - INFO - Loaded total of 121020 candles
+2025-11-10 21:24:25,173 - src.utils.validation - INFO - Validating data integrity
+2025-11-10 21:24:25,174 - src.utils.validation - INFO - Validating data integrity
+2025-11-10 21:24:25,206 - src.utils.validation - INFO - Data validation passed
+2025-11-10 21:24:25,224 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-10 21:24:25,225 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-10 21:24:25,236 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-10 21:24:25,236 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-10 21:24:25,236 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-10 21:24:25,237 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-10 21:24:25,237 - src.utils.validation - INFO -   Risk strategies: 1-5 per bot
+2025-11-10 21:24:25,237 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-10 21:24:25,275 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-10 21:24:25,287 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-10 21:24:25,298 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-10 21:24:25,299 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-10 21:24:25,300 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-10 21:24:25,300 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-10 21:24:25,300 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-10 21:24:25,301 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-10 21:24:25,316 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-10 21:24:25,316 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-10 21:24:25,317 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-10 21:24:25,326 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-10 21:24:25,327 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-10 21:24:25,327 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-10 21:24:25,328 - src.utils.validation - INFO -   Pre-computing 1-indicator combinations...
+2025-11-10 21:24:25,328 - src.utils.validation - INFO -     50 combinations available
+2025-11-10 21:24:25,329 - src.utils.validation - INFO -   Pre-computing 2-indicator combinations...
+2025-11-10 21:24:25,330 - src.utils.validation - INFO -     1,225 combinations available
+2025-11-10 21:24:25,330 - src.utils.validation - INFO -   Pre-computing 3-indicator combinations...
+2025-11-10 21:24:25,338 - src.utils.validation - INFO -     19,600 combinations available
+2025-11-10 21:24:25,339 - src.utils.validation - INFO -   Pre-computing 4-indicator combinations...
+2025-11-10 21:24:25,955 - src.utils.validation - INFO -     230,300 combinations available
+2025-11-10 21:24:25,955 - src.utils.validation - INFO -   Pre-computing 5-indicator combinations...
+2025-11-10 21:24:32,721 - src.utils.validation - INFO -     2,118,760 combinations available
+2025-11-10 21:24:34,709 - src.utils.validation - INFO -   Saved combinations to cache: cache/indicator_combinations_1_5.pkl
+2025-11-10 21:24:34,710 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-10 21:24:34,710 - src.utils.validation - INFO -   Mutation rate: 15.0%
+2025-11-10 21:24:34,711 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-10 21:24:34,711 - src.utils.validation - INFO -   Pre-computed combination pools: 2369935 total combinations
+2025-11-10 21:24:34,712 - src.utils.validation - INFO - 
+Starting Evolution: 5 generations, 10 cycles
+2025-11-10 21:24:34,712 - src.utils.validation - INFO - Evolution profiler started
+2025-11-10 21:24:34,712 - src.utils.validation - INFO - Generating initial population...
+2025-11-10 21:24:34,712 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-10 21:24:34,713 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-10 21:24:34,719 - src.utils.validation - INFO - Launching GPU kernel: 10240 work items, 512 per group (20 groups)
+2025-11-10 21:24:34,725 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-10 21:24:34,776 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-10 21:24:34,790 - src.utils.validation - INFO - Initial population: 10000 bots, 6930 unique (69.3% natural diversity)
+2025-11-10 21:24:34,790 - src.utils.validation - INFO - Note: Combinations can be reused across generations (no global tracking)
+2025-11-10 21:24:34,793 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-10 21:24:34,793 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-10 21:24:37,927 - src.utils.validation - INFO - Selecting survivors...
+2025-11-10 21:24:37,932 - src.utils.validation - INFO - SURVIVAL FILTER: 1409 bots eliminated for missing trades, 8418 for non-positive PnL, 173 passed
+2025-11-10 21:24:37,932 - src.utils.validation - INFO - Survivors: 133 unique bots kept (no cap applied)
+2025-11-10 21:24:37,933 - src.utils.validation - INFO - SURVIVAL: 133 survivors (from 173 bots with positive PnL and all cycles with trades)
+2025-11-10 21:24:37,933 - src.utils.validation - INFO - ELIMINATED: 9827 bots total
+2025-11-10 21:24:37,933 - src.utils.validation - INFO - Logging generation 0 results...
+2025-11-10 21:24:38,449 - src.utils.validation - INFO - First bot details logged to logs\generation_0_bot_0_details.txt
+2025-11-10 21:24:38,453 - src.utils.validation - INFO - GPU logging completed for generation 0 in 0.520s
+2025-11-10 21:24:38,457 - src.utils.validation - INFO - Refilling population...
+2025-11-10 21:24:38,459 - src.utils.validation - INFO - Survivors for refill: 133 total, 133 unique indicator combinations (100.0% diversity)
+2025-11-10 21:24:38,460 - src.utils.validation - INFO - Generating 9867 new unique bots (no crossover/mutation)
+2025-11-10 21:24:38,460 - src.utils.validation - INFO - Unused pool sizes: {1: 50, 2: 1225, 3: 19600, 4: 230300, 5: 2118760}
+2025-11-10 21:24:38,460 - src.utils.validation - INFO - batch_combinations size: 133 (tracking THIS generation only)
+2025-11-10 21:24:53,992 - src.utils.validation - INFO - After refill: 10000 total bots, 10000 unique indicator combinations (100.0% diversity)
+2025-11-10 21:24:53,993 - src.utils.validation - INFO - Combinations reused across generations (allowed): 0 potential duplicates
+2025-11-10 21:24:53,997 - src.utils.validation - INFO - Population refilled: 10000 bots
+2025-11-10 21:24:53,998 - src.utils.validation - INFO - Generation 0 completed in 19.205s
+2025-11-10 21:24:53,998 - src.utils.validation - INFO - 
+--- GENERATION 1 ---
+2025-11-10 21:24:53,998 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-10 21:24:58,085 - src.utils.validation - INFO - Selecting survivors...
+2025-11-10 21:24:58,091 - src.utils.validation - INFO - SURVIVAL FILTER: 1751 bots eliminated for missing trades, 7936 for non-positive PnL, 313 passed
+2025-11-10 21:24:58,092 - src.utils.validation - INFO - Survivors: 313 unique bots kept (no cap applied)
+2025-11-10 21:24:58,092 - src.utils.validation - INFO - SURVIVAL: 313 survivors (from 313 bots with positive PnL and all cycles with trades)
+2025-11-10 21:24:58,092 - src.utils.validation - INFO - ELIMINATED: 9687 bots total
+2025-11-10 21:24:58,093 - src.utils.validation - INFO - Logging generation 1 results...
+2025-11-10 21:24:58,603 - src.utils.validation - INFO - First bot details logged to logs\generation_1_bot_4408_details.txt
+2025-11-10 21:24:58,603 - src.utils.validation - INFO - GPU logging completed for generation 1 in 0.510s
+2025-11-10 21:24:58,606 - src.utils.validation - INFO - Refilling population...
+2025-11-10 21:24:58,608 - src.utils.validation - INFO - Survivors for refill: 313 total, 313 unique indicator combinations (100.0% diversity)
+2025-11-10 21:24:58,609 - src.utils.validation - INFO - Generating 9687 new unique bots (no crossover/mutation)
+2025-11-10 21:24:58,609 - src.utils.validation - INFO - Unused pool sizes: {1: 50, 2: 1225, 3: 19600, 4: 230300, 5: 2118760}
+2025-11-10 21:24:58,610 - src.utils.validation - INFO - batch_combinations size: 313 (tracking THIS generation only)
+2025-11-10 21:25:12,449 - src.utils.validation - INFO - After refill: 10000 total bots, 10000 unique indicator combinations (100.0% diversity)
+2025-11-10 21:25:12,449 - src.utils.validation - INFO - Combinations reused across generations (allowed): 0 potential duplicates
+2025-11-10 21:25:12,454 - src.utils.validation - INFO - Population refilled: 10000 bots
+2025-11-10 21:25:12,455 - src.utils.validation - INFO - Generation 1 completed in 18.457s
+2025-11-10 21:25:12,456 - src.utils.validation - INFO - 
+--- GENERATION 2 ---
+2025-11-10 21:25:12,456 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-10 21:25:16,101 - src.utils.validation - INFO - Selecting survivors...
+2025-11-10 21:25:16,108 - src.utils.validation - INFO - SURVIVAL FILTER: 1717 bots eliminated for missing trades, 7854 for non-positive PnL, 429 passed
+2025-11-10 21:25:16,109 - src.utils.validation - INFO - Survivors: 429 unique bots kept (no cap applied)
+2025-11-10 21:25:16,110 - src.utils.validation - INFO - SURVIVAL: 429 survivors (from 429 bots with positive PnL and all cycles with trades)
+2025-11-10 21:25:16,111 - src.utils.validation - INFO - ELIMINATED: 9571 bots total
+2025-11-10 21:25:16,113 - src.utils.validation - INFO - Logging generation 2 results...
+2025-11-10 21:25:17,550 - src.utils.validation - INFO - First bot details logged to logs\generation_2_bot_15878_details.txt
+2025-11-10 21:25:17,551 - src.utils.validation - INFO - GPU logging completed for generation 2 in 1.438s
+2025-11-10 21:25:17,577 - src.utils.validation - INFO - Refilling population...
+2025-11-10 21:25:17,589 - src.utils.validation - INFO - Survivors for refill: 429 total, 429 unique indicator combinations (100.0% diversity)
+2025-11-10 21:25:17,590 - src.utils.validation - INFO - Generating 9571 new unique bots (no crossover/mutation)
+2025-11-10 21:25:17,591 - src.utils.validation - INFO - Unused pool sizes: {1: 50, 2: 1225, 3: 19600, 4: 230300, 5: 2118760}
+2025-11-10 21:25:17,591 - src.utils.validation - INFO - batch_combinations size: 429 (tracking THIS generation only)
+2025-11-10 21:25:54,364 - src.utils.validation - INFO - After refill: 10000 total bots, 10000 unique indicator combinations (100.0% diversity)
+2025-11-10 21:25:54,366 - src.utils.validation - INFO - Combinations reused across generations (allowed): 0 potential duplicates
+2025-11-10 21:25:54,380 - src.utils.validation - INFO - Population refilled: 10000 bots
+2025-11-10 21:25:54,382 - src.utils.validation - INFO - Generation 2 completed in 41.926s
+2025-11-10 21:25:54,382 - src.utils.validation - INFO - 
+--- GENERATION 3 ---
+2025-11-10 21:25:54,383 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-10 21:25:58,214 - src.utils.validation - INFO - Selecting survivors...
+2025-11-10 21:25:58,223 - src.utils.validation - INFO - SURVIVAL FILTER: 1683 bots eliminated for missing trades, 7772 for non-positive PnL, 545 passed
+2025-11-10 21:25:58,227 - src.utils.validation - INFO - Survivors: 545 unique bots kept (no cap applied)
+2025-11-10 21:25:58,228 - src.utils.validation - INFO - SURVIVAL: 545 survivors (from 545 bots with positive PnL and all cycles with trades)
+2025-11-10 21:25:58,229 - src.utils.validation - INFO - ELIMINATED: 9455 bots total
+2025-11-10 21:25:58,231 - src.utils.validation - INFO - Logging generation 3 results...
+2025-11-10 21:25:59,746 - src.utils.validation - INFO - First bot details logged to logs\generation_3_bot_15878_details.txt
+2025-11-10 21:25:59,747 - src.utils.validation - INFO - GPU logging completed for generation 3 in 1.513s
+2025-11-10 21:25:59,759 - src.utils.validation - INFO - Refilling population...
+2025-11-10 21:25:59,771 - src.utils.validation - INFO - Survivors for refill: 545 total, 545 unique indicator combinations (100.0% diversity)
+2025-11-10 21:25:59,773 - src.utils.validation - INFO - Generating 9455 new unique bots (no crossover/mutation)
+2025-11-10 21:25:59,774 - src.utils.validation - INFO - Unused pool sizes: {1: 50, 2: 1225, 3: 19600, 4: 230300, 5: 2118760}
+2025-11-10 21:25:59,775 - src.utils.validation - INFO - batch_combinations size: 545 (tracking THIS generation only)
+2025-11-10 21:26:34,003 - src.utils.validation - INFO - After refill: 10000 total bots, 10000 unique indicator combinations (100.0% diversity)
+2025-11-10 21:26:34,004 - src.utils.validation - INFO - Combinations reused across generations (allowed): 0 potential duplicates
+2025-11-10 21:26:34,020 - src.utils.validation - INFO - Population refilled: 10000 bots
+2025-11-10 21:26:34,020 - src.utils.validation - INFO - Generation 3 completed in 39.638s
+2025-11-10 21:26:34,021 - src.utils.validation - INFO - 
+--- GENERATION 4 ---
+2025-11-10 21:26:34,021 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-10 21:26:39,032 - src.utils.validation - INFO - Selecting survivors...
+2025-11-10 21:26:39,037 - src.utils.validation - INFO - SURVIVAL FILTER: 1714 bots eliminated for missing trades, 7654 for non-positive PnL, 632 passed
+2025-11-10 21:26:39,039 - src.utils.validation - INFO - Survivors: 632 unique bots kept (no cap applied)
+2025-11-10 21:26:39,040 - src.utils.validation - INFO - SURVIVAL: 632 survivors (from 632 bots with positive PnL and all cycles with trades)
+2025-11-10 21:26:39,041 - src.utils.validation - INFO - ELIMINATED: 9368 bots total
+2025-11-10 21:26:39,042 - src.utils.validation - INFO - Logging generation 4 results...
+2025-11-10 21:26:40,022 - src.utils.validation - INFO - First bot details logged to logs\generation_4_bot_15878_details.txt
+2025-11-10 21:26:40,024 - src.utils.validation - INFO - GPU logging completed for generation 4 in 0.980s
+2025-11-10 21:26:40,040 - src.utils.validation - INFO - Refilling population...
+2025-11-10 21:26:40,046 - src.utils.validation - INFO - Survivors for refill: 632 total, 632 unique indicator combinations (100.0% diversity)
+2025-11-10 21:26:40,047 - src.utils.validation - INFO - Generating 9368 new unique bots (no crossover/mutation)
+2025-11-10 21:26:40,047 - src.utils.validation - INFO - Unused pool sizes: {1: 50, 2: 1225, 3: 19600, 4: 230300, 5: 2118760}
+2025-11-10 21:26:40,047 - src.utils.validation - INFO - batch_combinations size: 632 (tracking THIS generation only)
+2025-11-10 21:26:56,893 - src.utils.validation - INFO - After refill: 10000 total bots, 10000 unique indicator combinations (100.0% diversity)
+2025-11-10 21:26:56,893 - src.utils.validation - INFO - Combinations reused across generations (allowed): 0 potential duplicates
+2025-11-10 21:26:56,898 - src.utils.validation - INFO - Population refilled: 10000 bots
+2025-11-10 21:26:56,899 - src.utils.validation - INFO - Generation 4 completed in 22.878s
+2025-11-10 21:26:56,899 - src.utils.validation - INFO - 
+--- FINAL EVALUATION ---
+2025-11-10 21:27:04,501 - src.utils.validation - INFO - First bot details logged to logs\generation_5_bot_15878_details.txt
+2025-11-10 21:27:04,502 - src.utils.validation - INFO - GPU logging completed for generation 5 in 2.746s
+2025-11-10 21:27:04,529 - src.utils.validation - INFO - 
+Evolution complete!
+
+2025-11-10 21:27:04,547 - src.utils.validation - INFO - Filtered to 100 bots where all cycles are profitable
+2025-11-10 21:27:04,560 - src.utils.validation - INFO - Saved bot 15878 to bots/BTC_USDT/1m/bot_15878.json
+2025-11-10 21:27:04,565 - src.utils.validation - INFO - Saved bot 15878 to bots/BTC_USDT/1m/bot_15878.json
+2025-11-10 21:27:04,567 - src.utils.validation - INFO - Saved bot 15878 to bots/BTC_USDT/1m/bot_15878.json
+2025-11-10 21:27:04,569 - src.utils.validation - INFO - Saved bot 15878 to bots/BTC_USDT/1m/bot_15878.json
+2025-11-10 21:27:04,571 - src.utils.validation - INFO - Saved bot 10969 to bots/BTC_USDT/1m/bot_10969.json
+2025-11-10 21:27:04,574 - src.utils.validation - INFO - Saved bot 10969 to bots/BTC_USDT/1m/bot_10969.json
+2025-11-10 21:27:04,577 - src.utils.validation - INFO - Saved bot 10969 to bots/BTC_USDT/1m/bot_10969.json
+2025-11-10 21:27:04,579 - src.utils.validation - INFO - Saved bot 10969 to bots/BTC_USDT/1m/bot_10969.json
+2025-11-10 21:27:04,587 - src.utils.validation - INFO - Saved bot 14832 to bots/BTC_USDT/1m/bot_14832.json
+2025-11-10 21:27:04,591 - src.utils.validation - INFO - Saved bot 14832 to bots/BTC_USDT/1m/bot_14832.json
+2025-11-10 21:27:04,594 - src.utils.validation - INFO - Saved bot 14832 to bots/BTC_USDT/1m/bot_14832.json
+2025-11-10 21:27:04,597 - src.utils.validation - INFO - Saved bot 14832 to bots/BTC_USDT/1m/bot_14832.json
+2025-11-10 21:27:04,599 - src.utils.validation - INFO - Saved bot 21336 to bots/BTC_USDT/1m/bot_21336.json
+2025-11-10 21:27:04,603 - src.utils.validation - INFO - Saved bot 21336 to bots/BTC_USDT/1m/bot_21336.json
+2025-11-10 21:27:04,606 - src.utils.validation - INFO - Saved bot 21336 to bots/BTC_USDT/1m/bot_21336.json
+2025-11-10 21:27:04,610 - src.utils.validation - INFO - Saved bot 43100 to bots/BTC_USDT/1m/bot_43100.json
+2025-11-10 21:27:04,614 - src.utils.validation - INFO - Saved bot 25071 to bots/BTC_USDT/1m/bot_25071.json
+2025-11-10 21:27:04,616 - src.utils.validation - INFO - Saved bot 25071 to bots/BTC_USDT/1m/bot_25071.json
+2025-11-10 21:27:04,618 - src.utils.validation - INFO - Saved bot 25071 to bots/BTC_USDT/1m/bot_25071.json
+2025-11-10 21:27:04,620 - src.utils.validation - INFO - Saved bot 19677 to bots/BTC_USDT/1m/bot_19677.json
+2025-11-10 21:27:04,622 - src.utils.validation - INFO - Saved bot 19677 to bots/BTC_USDT/1m/bot_19677.json
+2025-11-10 21:27:04,624 - src.utils.validation - INFO - Saved bot 19677 to bots/BTC_USDT/1m/bot_19677.json
+2025-11-10 21:27:04,626 - src.utils.validation - INFO - Saved bot 19677 to bots/BTC_USDT/1m/bot_19677.json
+2025-11-10 21:27:04,629 - src.utils.validation - INFO - Saved bot 14469 to bots/BTC_USDT/1m/bot_14469.json
+2025-11-10 21:27:04,631 - src.utils.validation - INFO - Saved bot 14469 to bots/BTC_USDT/1m/bot_14469.json
+2025-11-10 21:27:04,633 - src.utils.validation - INFO - Saved bot 14469 to bots/BTC_USDT/1m/bot_14469.json
+2025-11-10 21:27:04,635 - src.utils.validation - INFO - Saved bot 14469 to bots/BTC_USDT/1m/bot_14469.json
+2025-11-10 21:27:04,637 - src.utils.validation - INFO - Saved bot 42117 to bots/BTC_USDT/1m/bot_42117.json
+2025-11-10 21:27:04,640 - src.utils.validation - INFO - Saved bot 26675 to bots/BTC_USDT/1m/bot_26675.json
+2025-11-10 21:27:04,643 - src.utils.validation - INFO - Saved bot 26675 to bots/BTC_USDT/1m/bot_26675.json
+2025-11-10 21:27:04,646 - src.utils.validation - INFO - Saved bot 26675 to bots/BTC_USDT/1m/bot_26675.json
+2025-11-10 21:27:04,650 - src.utils.validation - INFO - Saved bot 4408 to bots/BTC_USDT/1m/bot_4408.json
+2025-11-10 21:27:04,654 - src.utils.validation - INFO - Saved bot 4408 to bots/BTC_USDT/1m/bot_4408.json
+2025-11-10 21:27:04,656 - src.utils.validation - INFO - Saved bot 4408 to bots/BTC_USDT/1m/bot_4408.json
+2025-11-10 21:27:04,660 - src.utils.validation - INFO - Saved bot 4408 to bots/BTC_USDT/1m/bot_4408.json
+2025-11-10 21:27:04,664 - src.utils.validation - INFO - Saved bot 4408 to bots/BTC_USDT/1m/bot_4408.json
+2025-11-10 21:27:04,666 - src.utils.validation - INFO - Saved bot 4408 to bots/BTC_USDT/1m/bot_4408.json
+2025-11-10 21:27:04,671 - src.utils.validation - INFO - Saved bot 15016 to bots/BTC_USDT/1m/bot_15016.json
+2025-11-10 21:27:04,673 - src.utils.validation - INFO - Saved bot 15016 to bots/BTC_USDT/1m/bot_15016.json
+2025-11-10 21:27:04,676 - src.utils.validation - INFO - Saved bot 15016 to bots/BTC_USDT/1m/bot_15016.json
+2025-11-10 21:27:04,685 - src.utils.validation - INFO - Saved bot 15016 to bots/BTC_USDT/1m/bot_15016.json
+2025-11-10 21:27:04,689 - src.utils.validation - INFO - Saved bot 46559 to bots/BTC_USDT/1m/bot_46559.json
+2025-11-10 21:27:04,695 - src.utils.validation - INFO - Saved bot 15235 to bots/BTC_USDT/1m/bot_15235.json
+2025-11-10 21:27:04,697 - src.utils.validation - INFO - Saved bot 15235 to bots/BTC_USDT/1m/bot_15235.json
+2025-11-10 21:27:04,699 - src.utils.validation - INFO - Saved bot 15235 to bots/BTC_USDT/1m/bot_15235.json
+2025-11-10 21:27:04,700 - src.utils.validation - INFO - Saved bot 15235 to bots/BTC_USDT/1m/bot_15235.json
+2025-11-10 21:27:04,703 - src.utils.validation - INFO - Saved bot 33079 to bots/BTC_USDT/1m/bot_33079.json
+2025-11-10 21:27:04,707 - src.utils.validation - INFO - Saved bot 33079 to bots/BTC_USDT/1m/bot_33079.json
+2025-11-10 21:27:04,710 - src.utils.validation - INFO - Saved bot 25689 to bots/BTC_USDT/1m/bot_25689.json
+2025-11-10 21:27:04,713 - src.utils.validation - INFO - Saved bot 25689 to bots/BTC_USDT/1m/bot_25689.json
+2025-11-10 21:27:04,715 - src.utils.validation - INFO - Saved bot 25689 to bots/BTC_USDT/1m/bot_25689.json
+2025-11-10 21:27:04,719 - src.utils.validation - INFO - Saved bot 13991 to bots/BTC_USDT/1m/bot_13991.json
+2025-11-10 21:27:04,723 - src.utils.validation - INFO - Saved bot 13991 to bots/BTC_USDT/1m/bot_13991.json
+2025-11-10 21:27:04,725 - src.utils.validation - INFO - Saved bot 13991 to bots/BTC_USDT/1m/bot_13991.json
+2025-11-10 21:27:04,727 - src.utils.validation - INFO - Saved bot 13991 to bots/BTC_USDT/1m/bot_13991.json
+2025-11-10 21:27:04,730 - src.utils.validation - INFO - Saved bot 29948 to bots/BTC_USDT/1m/bot_29948.json
+2025-11-10 21:27:04,732 - src.utils.validation - INFO - Saved bot 29948 to bots/BTC_USDT/1m/bot_29948.json
+2025-11-10 21:27:04,734 - src.utils.validation - INFO - Saved bot 39582 to bots/BTC_USDT/1m/bot_39582.json
+2025-11-10 21:27:04,736 - src.utils.validation - INFO - Saved bot 20278 to bots/BTC_USDT/1m/bot_20278.json
+2025-11-10 21:27:04,739 - src.utils.validation - INFO - Saved bot 20278 to bots/BTC_USDT/1m/bot_20278.json
+2025-11-10 21:27:04,742 - src.utils.validation - INFO - Saved bot 20278 to bots/BTC_USDT/1m/bot_20278.json
+2025-11-10 21:27:04,745 - src.utils.validation - INFO - Saved bot 5781 to bots/BTC_USDT/1m/bot_5781.json
+2025-11-10 21:27:04,746 - src.utils.validation - INFO - Saved bot 5781 to bots/BTC_USDT/1m/bot_5781.json
+2025-11-10 21:27:04,748 - src.utils.validation - INFO - Saved bot 5781 to bots/BTC_USDT/1m/bot_5781.json
+2025-11-10 21:27:04,749 - src.utils.validation - INFO - Saved bot 5781 to bots/BTC_USDT/1m/bot_5781.json
+2025-11-10 21:27:04,752 - src.utils.validation - INFO - Saved bot 5781 to bots/BTC_USDT/1m/bot_5781.json
+2025-11-10 21:27:04,754 - src.utils.validation - INFO - Saved bot 16775 to bots/BTC_USDT/1m/bot_16775.json
+2025-11-10 21:27:04,756 - src.utils.validation - INFO - Saved bot 16775 to bots/BTC_USDT/1m/bot_16775.json
+2025-11-10 21:27:04,757 - src.utils.validation - INFO - Saved bot 16775 to bots/BTC_USDT/1m/bot_16775.json
+2025-11-10 21:27:04,758 - src.utils.validation - INFO - Saved bot 16775 to bots/BTC_USDT/1m/bot_16775.json
+2025-11-10 21:27:04,760 - src.utils.validation - INFO - Saved bot 45226 to bots/BTC_USDT/1m/bot_45226.json
+2025-11-10 21:27:04,762 - src.utils.validation - INFO - Saved bot 9345 to bots/BTC_USDT/1m/bot_9345.json
+2025-11-10 21:27:04,764 - src.utils.validation - INFO - Saved bot 9345 to bots/BTC_USDT/1m/bot_9345.json
+2025-11-10 21:27:04,766 - src.utils.validation - INFO - Saved bot 9345 to bots/BTC_USDT/1m/bot_9345.json
+2025-11-10 21:27:04,767 - src.utils.validation - INFO - Saved bot 9345 to bots/BTC_USDT/1m/bot_9345.json
+2025-11-10 21:27:04,769 - src.utils.validation - INFO - Saved bot 9345 to bots/BTC_USDT/1m/bot_9345.json
+2025-11-10 21:27:04,770 - src.utils.validation - INFO - Saved bot 46588 to bots/BTC_USDT/1m/bot_46588.json
+2025-11-10 21:27:04,774 - src.utils.validation - INFO - Saved bot 17679 to bots/BTC_USDT/1m/bot_17679.json
+2025-11-10 21:27:04,776 - src.utils.validation - INFO - Saved bot 17679 to bots/BTC_USDT/1m/bot_17679.json
+2025-11-10 21:27:04,780 - src.utils.validation - INFO - Saved bot 17679 to bots/BTC_USDT/1m/bot_17679.json
+2025-11-10 21:27:04,782 - src.utils.validation - INFO - Saved bot 17679 to bots/BTC_USDT/1m/bot_17679.json
+2025-11-10 21:27:04,785 - src.utils.validation - INFO - Saved bot 29303 to bots/BTC_USDT/1m/bot_29303.json
+2025-11-10 21:27:04,789 - src.utils.validation - INFO - Saved bot 29303 to bots/BTC_USDT/1m/bot_29303.json
+2025-11-10 21:27:04,791 - src.utils.validation - INFO - Saved bot 29303 to bots/BTC_USDT/1m/bot_29303.json
+2025-11-10 21:27:04,795 - src.utils.validation - INFO - Saved bot 15530 to bots/BTC_USDT/1m/bot_15530.json
+2025-11-10 21:27:04,799 - src.utils.validation - INFO - Saved bot 15530 to bots/BTC_USDT/1m/bot_15530.json
+2025-11-10 21:27:04,802 - src.utils.validation - INFO - Saved bot 15530 to bots/BTC_USDT/1m/bot_15530.json
+2025-11-10 21:27:04,806 - src.utils.validation - INFO - Saved bot 15530 to bots/BTC_USDT/1m/bot_15530.json
+2025-11-10 21:27:04,810 - src.utils.validation - INFO - Saved bot 14760 to bots/BTC_USDT/1m/bot_14760.json
+2025-11-10 21:27:04,812 - src.utils.validation - INFO - Saved bot 14760 to bots/BTC_USDT/1m/bot_14760.json
+2025-11-10 21:27:04,815 - src.utils.validation - INFO - Saved bot 14760 to bots/BTC_USDT/1m/bot_14760.json
+2025-11-10 21:27:04,818 - src.utils.validation - INFO - Saved bot 14760 to bots/BTC_USDT/1m/bot_14760.json
+2025-11-10 21:27:04,820 - src.utils.validation - INFO - Saved bot 11064 to bots/BTC_USDT/1m/bot_11064.json
+2025-11-10 21:27:04,822 - src.utils.validation - INFO - Saved bot 11064 to bots/BTC_USDT/1m/bot_11064.json
+2025-11-10 21:27:04,827 - src.utils.validation - INFO - Saved bot 11064 to bots/BTC_USDT/1m/bot_11064.json
+2025-11-10 21:27:04,831 - src.utils.validation - INFO - Saved bot 11064 to bots/BTC_USDT/1m/bot_11064.json
+2025-11-10 21:27:04,838 - src.utils.validation - INFO - Saved bot 27726 to bots/BTC_USDT/1m/bot_27726.json
+2025-11-10 21:27:04,847 - src.utils.validation - INFO - Saved bot 27726 to bots/BTC_USDT/1m/bot_27726.json
+2025-11-10 21:27:04,859 - src.utils.validation - INFO - Saved bot 27726 to bots/BTC_USDT/1m/bot_27726.json
+2025-11-10 21:27:04,867 - src.utils.validation - INFO - Saved bot 14638 to bots/BTC_USDT/1m/bot_14638.json
+2025-11-10 21:27:04,898 - src.utils.validation - INFO - 
+Saved top 100 bots to bots/BTC_USDT/1m/run_20251110_212704/best_bots.json and individual files

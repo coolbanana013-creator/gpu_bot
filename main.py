@@ -472,9 +472,10 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         print("\nSaving results...")
         results_start = time.time()
         
-        evolver.save_top_bots(count=100)
-        evolver.print_top_bots(count=10, initial_balance=params['initial_balance'])
-        evolver.print_current_generation(initial_balance=params['initial_balance'])
+        evolver.save_top_bots(count=100, filter_all_profitable=True)
+        # Removed print_top_bots - all data is in CSV
+        # evolver.print_top_bots(count=10, initial_balance=params['initial_balance'])
+        # evolver.print_current_generation(initial_balance=params['initial_balance'])
         
         results_time = time.time() - results_start
         print(f"Results processing completed in {results_time:.3f}s")
