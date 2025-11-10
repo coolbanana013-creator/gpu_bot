@@ -195,6 +195,14 @@ class GeneticAlgorithmEvolver:
         """
         Pre-compute all possible indicator combinations for fast O(1) selection.
         
+        INCREMENTAL CACHING: Each combination size (1, 2, 3, etc.) is saved separately.
+        This allows reusing existing cache files when increasing max_indicators.
+        
+        Example:
+        - First run with max=5: Generates and saves 1.pkl, 2.pkl, 3.pkl, 4.pkl, 5.pkl
+        - Next run with max=6: Reuses 1-5.pkl files, only generates 6.pkl
+        - Next run with max=8: Reuses 1-6.pkl files, only generates 7.pkl and 8.pkl
+        
         Combinations by size:
         - 1 indicator: C(50,1) = 50
         - 2 indicators: C(50,2) = 1,225
@@ -219,36 +227,43 @@ class GeneticAlgorithmEvolver:
         min_ind = self.bot_generator.min_indicators
         max_ind = self.bot_generator.max_indicators
         
-        # Try to load from cache first
-        cache_file = f"cache/indicator_combinations_{min_ind}_{max_ind}.pkl"
-        if os.path.exists(cache_file):
-            try:
-                log_info(f"  Loading pre-computed combinations from cache...")
-                with open(cache_file, 'rb') as f:
-                    self.unused_combinations = pickle.load(f)
-                log_info(f"  Loaded {sum(len(v) for v in self.unused_combinations.values()):,} combinations from cache")
-                return
-            except Exception as e:
-                log_warning(f"  Failed to load cache: {e}, recomputing...")
+        os.makedirs('cache', exist_ok=True)
         
-        # Pre-compute combinations
+        # Load or generate each combination size separately
         for num_indicators in range(min_ind, max_ind + 1):
-            log_info(f"  Pre-computing {num_indicators}-indicator combinations...")
+            cache_file = f"cache/indicator_combinations_{num_indicators}.pkl"
+            
+            # Try to load from cache first
+            if os.path.exists(cache_file):
+                try:
+                    log_info(f"  Loading {num_indicators}-indicator combinations from cache...")
+                    with open(cache_file, 'rb') as f:
+                        combos = pickle.load(f)
+                    self.unused_combinations[num_indicators] = combos
+                    log_info(f"    Loaded {len(combos):,} combinations from cache")
+                    continue
+                except Exception as e:
+                    log_warning(f"  Failed to load cache for {num_indicators}-indicator combinations: {e}")
+            
+            # Generate if not cached
+            log_info(f"  Generating {num_indicators}-indicator combinations...")
             combos = set(
                 frozenset(combo) 
                 for combo in itertools.combinations(available_indicators, num_indicators)
             )
             self.unused_combinations[num_indicators] = combos
-            log_info(f"    {len(combos):,} combinations available")
+            log_info(f"    Generated {len(combos):,} combinations")
+            
+            # Save to individual cache file
+            try:
+                with open(cache_file, 'wb') as f:
+                    pickle.dump(combos, f)
+                log_info(f"    Saved to cache: {cache_file}")
+            except Exception as e:
+                log_warning(f"  Failed to save cache for {num_indicators}-indicator combinations: {e}")
         
-        # Save to cache
-        try:
-            os.makedirs('cache', exist_ok=True)
-            with open(cache_file, 'wb') as f:
-                pickle.dump(self.unused_combinations, f)
-            log_info(f"  Saved combinations to cache: {cache_file}")
-        except Exception as e:
-            log_warning(f"  Failed to save cache: {e}")
+        total_combos = sum(len(v) for v in self.unused_combinations.values())
+        log_info(f"  Total combinations ready: {total_combos:,}")
     
     def initialize_population(self) -> List[CompactBotConfig]:
         """

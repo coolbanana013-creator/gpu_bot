@@ -1139,6 +1139,43 @@ class CompactBacktester:
         
         return results
     
+    def _calculate_max_drawdown(self, per_cycle_pnl: List[float]) -> float:
+        """Calculate maximum drawdown from per-cycle PnL."""
+        if not per_cycle_pnl:
+            return 0.0
+        
+        cumulative = self.initial_balance
+        peak = cumulative
+        max_dd = 0.0
+        
+        for pnl in per_cycle_pnl:
+            cumulative += pnl
+            if cumulative > peak:
+                peak = cumulative
+            dd = ((peak - cumulative) / peak * 100) if peak > 0 else 0.0
+            if dd > max_dd:
+                max_dd = dd
+        
+        return max_dd
+    
+    def _calculate_sharpe_ratio(self, per_cycle_pnl: List[float]) -> float:
+        """Calculate Sharpe ratio from per-cycle PnL."""
+        if not per_cycle_pnl or len(per_cycle_pnl) < 2:
+            return 0.0
+        
+        # Convert PnL to returns (percentage)
+        returns = [(pnl / self.initial_balance * 100) for pnl in per_cycle_pnl]
+        
+        mean_return = np.mean(returns)
+        std_return = np.std(returns, ddof=1)
+        
+        if std_return == 0:
+            return 0.0
+        
+        # Annualized Sharpe (assuming ~252 trading days, cycles are portions of that)
+        sharpe = mean_return / std_return
+        return sharpe
+    
     def _gpu_aggregate_results(
         self,
         bots: List[CompactBotConfig],
@@ -1250,6 +1287,10 @@ class CompactBacktester:
             final_balance = self.initial_balance + total_pnl
             roi = (total_pnl / self.initial_balance * 100) if self.initial_balance > 0 else 0.0
             
+            # Calculate risk metrics
+            max_drawdown = self._calculate_max_drawdown(per_cycle_pnl)
+            sharpe_ratio = self._calculate_sharpe_ratio(per_cycle_pnl)
+            
             result = BacktestResult(
                 bot_id=bot.bot_id,
                 total_trades=total_trades,
@@ -1262,8 +1303,8 @@ class CompactBacktester:
                 final_balance=final_balance,
                 win_rate=win_rate,
                 fitness_score=roi,
-                max_drawdown=0.0,
-                sharpe_ratio=0.0,
+                max_drawdown=max_drawdown,
+                sharpe_ratio=sharpe_ratio,
                 avg_win=0.0,
                 avg_loss=0.0,
                 profit_factor=0.0,
