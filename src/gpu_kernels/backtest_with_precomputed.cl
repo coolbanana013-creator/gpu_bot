@@ -737,29 +737,23 @@ void open_position(
         positions[slot].tp_price = price * (1.0f + tp_multiplier);
         positions[slot].sl_price = price * (1.0f - sl_multiplier);
         
-        // CORRECTED LIQUIDATION PRICE FORMULA
-        // Liquidated when price drops enough that loss = 95% of margin (5% maintenance margin)
-        // Loss = (entry - liq) * quantity
-        // Loss = margin * 0.95
-        // (entry - liq) * quantity = margin * 0.95
-        // (entry - liq) = (margin * 0.95) / quantity
-        // liq = entry - (margin * 0.95) / quantity
-        // Since quantity = margin / entry:
-        // liq = entry - (margin * 0.95) / (margin / entry)
-        // liq = entry - (0.95 * entry)
-        // liq = entry * (1 - 0.95)
-        // But this needs to account for leverage:
-        // liq = entry * (1 - 0.95 / leverage)
-        float liquidation_threshold = 0.95f / leverage;
+        // IMPROVED LIQUIDATION PRICE FORMULA WITH MAINTENANCE MARGIN
+        // Maintenance margin: 0.5% for BTC (typical for crypto exchanges)
+        // Liquidation occurs when: (margin - loss) < maintenance_margin * position_value
+        // Simplified: liquidation when price moves (1 - maintenance_margin_rate) / leverage
+        // This is more accurate than simple 0.95/leverage, especially at high leverage
+        float maintenance_margin_rate = 0.005f;  // 0.5% maintenance margin for BTC
+        float liquidation_threshold = (1.0f - maintenance_margin_rate) / leverage;
         positions[slot].liquidation_price = price * (1.0f - liquidation_threshold);
     } else {
         // Short
         positions[slot].tp_price = price * (1.0f - tp_multiplier);
         positions[slot].sl_price = price * (1.0f + sl_multiplier);
         
-        // CORRECTED LIQUIDATION PRICE FORMULA FOR SHORT
-        // Short is liquidated when price rises enough that loss = 95% of margin
-        float liquidation_threshold = 0.95f / leverage;
+        // IMPROVED LIQUIDATION PRICE FORMULA FOR SHORT WITH MAINTENANCE MARGIN
+        // Same calculation as long, but price moves upward
+        float maintenance_margin_rate = 0.005f;  // 0.5% maintenance margin for BTC
+        float liquidation_threshold = (1.0f - maintenance_margin_rate) / leverage;
         positions[slot].liquidation_price = price * (1.0f + liquidation_threshold);
     }
     
@@ -806,7 +800,18 @@ float close_position(
     
     // Calculate position value for fees (full notional value)
     float notional_position_value = pos->entry_price * pos->quantity * leverage;
-    float exit_fee = notional_position_value * (reason == 0 ? MAKER_FEE : TAKER_FEE);
+    
+    // CORRECTED: TP and SL are both limit orders → maker fee
+    // Only signal reversals (reason=3) are market orders → taker fee
+    // Liquidation (reason=2) loses all margin, no exit fee calculation needed
+    float exit_fee;
+    if (reason == 2) {
+        exit_fee = 0.0f;  // Liquidation = exchange takes everything
+    } else if (reason == 0 || reason == 1) {
+        exit_fee = notional_position_value * MAKER_FEE;  // TP/SL = limit orders
+    } else {
+        exit_fee = notional_position_value * TAKER_FEE;  // Signal reversal = market order
+    }
     float slippage_cost = notional_position_value * SLIPPAGE;
     
     // Net PnL after fees
@@ -1159,6 +1164,15 @@ __kernel void backtest_with_signals(
         return;
     }
     
+    // NEW: Enforce minimum TP:SL ratio to prevent unprofitable configurations
+    // TP must be at least 80% of SL (allows slight disadvantage but prevents absurd ratios)
+    // Example: TP=0.01, SL=0.10 is rejected (10:1 loss ratio = guaranteed to lose money)
+    if (bot.tp_multiplier < bot.sl_multiplier * 0.8f) {
+        results[bot_idx].bot_id = -9975;
+        results[bot_idx].fitness_score = -999999.0f;
+        return;
+    }
+    
     // Validate leverage is in reasonable range [1, 125]
     if (bot.leverage < 1 || bot.leverage > 125) {
         results[bot_idx].bot_id = -9984;
@@ -1228,8 +1242,39 @@ __kernel void backtest_with_signals(
         int cycle_start_wins = winning_trades;
         float cycle_pnl = 0.0f;  // Isolated PnL for this cycle only
         
-        // Iterate through bars in cycle
-        for (int bar = start_bar; bar <= end_bar; bar++) {
+        // Calculate warmup period (skip first N bars where indicators may be incomplete)
+        // This prevents unreliable signals from partially-computed indicators
+        int warmup_bars = 0;
+        for (int i = 0; i < bot.num_indicators; i++) {
+            unsigned char idx = bot.indicator_indices[i];
+            float period = bot.indicator_params[i][0];  // Most indicators use param1 as period
+            
+            // Estimate warmup needed for each indicator type
+            int indicator_warmup = (int)period;
+            if (idx == 9) {  // MACD
+                indicator_warmup = (int)bot.indicator_params[i][1];  // Use slow period
+            } else if (idx == 16) {  // Ichimoku
+                indicator_warmup = (int)bot.indicator_params[i][1];  // Use kijun period
+            }
+            // For most indicators, period parameter is sufficient warmup
+            
+            if (indicator_warmup > warmup_bars) {
+                warmup_bars = indicator_warmup;
+            }
+        }
+        
+        // Apply warmup: start trading only after indicators are fully initialized
+        int actual_start_bar = start_bar + warmup_bars;
+        if (actual_start_bar > end_bar) {
+            // Cycle too short for this bot's indicators - skip cycle
+            cycle_trades_arr[cycle] = 0;
+            cycle_wins_arr[cycle] = 0;
+            cycle_pnl_arr[cycle] = 0.0f;
+            continue;  // Skip to next cycle
+        }
+        
+        // Iterate through bars in cycle (after warmup period)
+        for (int bar = actual_start_bar; bar <= end_bar; bar++) {
             // Generate signal from precomputed indicators
             float signal = generate_signal_consensus(
                 precomputed_indicators,
@@ -1286,6 +1331,25 @@ __kernel void backtest_with_signals(
                 max_drawdown = current_dd;
             }
             
+            // CIRCUIT BREAKER: Stop trading if drawdown exceeds 30%
+            // This prevents unrealistic "death spirals" where bots lose 99% and keep trading
+            if (current_dd > 0.30f) {
+                // Close all positions and exit cycle early
+                for (int i = 0; i < MAX_POSITIONS; i++) {
+                    if (positions[i].is_active) {
+                        float return_amount = close_position(
+                            &positions[i],
+                            ohlcv[bar].close,
+                            (float)bot.leverage,
+                            &num_positions,
+                            3  // Emergency close
+                        );
+                        balance += return_amount;
+                    }
+                }
+                break;  // Exit bar loop - stop trading this cycle
+            }
+            
             // Open new positions if signal and balance allows
             if (signal != 0.0f && balance > initial_balance * MIN_BALANCE_PCT) {
                 if (num_positions < MAX_POSITIONS) {
@@ -1340,14 +1404,22 @@ __kernel void backtest_with_signals(
                 
                 total_pnl += actual_pnl;
                 cycle_pnl += actual_pnl;  // Add to cycle PnL
-                total_trades++;
+                
+                // Overflow protection: clamp counters at max values
+                if (total_trades < 65535) {
+                    total_trades++;
+                }
                 
                 // FIXED: Accumulate wins and losses properly
                 if (actual_pnl > 0.0f) {
-                    winning_trades++;
+                    if (winning_trades < 65535) {
+                        winning_trades++;
+                    }
                     sum_wins += actual_pnl;
                 } else {
-                    losing_trades++;
+                    if (losing_trades < 65535) {
+                        losing_trades++;
+                    }
                     sum_losses += fabs(actual_pnl);
                 }
             }

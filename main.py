@@ -26,6 +26,7 @@ from src.utils.config import (
     DEFAULT_MIN_RISK_STRATEGIES, DEFAULT_MAX_RISK_STRATEGIES,
     DEFAULT_RANDOM_SEED, IMPLEMENTED_MODES, MODE_DESCRIPTIONS
 )
+from src.utils.vram_estimator import VRAMEstimator
 from src.data_provider.fetcher import DataFetcher
 from src.data_provider.loader import DataLoader
 from src.bot_generator.compact_generator import CompactBotGenerator
@@ -497,6 +498,23 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         print(f"Data loading completed in {load_time:.3f}s")
         print(f"Total data preparation: {total_data_time:.3f}s")
         print(f"Loaded {len(ohlcv_array)} bars, {len(cycle_ranges)} cycles\n")
+        
+        # Validate VRAM requirements
+        print("Validating GPU memory requirements...")
+        vram_estimator = VRAMEstimator(gpu_context)
+        try:
+            vram_report = vram_estimator.estimate_and_validate_workflow(
+                population_size=params['population'],
+                num_cycles=len(cycle_ranges),
+                total_bars=len(ohlcv_array),
+                num_indicator_types=50,  # We have 50 GPU indicators
+                num_risk_strategy_types=15,  # We have 15 risk strategies
+                gpu_vram_bytes=vram_estimator.device_vram if vram_estimator.device_vram else None
+            )
+            print(f"VRAM validation passed: Peak usage {vram_report['peak_vram_mb']:.0f} MB\n")
+        except RuntimeError as e:
+            print(f"\nERROR: {e}")
+            sys.exit(1)
         
         # Initialize components
         print("Initializing evolution components...")

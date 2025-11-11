@@ -1,3 +1,19 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:960298399eeb19fa7afb92d4b386f000cb3df31a6278e52318ea5b14160e4353
-size 412
+{
+  "pair": "BTC/USDT",
+  "initial_balance": 1000.0,
+  "population": 10000,
+  "generations": 2,
+  "cycles": 3,
+  "backtest_days": 7,
+  "timeframe": "1m",
+  "min_leverage": 1,
+  "max_leverage": 1,
+  "min_indicators": 1,
+  "max_indicators": 5,
+  "min_risk_strategies": 1,
+  "max_risk_strategies": 5,
+  "data_chunk_days": 100,
+  "random_seed": 42,
+  "use_seed": "y",
+  "interactive_mode": false
+}
