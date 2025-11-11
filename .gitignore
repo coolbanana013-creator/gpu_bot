@@ -1,0 +1,49 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs and evolution results
+logs/*.csv
+logs/*.log
+logs/*.txt
+
+# Cache files
+cache/*.pkl
+cache/*.npz
+cache/*.json
+
+# Historical data files (keep structure, ignore data)
+data/**/1m/*.parquet
+data/**/5m/*.parquet
+data/**/15m/*.parquet
+data/**/1h/*.parquet
+
+# API keys and secrets
+.env
+*.key
+*.pem
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Data files
+*.h5
+*.hdf5
+
+# OS
+.DS_Store
+Thumbs.db

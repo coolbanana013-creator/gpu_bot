@@ -289,7 +289,15 @@ class CompactBacktester:
                                 ))
                             all_cycle_results[global_cycle_idx].append(cycle_data)
                         
+                        # Explicitly delete large chunk data to free memory immediately
+                        del chunk_results
+                        del chunk_data
+                        
                         pbar.update(1)
+                
+                # Explicit cleanup after chunk loop to release accumulated memory
+                import gc
+                gc.collect()
                 
                 # Success! Break out of retry loop
                 break
@@ -312,16 +320,30 @@ class CompactBacktester:
                     # Different error, re-raise
                     raise
 
-        # GPU-accelerated aggregation: sum trades/wins/pnl across chunks and cycles
+        # Force GPU synchronization and memory cleanup before aggregation
+        # This ensures all previous buffers are fully released and memory is defragmented
+        print("[BACKTEST] Finalizing GPU memory cleanup before aggregation...")
+        self.queue.finish()
+        
+        # Trigger Python garbage collection to release host-side buffer references
+        import gc
+        gc.collect()
+        
+        # Check available VRAM before aggregation
+        try:
+            # Try a small test allocation to verify GPU is responsive
+            test_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE, size=1024)
+            test_buf.release()
+        except cl.RuntimeError:
+            print("[BACKTEST] WARNING: GPU memory critically low, forcing additional cleanup...")
+            gc.collect()
+            import time
+            time.sleep(0.1)  # Brief pause for driver cleanup
+        
+        # GPU-accelerated aggregation with batching to manage memory
         print("[BACKTEST] GPU-accelerated aggregation of multi-cycle results...")
         
         # Flatten all chunk results into single array for GPU processing
-        # Format: [bot0_cycle0_chunk0, bot1_cycle0_chunk0, ..., bot0_cycle1_chunk0, ...]
-        total_data_points = 0
-        for cycle_idx in range(num_cycles):
-            total_data_points += len(all_cycle_results[cycle_idx]) * num_bots
-        
-        # Create flat arrays for GPU
         flat_bot_ids = []
         flat_cycle_ids = []
         flat_trades = []
@@ -337,14 +359,26 @@ class CompactBacktester:
                     flat_wins.append(wins)
                     flat_pnls.append(pnl)
         
-        # Run GPU aggregation (sum per bot across all cycles and chunks)
-        final_results = self._gpu_aggregate_results(
+        # Convert to numpy arrays
+        flat_bot_ids = np.array(flat_bot_ids, dtype=np.int32)
+        flat_cycle_ids = np.array(flat_cycle_ids, dtype=np.int32)
+        flat_trades = np.array(flat_trades, dtype=np.int32)
+        flat_wins = np.array(flat_wins, dtype=np.int32)
+        flat_pnls = np.array(flat_pnls, dtype=np.float32)
+        
+        # Free memory from original chunk data
+        del all_cycle_results
+        import gc
+        gc.collect()
+        
+        # Run GPU aggregation in batches to avoid OUT_OF_RESOURCES
+        final_results = self._gpu_aggregate_results_batched(
             bots,
-            np.array(flat_bot_ids, dtype=np.int32),
-            np.array(flat_cycle_ids, dtype=np.int32),
-            np.array(flat_trades, dtype=np.int32),
-            np.array(flat_wins, dtype=np.int32),
-            np.array(flat_pnls, dtype=np.float32),
+            flat_bot_ids,
+            flat_cycle_ids,
+            flat_trades,
+            flat_wins,
+            flat_pnls,
             num_cycles
         )
 
@@ -1181,6 +1215,201 @@ class CompactBacktester:
         # Annualized Sharpe (assuming ~252 trading days, cycles are portions of that)
         sharpe = mean_return / std_return
         return sharpe
+    
+    def _gpu_aggregate_results_batched(
+        self,
+        bots: List[CompactBotConfig],
+        bot_ids: np.ndarray,
+        cycle_ids: np.ndarray,
+        trades: np.ndarray,
+        wins: np.ndarray,
+        pnls: np.ndarray,
+        num_cycles: int
+    ) -> List[BacktestResult]:
+        """
+        GPU aggregation with batching to manage memory.
+        Processes bots in batches to avoid OUT_OF_RESOURCES errors.
+        """
+        num_bots = len(bots)
+        num_data_points = len(bot_ids)
+        
+        # Determine batch size based on available memory
+        # With 3.19GB VRAM and ~107MB for 100K bots, use 20K bot batches (~21MB each)
+        batch_size = 20000
+        num_batches = (num_bots + batch_size - 1) // batch_size
+        
+        print(f"  GPU aggregating {num_data_points:,} data points for {num_bots:,} bots in {num_batches} batches...")
+        
+        all_outputs = []
+        
+        # Process bots in batches
+        for batch_idx in range(num_batches):
+            batch_start = batch_idx * batch_size
+            batch_end = min(batch_start + batch_size, num_bots)
+            batch_bots = bots[batch_start:batch_end]
+            batch_num_bots = len(batch_bots)
+            
+            # Create bot_id lookup for this batch
+            batch_bot_ids = set(b.bot_id for b in batch_bots)
+            
+            # Filter data points for this batch
+            mask = np.isin(bot_ids, list(batch_bot_ids))
+            batch_bot_ids_arr = bot_ids[mask]
+            batch_cycle_ids_arr = cycle_ids[mask]
+            batch_trades_arr = trades[mask]
+            batch_wins_arr = wins[mask]
+            batch_pnls_arr = pnls[mask]
+            batch_data_points = len(batch_bot_ids_arr)
+            
+            if batch_data_points == 0:
+                # No data for this batch, skip
+                all_outputs.extend([[0, 0, 0.0] for _ in range(batch_num_bots)])
+                continue
+            
+            # Upload batch data to GPU
+            bot_ids_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=batch_bot_ids_arr)
+            cycle_ids_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=batch_cycle_ids_arr)
+            trades_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=batch_trades_arr)
+            wins_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=batch_wins_arr)
+            pnls_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=batch_pnls_arr)
+            
+            # Create bot_id lookup array for this batch
+            bot_id_lookup = np.array([b.bot_id for b in batch_bots], dtype=np.int32)
+            bot_id_lookup_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=bot_id_lookup)
+            
+            # Output: aggregated results per bot [trades, wins, pnl] × batch_num_bots
+            output_buf = cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY, size=batch_num_bots * 3 * 4)
+            
+            # Run aggregation kernel
+            kernel = self._aggregate_flat_kernel
+            global_size = (batch_num_bots,)
+            
+            kernel(
+                self.queue,
+                global_size,
+                None,
+                bot_id_lookup_buf,
+                bot_ids_buf,
+                cycle_ids_buf,
+                trades_buf,
+                wins_buf,
+                pnls_buf,
+                np.int32(batch_num_bots),
+                np.int32(batch_data_points),
+                output_buf
+            )
+            
+            self.queue.finish()
+            
+            # Read results
+            output = np.empty(batch_num_bots * 3, dtype=np.float32)
+            cl.enqueue_copy(self.queue, output, output_buf)
+            self.queue.finish()
+            
+            # Store results
+            for i in range(batch_num_bots):
+                idx = i * 3
+                all_outputs.append([
+                    int(output[idx]),      # total_trades
+                    int(output[idx + 1]),  # total_wins
+                    output[idx + 2]        # total_pnl
+                ])
+            
+            # Cleanup batch buffers
+            bot_ids_buf.release()
+            cycle_ids_buf.release()
+            trades_buf.release()
+            wins_buf.release()
+            pnls_buf.release()
+            bot_id_lookup_buf.release()
+            output_buf.release()
+            
+            # Force memory cleanup between batches
+            if batch_idx < num_batches - 1:
+                import gc
+                gc.collect()
+        
+        # Now build per-cycle results (CPU aggregation, already have the data)
+        return self._build_final_results(bots, bot_ids, cycle_ids, trades, wins, pnls, num_cycles, all_outputs)
+    
+    def _build_final_results(
+        self,
+        bots: List[CompactBotConfig],
+        bot_ids: np.ndarray,
+        cycle_ids: np.ndarray,
+        trades: np.ndarray,
+        wins: np.ndarray,
+        pnls: np.ndarray,
+        num_cycles: int,
+        all_outputs: List[List]
+    ) -> List[BacktestResult]:
+        """Build final BacktestResult objects with per-cycle data."""
+        num_bots = len(bots)
+        num_data_points = len(bot_ids)
+        
+        # Build per-cycle arrays by aggregating data points per cycle
+        bot_cycle_map = {}  # {bot_id: {cycle_id: [trades, wins, pnl]}}
+        
+        for i in range(num_data_points):
+            b_id = bot_ids[i]
+            c_id = cycle_ids[i]
+            if b_id not in bot_cycle_map:
+                bot_cycle_map[b_id] = {}
+            if c_id not in bot_cycle_map[b_id]:
+                bot_cycle_map[b_id][c_id] = [0, 0, 0.0]
+            bot_cycle_map[b_id][c_id][0] += trades[i]
+            bot_cycle_map[b_id][c_id][1] += wins[i]
+            bot_cycle_map[b_id][c_id][2] += pnls[i]
+        
+        # Convert to BacktestResult objects
+        final_results = []
+        for bot_idx in range(num_bots):
+            bot = bots[bot_idx]
+            
+            total_trades = all_outputs[bot_idx][0]
+            total_wins = all_outputs[bot_idx][1]
+            total_pnl = all_outputs[bot_idx][2]
+            
+            # Build per-cycle arrays
+            per_cycle_trades = []
+            per_cycle_wins = []
+            per_cycle_pnl = []
+            
+            bot_data = bot_cycle_map.get(bot.bot_id, {})
+            for cycle_idx in range(num_cycles):
+                cycle_data = bot_data.get(cycle_idx, [0, 0, 0.0])
+                per_cycle_trades.append(cycle_data[0])
+                per_cycle_wins.append(cycle_data[1])
+                per_cycle_pnl.append(cycle_data[2])
+            
+            # Calculate metrics
+            win_rate = (total_wins / total_trades * 100.0) if total_trades > 0 else 0.0
+            sharpe = self._calculate_sharpe_ratio(per_cycle_pnl)
+            
+            losing_trades = total_trades - total_wins
+            final_balance = self.initial_balance + total_pnl
+            
+            final_results.append(BacktestResult(
+                bot_id=bot.bot_id,
+                total_trades=total_trades,
+                winning_trades=total_wins,
+                losing_trades=losing_trades,
+                per_cycle_trades=per_cycle_trades,
+                per_cycle_wins=per_cycle_wins,
+                per_cycle_pnl=per_cycle_pnl,
+                total_pnl=total_pnl,
+                max_drawdown=0.0,
+                sharpe_ratio=sharpe,
+                win_rate=win_rate,
+                avg_win=0.0,
+                avg_loss=0.0,
+                profit_factor=0.0,
+                max_consecutive_wins=0.0,
+                max_consecutive_losses=0.0,
+                final_balance=final_balance
+            ))
+        
+        return final_results
     
     def _gpu_aggregate_results(
         self,

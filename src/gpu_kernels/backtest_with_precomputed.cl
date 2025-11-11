@@ -122,10 +122,13 @@ typedef struct {
 #define MAX_POSITIONS 1  // Most trading bots only hold 1 position at a time
 #define MAKER_FEE 0.0002f      // 0.02% Kucoin maker
 #define TAKER_FEE 0.0006f      // 0.06% Kucoin taker
-#define SLIPPAGE 0.0001f       // 0.01% average slippage
+#define BASE_SLIPPAGE 0.0001f  // 0.01% base slippage (low volatility, small orders)
 #define MIN_BALANCE_PCT 0.10f  // Stop trading below 10% balance
 // Maximum cycles recorded per bot (must match Python parser)
 #define MAX_CYCLES 100
+// Funding rate (perpetual futures charge every 8 hours)
+#define FUNDING_RATE_INTERVAL 480  // 8 hours = 480 minutes at 1m timeframe
+#define BASE_FUNDING_RATE 0.0001f  // 0.01% per 8 hours (typical neutral rate)
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -141,6 +144,107 @@ unsigned int xorshift32(unsigned int *state) {
     x ^= x << 5;
     *state = x;
     return x;
+}
+
+/**
+ * Calculate dynamic slippage based on position size, volume, volatility, and leverage
+ * 
+ * OPTIMIZED VERSION: Minimal memory footprint, no historical lookups
+ * Uses current bar data only to avoid OUT_OF_RESOURCES on large populations
+ */
+float calculate_dynamic_slippage(
+    float position_value,
+    float current_volume,
+    float leverage,
+    float current_price,
+    float current_high,
+    float current_low
+) {
+    // Base slippage (ideal conditions)
+    float slippage = BASE_SLIPPAGE;
+    
+    // 1. Volume impact: position size as % of current volume
+    // Simplified: use current volume as proxy for liquidity
+    float volume_impact = 0.0f;
+    if (current_volume > 0.0f) {
+        float position_pct = position_value / (current_volume * current_price);
+        volume_impact = position_pct * 0.01f;  // 1% of volume = 0.01% additional slippage
+        volume_impact = fmin(volume_impact, 0.005f);  // Cap at 0.5% additional
+    }
+    
+    // 2. Volatility multiplier: use current bar's high-low range
+    // Simplified: single bar volatility instead of 20-bar average
+    float volatility_multiplier = 1.0f;
+    if (current_price > 0.0f) {
+        float range_pct = (current_high - current_low) / current_price;
+        // If range is 2%, volatility is normal (1x)
+        // If range is 4%, volatility is high (2x)
+        volatility_multiplier = 1.0f + (range_pct / 0.02f);
+        volatility_multiplier = fmin(volatility_multiplier, 4.0f);  // Cap at 4x
+    }
+    
+    // 3. Leverage multiplier: higher leverage = larger notional = more market impact
+    // 1x leverage = 1.0x slippage
+    // 10x leverage = 1.2x slippage
+    // 50x leverage = 2.0x slippage
+    // 125x leverage = 3.0x slippage
+    float leverage_multiplier = 1.0f + (leverage / 62.5f);
+    
+    // Combine all factors
+    float total_slippage = (slippage + volume_impact) * volatility_multiplier * leverage_multiplier;
+    
+    // Final bounds: min 0.005% (ideal conditions), max 0.5% (terrible conditions)
+    // Reduced max to prevent excessive costs
+    total_slippage = fmin(fmax(total_slippage, 0.00005f), 0.005f);
+    
+    return total_slippage;
+}
+
+/**
+ * Calculate unrealized PnL for a position
+ */
+float calculate_unrealized_pnl(Position *pos, float current_price, float leverage) {
+    if (!pos->is_active) return 0.0f;
+    
+    float price_diff;
+    if (pos->direction == 1) {
+        // Long: profit when price rises
+        price_diff = current_price - pos->entry_price;
+    } else {
+        // Short: profit when price falls
+        price_diff = pos->entry_price - current_price;
+    }
+    
+    // Leveraged PnL
+    float raw_pnl = price_diff * pos->quantity;
+    return raw_pnl * leverage;
+}
+
+/**
+ * Calculate free margin (available for new positions)
+ * Free Margin = Balance + Unrealized PnL - Used Margin
+ */
+float calculate_free_margin(
+    float balance,
+    Position *positions,
+    int max_positions,
+    float current_price,
+    float leverage
+) {
+    float used_margin = 0.0f;
+    float unrealized_pnl = 0.0f;
+    
+    for (int i = 0; i < max_positions; i++) {
+        if (positions[i].is_active) {
+            // Margin used = entry_price * quantity
+            used_margin += positions[i].entry_price * positions[i].quantity;
+            
+            // Add unrealized PnL
+            unrealized_pnl += calculate_unrealized_pnl(&positions[i], current_price, leverage);
+        }
+    }
+    
+    return balance + unrealized_pnl - used_margin;
 }
 
 /**
@@ -259,24 +363,47 @@ float calculate_position_size(
 }
 
 /**
- * Check if position should be liquidated
+ * Check if account should be liquidated (ACCOUNT-LEVEL, not per-position)
+ * 
+ * Real liquidation checks total equity against maintenance margin:
+ * - Equity = Balance + Sum(Unrealized PnL)
+ * - Used Margin = Sum(entry_price * quantity for all positions)
+ * - Maintenance Margin = Used Margin * maintenance_rate (0.5% for BTC)
+ * - Liquidation occurs when: Equity < Maintenance Margin
  */
-int check_liquidation(Position *pos, float current_price, float leverage) {
-    if (!pos->is_active) return 0;
+int check_account_liquidation(
+    float balance,
+    Position *positions,
+    int max_positions,
+    float current_price,
+    float leverage
+) {
+    float total_unrealized_pnl = 0.0f;
+    float total_used_margin = 0.0f;
     
-    float pnl_pct;
-    if (pos->direction == 1) {
-        // Long position
-        pnl_pct = (current_price - pos->entry_price) / pos->entry_price;
-    } else {
-        // Short position
-        pnl_pct = (pos->entry_price - current_price) / pos->entry_price;
+    for (int i = 0; i < max_positions; i++) {
+        if (positions[i].is_active) {
+            // Calculate unrealized PnL
+            total_unrealized_pnl += calculate_unrealized_pnl(&positions[i], current_price, leverage);
+            
+            // Calculate used margin
+            total_used_margin += positions[i].entry_price * positions[i].quantity;
+        }
     }
     
-    // Liquidation threshold: -100% / leverage (e.g., -10% for 10x)
-    float liquidation_threshold = -1.0f / leverage;
+    // No positions = no liquidation
+    if (total_used_margin <= 0.0f) return 0;
     
-    return (pnl_pct <= liquidation_threshold);
+    // Calculate equity
+    float equity = balance + total_unrealized_pnl;
+    
+    // Maintenance margin: 0.5% of used margin for BTC
+    // This means you need to maintain 0.5% of position value as collateral
+    float maintenance_rate = 0.005f;
+    float maintenance_margin = total_used_margin * maintenance_rate * leverage;
+    
+    // Liquidation occurs when equity drops below maintenance margin
+    return (equity < maintenance_margin);
 }
 
 /**
@@ -682,7 +809,10 @@ void open_position(
     float sl_multiplier,
     int bar,
     float leverage,
-    float *balance
+    float *balance,
+    float current_volume,  // NEW: for dynamic slippage
+    float current_high,    // NEW: for dynamic slippage
+    float current_low      // NEW: for dynamic slippage
 ) {
     if (*num_positions >= MAX_POSITIONS) return;
     
@@ -701,15 +831,26 @@ void open_position(
     // Margin = what we reserve from balance (collateral)
     float margin_required = desired_position_value / leverage;
     
+    // DYNAMIC SLIPPAGE based on market conditions (optimized - no historical lookups)
+    float slippage_rate = calculate_dynamic_slippage(
+        desired_position_value,
+        current_volume,
+        leverage,
+        price,
+        current_high,
+        current_low
+    );
+    
     // Fees and slippage are based on FULL position value (leverage amplifies costs)
     float entry_fee = desired_position_value * TAKER_FEE;
-    float slippage_cost = desired_position_value * SLIPPAGE;
+    float slippage_cost = desired_position_value * slippage_rate;
     
     // Total cost = margin we reserve + fees we pay upfront
     float total_cost = margin_required + entry_fee + slippage_cost;
     
-    // Check if balance is sufficient BEFORE deducting
-    if (*balance < total_cost) return;
+    // IMPROVED: Check free margin (balance + unrealized PnL - used margin)
+    float free_margin = calculate_free_margin(*balance, positions, MAX_POSITIONS, price, leverage);
+    if (free_margin < total_cost) return;
     
     // Deduct cost from balance
     *balance -= total_cost;
@@ -766,7 +907,7 @@ void open_position(
  * REALISTIC APPROACH:
  * - Quantity was calculated from margin (margin / entry_price)
  * - PnL = price_diff * quantity * leverage (leverage amplification)
- * - Return = margin + leveraged_pnl - fees
+ * - Return = margin + leveraged_pnl - fees - slippage
  * - Liquidation = lose entire margin (but no more)
  */
 float close_position(
@@ -774,7 +915,10 @@ float close_position(
     float exit_price,
     float leverage,
     int *num_positions,
-    int reason  // 0 = TP, 1 = SL, 2 = liquidation, 3 = signal reversal
+    int reason,  // 0 = TP, 1 = SL, 2 = liquidation, 3 = signal reversal
+    float current_volume,  // NEW: for dynamic slippage
+    float current_high,    // NEW: for dynamic slippage
+    float current_low      // NEW: for dynamic slippage
 ) {
     if (!pos->is_active) return 0.0f;
     
@@ -812,7 +956,17 @@ float close_position(
     } else {
         exit_fee = notional_position_value * TAKER_FEE;  // Signal reversal = market order
     }
-    float slippage_cost = notional_position_value * SLIPPAGE;
+    
+    // DYNAMIC SLIPPAGE on exit (optimized - no historical lookups)
+    float slippage_rate = calculate_dynamic_slippage(
+        notional_position_value,
+        current_volume,
+        leverage,
+        exit_price,
+        current_high,
+        current_low
+    );
+    float slippage_cost = notional_position_value * slippage_rate;
     
     // Net PnL after fees
     float net_pnl = leveraged_pnl - exit_fee - slippage_cost;
@@ -840,12 +994,13 @@ float close_position(
 
 /*
  * Manage all positions for current bar
- * UPDATED: Now properly accumulates sum_wins and sum_losses
+ * UPDATED: Account-level liquidation, signal reversals, funding rates, dynamic slippage (optimized)
  */
 void manage_positions(
     Position *positions,
     int *num_positions,
     __global OHLCVBar *bar,
+    int current_bar_idx,
     float signal,
     float leverage,
     float *balance,
@@ -859,7 +1014,85 @@ void manage_positions(
     float *max_drawdown,
     float initial_balance
 ) {
-    // Check existing positions for TP/SL/Liquidation
+    // FIRST: Check account-level liquidation (affects all positions)
+    int account_liquidated = check_account_liquidation(
+        *balance,
+        positions,
+        MAX_POSITIONS,
+        bar->close,
+        leverage
+    );
+    
+    if (account_liquidated) {
+        // Liquidate ALL positions immediately
+        for (int i = 0; i < MAX_POSITIONS; i++) {
+            if (positions[i].is_active) {
+                float return_amount = close_position(
+                    &positions[i],
+                    bar->close,
+                    leverage,
+                    num_positions,
+                    2,  // Liquidation
+                    bar->volume,
+                    bar->high,
+                    bar->low
+                );
+                *balance += return_amount;
+                
+                float margin_was = positions[i].entry_price * positions[i].quantity;
+                float actual_pnl = return_amount - margin_was;
+                
+                *total_pnl += actual_pnl;
+                *cycle_pnl += actual_pnl;
+                (*total_trades)++;
+                
+                if (actual_pnl > 0.0f) {
+                    (*winning_trades)++;
+                    *sum_wins += actual_pnl;
+                } else {
+                    (*losing_trades)++;
+                    *sum_losses += fabs(actual_pnl);
+                }
+            }
+        }
+        
+        if (*balance < 0.0f) *balance = 0.0f;
+        return;  // Exit early - all positions closed
+    }
+    
+    // SECOND: Apply funding rates (every 8 hours = 480 bars at 1m)
+    for (int i = 0; i < MAX_POSITIONS; i++) {
+        if (!positions[i].is_active) continue;
+        
+        int bars_held = current_bar_idx - positions[i].entry_bar;
+        
+        // Check if we crossed a funding rate boundary
+        int prev_funding_periods = (bars_held - 1) / FUNDING_RATE_INTERVAL;
+        int curr_funding_periods = bars_held / FUNDING_RATE_INTERVAL;
+        
+        if (curr_funding_periods > prev_funding_periods) {
+            // Funding rate payment due
+            float position_value = positions[i].entry_price * positions[i].quantity * leverage;
+            float funding_cost = position_value * BASE_FUNDING_RATE;
+            
+            // In bull markets (positive funding), longs pay, shorts receive
+            // In bear markets (negative funding), shorts pay, longs receive
+            // We use neutral rate here; real impl would fetch actual funding rate
+            if (positions[i].direction == 1) {
+                // Long position pays funding
+                *balance -= funding_cost;
+                *total_pnl -= funding_cost;
+                *cycle_pnl -= funding_cost;
+            } else {
+                // Short position receives funding
+                *balance += funding_cost;
+                *total_pnl += funding_cost;
+                *cycle_pnl += funding_cost;
+            }
+        }
+    }
+    
+    // THIRD: Check existing positions for TP/SL/Signal Reversal
     for (int i = 0; i < MAX_POSITIONS; i++) {
         if (!positions[i].is_active) continue;
         
@@ -868,15 +1101,8 @@ void manage_positions(
         int close_reason = 3;
         float exit_price = bar->close;
         
-        // Check liquidation first (highest priority)
-        if (check_liquidation(pos, bar->low, leverage) || 
-            check_liquidation(pos, bar->high, leverage)) {
-            should_close = 1;
-            close_reason = 2;
-            exit_price = pos->liquidation_price;
-        }
-        // Check TP
-        else if (pos->direction == 1 && bar->high >= pos->tp_price) {
+        // Check TP (highest priority after liquidation)
+        if (pos->direction == 1 && bar->high >= pos->tp_price) {
             should_close = 1;
             close_reason = 0;
             exit_price = pos->tp_price;
@@ -886,7 +1112,7 @@ void manage_positions(
             close_reason = 0;
             exit_price = pos->tp_price;
         }
-        // Check SL
+        // Check SL (second priority)
         else if (pos->direction == 1 && bar->low <= pos->sl_price) {
             should_close = 1;
             close_reason = 1;
@@ -897,16 +1123,31 @@ void manage_positions(
             close_reason = 1;
             exit_price = pos->sl_price;
         }
-        // Check signal reversal (lowest priority - removed per review recommendation)
-        // Rely only on TP/SL for exits
+        // RESTORED: Check signal reversal (third priority)
+        // If long and signal turns bearish, exit
+        // If short and signal turns bullish, exit
+        else if ((pos->direction == 1 && signal < 0.0f) ||
+                 (pos->direction == -1 && signal > 0.0f)) {
+            should_close = 1;
+            close_reason = 3;  // Signal reversal
+            exit_price = bar->close;
+        }
         
         if (should_close) {
             // Close position and get return amount
-            float return_amount = close_position(pos, exit_price, leverage, num_positions, close_reason);
+            float return_amount = close_position(
+                pos,
+                exit_price,
+                leverage,
+                num_positions,
+                close_reason,
+                bar->volume,
+                bar->high,
+                bar->low
+            );
             *balance += return_amount;
             
             // Calculate actual PnL
-            // With new margin system: margin = entry_price * quantity
             float margin_was = pos->entry_price * pos->quantity;
             float actual_pnl = return_amount - margin_was;
             
@@ -1242,21 +1483,74 @@ __kernel void backtest_with_signals(
         int cycle_start_wins = winning_trades;
         float cycle_pnl = 0.0f;  // Isolated PnL for this cycle only
         
-        // Calculate warmup period (skip first N bars where indicators may be incomplete)
+        // IMPROVED: Calculate warmup period with proper multipliers
+        // Most indicators need 2-3x their period to stabilize
         // This prevents unreliable signals from partially-computed indicators
         int warmup_bars = 0;
         for (int i = 0; i < bot.num_indicators; i++) {
             unsigned char idx = bot.indicator_indices[i];
-            float period = bot.indicator_params[i][0];  // Most indicators use param1 as period
+            float period = bot.indicator_params[i][0];
+            float period2 = bot.indicator_params[i][1];
+            float period3 = bot.indicator_params[i][2];
             
-            // Estimate warmup needed for each indicator type
-            int indicator_warmup = (int)period;
-            if (idx == 9) {  // MACD
-                indicator_warmup = (int)bot.indicator_params[i][1];  // Use slow period
-            } else if (idx == 16) {  // Ichimoku
-                indicator_warmup = (int)bot.indicator_params[i][1];  // Use kijun period
+            int indicator_warmup = 0;
+            
+            // Moving Averages (0-11)
+            if (idx >= 0 && idx <= 5) {
+                // SMA: needs exactly period bars
+                indicator_warmup = (int)period;
+            } else if (idx >= 6 && idx <= 11) {
+                // EMA/DEMA/TEMA: need 3x period for 95% accuracy
+                indicator_warmup = (int)(period * 3.0f);
             }
-            // For most indicators, period parameter is sufficient warmup
+            // Momentum Indicators (12-19)
+            else if (idx >= 12 && idx <= 14) {
+                // RSI: needs 2x period for stability
+                indicator_warmup = (int)(period * 2.0f);
+            } else if (idx == 15 || idx == 16) {
+                // Stochastic, StochRSI: need 2x period
+                indicator_warmup = (int)(period * 2.0f);
+            } else if (idx >= 17 && idx <= 19) {
+                // Momentum, ROC, Williams: need period + buffer
+                indicator_warmup = (int)period + 10;
+            }
+            // Volatility Indicators (20-25)
+            else if (idx >= 20 && idx <= 22) {
+                // ATR, NATR: need 2x period for smoothing
+                indicator_warmup = (int)(period * 2.0f);
+            } else if (idx == 23 || idx == 24) {
+                // Bollinger Bands: need 3x period for stddev stability
+                indicator_warmup = (int)(period * 3.0f);
+            } else if (idx == 25) {
+                // Keltner Channel: needs period + ATR warmup
+                indicator_warmup = (int)(period * 2.5f);
+            }
+            // Trend Indicators (26-35)
+            else if (idx == 26) {
+                // MACD: needs slow_period + signal_period
+                indicator_warmup = (int)(period2 + period3 + 10);
+            } else if (idx == 27) {
+                // ADX: needs 2x period (DI calculation + ADX smoothing)
+                indicator_warmup = (int)(period * 2.0f);
+            } else if (idx >= 28 && idx <= 35) {
+                // Aroon, CCI, DPO, SAR, SuperTrend, Trend Strength
+                indicator_warmup = (int)(period * 1.5f);
+            }
+            // Volume Indicators (36-40)
+            else if (idx >= 36 && idx <= 40) {
+                // OBV, VWAP, MFI, A/D, Volume SMA
+                indicator_warmup = (int)period + 20;
+            }
+            // Pattern Indicators (41-45)
+            else if (idx >= 41 && idx <= 45) {
+                // Pivot Points, Fractals, S/R, Price Channel
+                indicator_warmup = (int)period + 10;
+            }
+            // Simple Indicators (46-49)
+            else if (idx >= 46 && idx <= 49) {
+                // High-Low Range, Close Position, Price Accel, Volume ROC
+                indicator_warmup = 20;  // Minimal warmup
+            }
             
             if (indicator_warmup > warmup_bars) {
                 warmup_bars = indicator_warmup;
@@ -1290,6 +1584,7 @@ __kernel void backtest_with_signals(
                 positions,
                 &num_positions,
                 &ohlcv[bar],
+                bar,  // NEW: current bar index
                 signal,
                 (float)bot.leverage,
                 &balance,
@@ -1342,7 +1637,10 @@ __kernel void backtest_with_signals(
                             ohlcv[bar].close,
                             (float)bot.leverage,
                             &num_positions,
-                            3  // Emergency close
+                            3,  // Emergency close
+                            ohlcv[bar].volume,
+                            ohlcv[bar].high,
+                            ohlcv[bar].low
                         );
                         balance += return_amount;
                     }
@@ -1374,7 +1672,10 @@ __kernel void backtest_with_signals(
                         bot.sl_multiplier,
                         bar,
                         (float)bot.leverage,
-                        &balance
+                        &balance,
+                        ohlcv[bar].volume,  // NEW: for dynamic slippage
+                        ohlcv[bar].high,    // NEW: for dynamic slippage
+                        ohlcv[bar].low      // NEW: for dynamic slippage
                     );
                 }
             }
@@ -1393,7 +1694,10 @@ __kernel void backtest_with_signals(
                     ohlcv[end_bar].close,
                     (float)bot.leverage,
                     &num_positions,
-                    3  // End of cycle exit
+                    3,  // End of cycle exit
+                    ohlcv[end_bar].volume,
+                    ohlcv[end_bar].high,
+                    ohlcv[end_bar].low
                 );
                 balance += return_amount;
                 
@@ -1656,6 +1960,7 @@ __kernel void backtest_parallel_bot_cycle(
             positions,
             &num_positions,
             &ohlcv[bar],
+            bar,  // NEW: current bar index
             signal,
             (float)bot.leverage,
             &balance,
@@ -1694,7 +1999,10 @@ __kernel void backtest_parallel_bot_cycle(
                     bot.sl_multiplier,
                     bar,
                     (float)bot.leverage,
-                    &balance
+                    &balance,
+                    ohlcv[bar].volume,  // NEW: for dynamic slippage
+                    ohlcv[bar].high,    // NEW: for dynamic slippage
+                    ohlcv[bar].low      // NEW: for dynamic slippage
                 );
             }
         }

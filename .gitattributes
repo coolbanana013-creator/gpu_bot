@@ -1,5 +1,0 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:10290bf8a277b7452ac08f6f285a1af5b8b39c8c37ed7f42447592b98ac1a36f
-size 82
-/gpu_bot.log filter=lfs diff=lfs merge=lfs -text
-/logs/gpu_bot.log filter=lfs diff=lfs merge=lfs -text
