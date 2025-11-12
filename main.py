@@ -887,15 +887,17 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
 def run_mode2(gpu_context, gpu_queue):
     """
     Mode 2: Paper Trading (Live Simulation)
-    Replicates GPU kernel logic on CPU with live data using Universal SDK.
+    Replicates GPU kernel logic EXACTLY on CPU with live data.
     Uses test endpoint - no real money at risk.
+    IDENTICAL to Mode 3 except test_mode=True.
     """
     try:
         from src.live_trading.credentials import CredentialsManager
         from src.live_trading.kucoin_universal_client import KucoinUniversalClient
         from src.live_trading.engine import RealTimeTradingEngine
         from src.bot_generator.compact_generator import CompactBotConfig
-        import ccxt
+        from src.data_provider.fetcher import DataFetcher
+        from src.utils.config import EXCHANGE_TYPE
         
         print("\n" + "="*60)
         print("MODE 2: PAPER TRADING (TEST ENDPOINT)")
@@ -993,32 +995,23 @@ def run_mode2(gpu_context, gpu_queue):
                 leverage=10
             )
         
-        # Convert pair format for Kucoin perpetuals
-        # BTC/USDT -> XBTUSDTM (Universal SDK) and XBTUSDT:USDT (CCXT)
+        # Convert pair format: BTC/USDT -> XBTUSDTM (Kucoin perpetuals)
         if pair == 'BTC/USDT':
-            kucoin_symbol = 'XBTUSDTM'  # For Universal SDK
-            ccxt_symbol = 'XBTUSDT:USDT'  # For CCXT
+            kucoin_symbol = 'XBTUSDTM'
         elif pair == 'ETH/USDT':
             kucoin_symbol = 'ETHUSDTM'
-            ccxt_symbol = 'ETHUSDT:USDT'
         else:
-            # Generic conversion
             kucoin_symbol = pair.replace('/', '') + 'M'
-            ccxt_symbol = pair.replace('/', '') + ':USDT'
         
         # Initialize Kucoin Universal SDK client (TEST MODE)
         log_info("Connecting to Kucoin (Test Endpoint)...")
-        try:
-            kucoin_client = KucoinUniversalClient(
-                api_key=credentials['api_key'],
-                api_secret=credentials['api_secret'],
-                api_passphrase=credentials['api_passphrase'],
-                test_mode=True  # Use test endpoint - no real money
-            )
-            log_info("✅ Connected to Kucoin Test API")
-        except Exception as e:
-            log_error(f"Failed to connect: {e}")
-            return
+        kucoin_client = KucoinUniversalClient(
+            api_key=credentials['api_key'],
+            api_secret=credentials['api_secret'],
+            api_passphrase=credentials['api_passphrase'],
+            test_mode=True  # Test endpoint - NO REAL MONEY
+        )
+        log_info("✅ Connected to Kucoin Test API")
         
         # Initialize trading engine
         log_info("Initializing paper trading engine...")
@@ -1031,30 +1024,30 @@ def run_mode2(gpu_context, gpu_queue):
             test_mode=True
         )
         
-        # Fetch historical data using CCXT for indicators
+        # Fetch historical data using DataProvider (same as Mode 1)
         log_info("Loading historical data...")
-        try:
-            ccxt_client = ccxt.kucoinfutures({
-                'apiKey': credentials['api_key'],
-                'secret': credentials['api_secret'],
-                'password': credentials['api_passphrase'],
-                'enableRateLimit': True
-            })
-            
-            # Load markets to ensure symbol is available
-            ccxt_client.load_markets()
-            
-            # Fetch 500 candles for indicator warmup
-            historical_candles = ccxt_client.fetch_ohlcv(ccxt_symbol, timeframe, limit=500)
-            
-            for candle in historical_candles:
-                timestamp_ms, open_, high, low, close, volume = candle
-                engine.process_candle(open_, high, low, close, volume, timestamp_ms / 1000.0)
-            
-            log_info(f"✅ Loaded {len(historical_candles)} historical candles")
-        except Exception as e:
-            log_warning(f"Failed to load historical data: {e}")
-            log_info("Continuing without historical warmup...")
+        fetcher = DataFetcher(exchange_type='futures')
+        
+        # Fetch 2 days of data for indicator warmup (500+ candles for 1m)
+        file_paths = fetcher.fetch_data_range(
+            pair=pair,
+            timeframe=timeframe,
+            total_days=2
+        )
+        
+        # Load data from parquet files
+        from src.data_provider.loader import DataLoader
+        loader = DataLoader(file_paths=file_paths, gpu_context=gpu_context, gpu_queue=gpu_queue)
+        data_dict = loader.load_all_data()
+        
+        # Process historical candles to warm up indicators
+        ohlcv = data_dict['ohlcv']
+        for i in range(len(ohlcv)):
+            open_, high, low, close, volume = ohlcv[i][1], ohlcv[i][2], ohlcv[i][3], ohlcv[i][4], ohlcv[i][5]
+            timestamp = ohlcv[i][0] / 1000.0  # Convert ms to seconds
+            engine.process_candle(open_, high, low, close, volume, timestamp)
+        
+        log_info(f"✅ Loaded {len(ohlcv)} historical candles")
         
         # Start engine
         engine.start()
@@ -1063,18 +1056,23 @@ def run_mode2(gpu_context, gpu_queue):
         log_info("📄 PAPER TRADING STARTED - Press Ctrl+C to stop")
         log_info("="*60 + "\n")
         
-        # Simple polling loop (fetch candles every timeframe period)
+        # Live trading loop - fetch new candles from DataFetcher
         timeframe_seconds = {'1m': 60, '5m': 300, '15m': 900}[timeframe]
-        last_timestamp = 0
+        last_timestamp = ohlcv[-1][0] if len(ohlcv) > 0 else 0
         
         # Keep running until interrupted
         while True:
             try:
-                # Fetch latest candle
-                candles = ccxt_client.fetch_ohlcv(ccxt_symbol, timeframe, limit=2)
-                if candles and len(candles) >= 2:
+                # Fetch latest candles using DataFetcher (not CCXT)
+                latest_data = fetcher.fetch_latest_candles(
+                    pair=pair,
+                    timeframe=timeframe,
+                    limit=2
+                )
+                
+                if latest_data and len(latest_data) >= 2:
                     # Get completed candle (second to last)
-                    candle = candles[-2]
+                    candle = latest_data[-2]
                     timestamp_ms = candle[0]
                     
                     # Only process if new candle
@@ -1094,18 +1092,13 @@ def run_mode2(gpu_context, gpu_queue):
                 
             except KeyboardInterrupt:
                 raise
-            except Exception as e:
-                log_error(f"Error in trading loop: {e}")
-                time.sleep(5)
         
     except KeyboardInterrupt:
         log_warning("\n\nPaper trading stopped by user")
         
-        # Stop components
+        # Stop engine
         if 'engine' in locals():
             engine.stop()
-        if 'data_streamer' in locals():
-            data_streamer.stop()
         
         # Save trading session results
         if 'engine' in locals() and 'bot_config' in locals():
@@ -1158,15 +1151,17 @@ def run_mode2(gpu_context, gpu_queue):
 def run_mode3(gpu_context, gpu_queue):
     """
     Mode 3: Live Trading (Real Money)
-    Uses Kucoin Universal SDK with REAL trading endpoint.
-    ⚠️  TRADES WITH REAL MONEY ⚠️
+    Replicates GPU kernel logic EXACTLY on CPU with live data.
+    Uses LIVE endpoint - REAL MONEY AT RISK.
+    IDENTICAL to Mode 2 except test_mode=False.
     """
     try:
         from src.live_trading.credentials import CredentialsManager
         from src.live_trading.kucoin_universal_client import KucoinUniversalClient
         from src.live_trading.engine import RealTimeTradingEngine
         from src.bot_generator.compact_generator import CompactBotConfig
-        import ccxt
+        from src.data_provider.fetcher import DataFetcher
+        from src.utils.config import EXCHANGE_TYPE
         
         print("\n" + "="*60)
         print("MODE 3: LIVE TRADING (REAL MONEY)")
@@ -1278,33 +1273,24 @@ def run_mode3(gpu_context, gpu_queue):
                 leverage=10
             )
         
-        # Convert pair format for Kucoin perpetuals
-        # BTC/USDT -> XBTUSDTM (Universal SDK) and XBTUSDT:USDT (CCXT)
+        # Convert pair format: BTC/USDT -> XBTUSDTM (Kucoin perpetuals)
         if pair == 'BTC/USDT':
-            kucoin_symbol = 'XBTUSDTM'  # For Universal SDK
-            ccxt_symbol = 'XBTUSDT:USDT'  # For CCXT
+            kucoin_symbol = 'XBTUSDTM'
         elif pair == 'ETH/USDT':
             kucoin_symbol = 'ETHUSDTM'
-            ccxt_symbol = 'ETHUSDT:USDT'
         else:
-            # Generic conversion
             kucoin_symbol = pair.replace('/', '') + 'M'
-            ccxt_symbol = pair.replace('/', '') + ':USDT'
         
         # Initialize Kucoin Universal SDK client (LIVE MODE)
         log_info("Connecting to Kucoin (LIVE Endpoint)...")
         log_warning("⚠️  USING REAL MONEY API!")
-        try:
-            kucoin_client = KucoinUniversalClient(
-                api_key=credentials['api_key'],
-                api_secret=credentials['api_secret'],
-                api_passphrase=credentials['api_passphrase'],
-                test_mode=False  # LIVE TRADING - REAL MONEY!
-            )
-            log_info("✅ Connected to Kucoin LIVE API")
-        except Exception as e:
-            log_error(f"Failed to connect: {e}")
-            return
+        kucoin_client = KucoinUniversalClient(
+            api_key=credentials['api_key'],
+            api_secret=credentials['api_secret'],
+            api_passphrase=credentials['api_passphrase'],
+            test_mode=False  # LIVE endpoint - REAL MONEY!
+        )
+        log_info("✅ Connected to Kucoin LIVE API")
         
         # Initialize trading engine
         log_info("Initializing LIVE trading engine...")
@@ -1317,30 +1303,30 @@ def run_mode3(gpu_context, gpu_queue):
             test_mode=False  # LIVE MODE
         )
         
-        # Fetch historical data using CCXT for indicators
+        # Fetch historical data using DataProvider (same as Mode 1)
         log_info("Loading historical data...")
-        try:
-            ccxt_client = ccxt.kucoinfutures({
-                'apiKey': credentials['api_key'],
-                'secret': credentials['api_secret'],
-                'password': credentials['api_passphrase'],
-                'enableRateLimit': True
-            })
-            
-            # Load markets to ensure symbol is available
-            ccxt_client.load_markets()
-            
-            # Fetch 500 candles for indicator warmup
-            historical_candles = ccxt_client.fetch_ohlcv(ccxt_symbol, timeframe, limit=500)
-            
-            for candle in historical_candles:
-                timestamp_ms, open_, high, low, close, volume = candle
-                engine.process_candle(open_, high, low, close, volume, timestamp_ms / 1000.0)
-            
-            log_info(f"✅ Loaded {len(historical_candles)} historical candles")
-        except Exception as e:
-            log_warning(f"Failed to load historical data: {e}")
-            log_info("Continuing without historical warmup...")
+        fetcher = DataFetcher(exchange_type='futures')
+        
+        # Fetch 2 days of data for indicator warmup (500+ candles for 1m)
+        file_paths = fetcher.fetch_data_range(
+            pair=pair,
+            timeframe=timeframe,
+            total_days=2
+        )
+        
+        # Load data from parquet files
+        from src.data_provider.loader import DataLoader
+        loader = DataLoader(file_paths=file_paths, gpu_context=gpu_context, gpu_queue=gpu_queue)
+        data_dict = loader.load_all_data()
+        
+        # Process historical candles to warm up indicators
+        ohlcv = data_dict['ohlcv']
+        for i in range(len(ohlcv)):
+            open_, high, low, close, volume = ohlcv[i][1], ohlcv[i][2], ohlcv[i][3], ohlcv[i][4], ohlcv[i][5]
+            timestamp = ohlcv[i][0] / 1000.0  # Convert ms to seconds
+            engine.process_candle(open_, high, low, close, volume, timestamp)
+        
+        log_info(f"✅ Loaded {len(ohlcv)} historical candles")
         
         # Start engine
         engine.start()
@@ -1350,18 +1336,23 @@ def run_mode3(gpu_context, gpu_queue):
         log_warning("⚠️  ALL TRADES ARE REAL - MONITOR CAREFULLY!")
         log_info("="*60 + "\n")
         
-        # Simple polling loop (fetch candles every timeframe period)
+        # Live trading loop - fetch new candles from DataFetcher
         timeframe_seconds = {'1m': 60, '5m': 300, '15m': 900}[timeframe]
-        last_timestamp = 0
+        last_timestamp = ohlcv[-1][0] if len(ohlcv) > 0 else 0
         
         # Keep running until interrupted
         while True:
             try:
-                # Fetch latest candle
-                candles = ccxt_client.fetch_ohlcv(ccxt_symbol, timeframe, limit=2)
-                if candles and len(candles) >= 2:
+                # Fetch latest candles using DataFetcher (not CCXT)
+                latest_data = fetcher.fetch_latest_candles(
+                    pair=pair,
+                    timeframe=timeframe,
+                    limit=2
+                )
+                
+                if latest_data and len(latest_data) >= 2:
                     # Get completed candle (second to last)
-                    candle = candles[-2]
+                    candle = latest_data[-2]
                     timestamp_ms = candle[0]
                     
                     # Only process if new candle
@@ -1381,18 +1372,13 @@ def run_mode3(gpu_context, gpu_queue):
                 
             except KeyboardInterrupt:
                 raise
-            except Exception as e:
-                log_error(f"Error in trading loop: {e}")
-                time.sleep(5)
         
     except KeyboardInterrupt:
         log_warning("\n\nLive trading stopped by user")
         
-        # Stop components
+        # Stop engine
         if 'engine' in locals():
             engine.stop()
-        if 'data_streamer' in locals():
-            data_streamer.stop()
         
         # Save trading session results
         if 'engine' in locals() and 'bot_config' in locals():
