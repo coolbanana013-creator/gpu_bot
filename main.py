@@ -1037,17 +1037,23 @@ def run_mode2(gpu_context, gpu_queue):
         
         # Load data from parquet files
         from src.data_provider.loader import DataLoader
-        loader = DataLoader(file_paths=file_paths, gpu_context=gpu_context, gpu_queue=gpu_queue)
-        data_dict = loader.load_all_data()
+        loader = DataLoader(
+            file_paths=file_paths,
+            timeframe=timeframe,
+            gpu_context=gpu_context,
+            gpu_queue=gpu_queue
+        )
+        ohlcv_data = loader.load_all_data()
+        
+        # Convert DataFrame to numpy array
+        ohlcv_array = ohlcv_data[['timestamp', 'open', 'high', 'low', 'close', 'volume']].values.astype(np.float32)
         
         # Process historical candles to warm up indicators
-        ohlcv = data_dict['ohlcv']
-        for i in range(len(ohlcv)):
-            open_, high, low, close, volume = ohlcv[i][1], ohlcv[i][2], ohlcv[i][3], ohlcv[i][4], ohlcv[i][5]
-            timestamp = ohlcv[i][0] / 1000.0  # Convert ms to seconds
-            engine.process_candle(open_, high, low, close, volume, timestamp)
+        for i in range(len(ohlcv_array)):
+            timestamp_ms, open_, high, low, close, volume = ohlcv_array[i]
+            engine.process_candle(open_, high, low, close, volume, timestamp_ms / 1000.0)
         
-        log_info(f"✅ Loaded {len(ohlcv)} historical candles")
+        log_info(f"✅ Loaded {len(ohlcv_array)} historical candles")
         
         # Start engine
         engine.start()
@@ -1316,17 +1322,23 @@ def run_mode3(gpu_context, gpu_queue):
         
         # Load data from parquet files
         from src.data_provider.loader import DataLoader
-        loader = DataLoader(file_paths=file_paths, gpu_context=gpu_context, gpu_queue=gpu_queue)
-        data_dict = loader.load_all_data()
+        loader = DataLoader(
+            file_paths=file_paths,
+            timeframe=timeframe,
+            gpu_context=gpu_context,
+            gpu_queue=gpu_queue
+        )
+        ohlcv_data = loader.load_all_data()
+        
+        # Convert DataFrame to numpy array
+        ohlcv_array = ohlcv_data[['timestamp', 'open', 'high', 'low', 'close', 'volume']].values.astype(np.float32)
         
         # Process historical candles to warm up indicators
-        ohlcv = data_dict['ohlcv']
-        for i in range(len(ohlcv)):
-            open_, high, low, close, volume = ohlcv[i][1], ohlcv[i][2], ohlcv[i][3], ohlcv[i][4], ohlcv[i][5]
-            timestamp = ohlcv[i][0] / 1000.0  # Convert ms to seconds
-            engine.process_candle(open_, high, low, close, volume, timestamp)
+        for i in range(len(ohlcv_array)):
+            timestamp_ms, open_, high, low, close, volume = ohlcv_array[i]
+            engine.process_candle(open_, high, low, close, volume, timestamp_ms / 1000.0)
         
-        log_info(f"✅ Loaded {len(ohlcv)} historical candles")
+        log_info(f"✅ Loaded {len(ohlcv_array)} historical candles")
         
         # Start engine
         engine.start()
