@@ -3028,3 +3028,57 @@ Execution interrupted by user
 2025-11-12 23:25:30,042 - src.utils.validation - INFO - Data ready: 2 file(s) total (1 from cache, 1 newly downloaded)
 2025-11-12 23:25:30,042 - src.utils.validation - INFO - Loading historical data from 2 files...
 2025-11-12 23:25:30,044 - src.utils.validation - ERROR - Test failed with error: <pyopencl.Context at 0x1f8a14bdf90 on <pyopencl.Device 'Intel(R) UHD Graphics' on 'Intel(R) OpenCL Graphics' at 0x1f8a3f38070>>
+2025-11-12 23:28:40,631 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:28:40,632 - src.utils.validation - INFO - TESTING MODE 2: PAPER TRADING
+2025-11-12 23:28:40,633 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:28:40,633 - src.utils.validation - INFO - Initializing GPU...
+2025-11-12 23:28:40,904 - src.utils.validation - INFO - ✅ GPU Initialized: Intel(R) UHD Graphics
+2025-11-12 23:28:40,905 - src.utils.validation - INFO - Pair: BTC/USDT
+2025-11-12 23:28:40,905 - src.utils.validation - INFO - Timeframe: 1m
+2025-11-12 23:28:40,907 - src.utils.validation - INFO - Initial Balance: $1000.0
+2025-11-12 23:28:40,907 - src.utils.validation - INFO - Test Mode: True
+2025-11-12 23:28:40,907 - src.utils.validation - INFO - Loading Kucoin credentials...
+2025-11-12 23:28:40,999 - src.utils.validation - INFO - Initializing Kucoin Universal Client (Test Mode)...
+2025-11-12 23:28:41,000 - src.utils.validation - INFO - ✅ Kucoin client initialized - 🧪 TEST MODE (Paper Trading)
+2025-11-12 23:28:41,000 - src.utils.validation - INFO - 🛡️ Risk manager initialized - Max leverage: 10x, Daily loss limit: $10000.0
+2025-11-12 23:28:41,001 - src.utils.validation - INFO - Loading bot configuration...
+2025-11-12 23:28:41,010 - src.utils.validation - INFO - Loading bot from: bots\BTC_USDT\1m\bot_10.json
+2025-11-12 23:28:41,012 - src.utils.validation - INFO - Bot loaded: 2 indicators, leverage: 1x
+2025-11-12 23:28:41,013 - src.utils.validation - INFO - Initializing Real-Time Trading Engine...
+2025-11-12 23:28:41,013 - src.utils.validation - INFO - 🤖 Trading Engine initialized - PAPER (Test Endpoint)
+2025-11-12 23:28:41,014 - src.utils.validation - INFO -    Pair: XBTUSDTM
+2025-11-12 23:28:41,014 - src.utils.validation - INFO -    Bot ID: 10
+2025-11-12 23:28:41,015 - src.utils.validation - INFO -    Indicators: 2
+2025-11-12 23:28:41,015 - src.utils.validation - INFO -    Leverage: 1x
+2025-11-12 23:28:41,016 - src.utils.validation - INFO -    TP: 10.42%, SL: 3.15%
+2025-11-12 23:28:41,017 - src.utils.validation - INFO -    Risk Strategy: Fixed USD Amount (param: 2077.9473)
+2025-11-12 23:28:41,018 - src.utils.validation - INFO - Initializing DataProvider...
+2025-11-12 23:28:41,028 - src.utils.validation - INFO - Initialized Kucoin Spot API connection
+2025-11-12 23:28:44,436 - src.utils.validation - INFO - Fetching 2 days of historical data for BTC/USDT 1m...
+2025-11-12 23:28:44,438 - src.utils.validation - INFO - Fetching 2 days of BTC/USDT 1m data ending 2025-11-12
+2025-11-12 23:28:44,677 - src.utils.validation - INFO - [OK] All 2 data file(s) already cached - no downloading needed
+2025-11-12 23:28:44,678 - src.utils.validation - INFO - Data ready: 2 file(s) total (2 from cache, 0 newly downloaded)
+2025-11-12 23:28:44,679 - src.utils.validation - INFO - Loading historical data from 2 files...
+2025-11-12 23:28:44,679 - src.utils.validation - INFO - Loading 2 data files in parallel
+2025-11-12 23:28:44,702 - src.utils.validation - INFO - Loaded total of 2880 candles
+2025-11-12 23:28:44,703 - src.utils.validation - INFO - Validating data integrity
+2025-11-12 23:28:44,712 - src.utils.validation - INFO - Data validation passed
+2025-11-12 23:28:44,714 - src.utils.validation - INFO - ✅ Loaded 2880 historical candles
+2025-11-12 23:28:44,716 - src.utils.validation - INFO - Processing historical candles to warm up indicators...
+2025-11-12 23:28:45,186 - src.utils.validation - INFO - ✅ Historical warmup complete
+2025-11-12 23:28:45,186 - src.utils.validation - INFO - Starting trading engine...
+2025-11-12 23:28:45,188 - src.utils.validation - INFO - 🚀 PAPER TRADING ENGINE STARTED
+2025-11-12 23:28:45,188 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:28:45,189 - src.utils.validation - INFO - STARTING LIVE TRADING LOOP (5 minute test)
+2025-11-12 23:28:45,190 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:28:45,541 - src.utils.validation - INFO - [23:27:00] Price: $101707.60 | Balance: $1000.00 | PnL: $+0.00 | Positions: 0
+2025-11-12 23:29:13,363 - src.utils.validation - INFO - Test interrupted by user
+2025-11-12 23:29:13,365 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:29:13,366 - src.utils.validation - INFO - TEST RESULTS
+2025-11-12 23:29:13,367 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:29:13,368 - src.utils.validation - INFO - Total candles processed: 1
+2025-11-12 23:29:13,369 - src.utils.validation - INFO - Test duration: 28.2 seconds
+2025-11-12 23:29:13,369 - src.utils.validation - INFO - Final balance: $1000.00
+2025-11-12 23:29:13,370 - src.utils.validation - INFO - Final PnL: $+0.00
+2025-11-12 23:29:13,371 - src.utils.validation - INFO - Final positions: 0
+2025-11-12 23:29:13,372 - src.utils.validation - INFO - ✅ Mode 2 test complete!
