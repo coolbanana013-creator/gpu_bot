@@ -1,0 +1,36 @@
+# GPU-Accelerated Trading Bot Requirements
+# Python 3.8+ required
+
+# Core GPU Computing
+pyopencl>=2023.1.0
+
+# Data Processing & Analysis
+numpy>=1.24.0
+pandas>=2.0.0
+
+# Cryptocurrency Exchange APIs
+ccxt>=4.0.0
+kucoin-universal-sdk>=1.0.0
+requests>=2.31.0
+
+# System Monitoring & Performance
+psutil>=5.9.0
+
+# Testing Framework
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# Async Support
+asyncio>=3.4.3
+
+# Data Serialization
+pickle-mixin>=1.0.2
+
+# Logging
+colorama>=0.4.6
+
+# Path Management
+pathlib>=1.0.1
+
+# Type Hints & Validation
+typing-extensions>=4.7.0

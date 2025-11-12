@@ -2423,3 +2423,291 @@ Testing limit order (test mode)...
 2025-11-12 22:14:28,046 - src.utils.validation - INFO - 🛡️ Risk manager initialized - Max leverage: 10x, Daily loss limit: $10000.0
 2025-11-12 22:14:30,519 - src.utils.validation - INFO - ✅ ✅ Normal API call works
 2025-11-12 22:14:30,521 - src.utils.validation - INFO -    Testing rapid API calls (30 calls in quick succession)...
+2025-11-12 22:14:52,126 - src.utils.validation - INFO -    Completed 30 calls in 21.60s
+2025-11-12 22:14:52,127 - src.utils.validation - INFO - ✅ ✅ Rate limiter working - enforced delays: 21.60s
+2025-11-12 22:14:52,129 - src.utils.validation - INFO - ✅ 
+✅ Rate Limiter - ALL TESTS PASSED
+2025-11-12 22:14:52,130 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:14:52,131 - src.utils.validation - INFO - Testing: Circuit Breaker
+2025-11-12 22:14:52,132 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:14:52,132 - src.utils.validation - INFO - 
+🔌 Testing Circuit Breaker...
+2025-11-12 22:14:52,133 - src.utils.validation - INFO -    Circuit breaker OPEN after 3 failures
+2025-11-12 22:14:52,135 - src.utils.validation - INFO - ✅ ✅ Circuit breaker opened after threshold
+2025-11-12 22:14:52,136 - src.utils.validation - INFO - ✅ ✅ Circuit breaker blocked calls while OPEN
+2025-11-12 22:14:52,136 - src.utils.validation - INFO -    Waiting 5s for recovery...
+2025-11-12 22:14:58,138 - src.utils.validation - INFO - ✅ ✅ Circuit breaker recovered and allows calls
+2025-11-12 22:14:58,139 - src.utils.validation - INFO - ✅ 
+✅ Circuit Breaker - ALL TESTS PASSED
+2025-11-12 22:14:58,143 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:14:58,143 - src.utils.validation - INFO - Testing: Risk Manager
+2025-11-12 22:14:58,145 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:14:58,146 - src.utils.validation - INFO - 
+🛡️ Testing Risk Manager...
+2025-11-12 22:14:58,149 - src.utils.validation - INFO - ✅ Kucoin client initialized - 🧪 TEST MODE (Paper Trading)
+2025-11-12 22:14:58,149 - src.utils.validation - INFO - 🛡️ Risk manager initialized - Max leverage: 10x, Daily loss limit: $10000.0
+2025-11-12 22:15:04,182 - src.utils.validation - INFO - 🧪 TEST ORDER: BUY 1 XBTUSDTM @ Market [Leverage: 2x]
+2025-11-12 22:15:04,183 - src.utils.validation - INFO - ✅ ✅ Normal order passed risk checks
+2025-11-12 22:15:07,181 - src.utils.validation - ERROR - ❌ Failed to place order: Size 150 exceeds maximum 100
+2025-11-12 22:15:07,182 - src.utils.validation - INFO - ✅ ✅ Oversized order rejected (wrapped exception)
+2025-11-12 22:15:07,798 - src.utils.validation - ERROR - ❌ Failed to place order: Leverage 15 outside allowed range 1-10
+2025-11-12 22:15:07,800 - src.utils.validation - ERROR - ❌ Unexpected error: Unexpected error placing market order: Leverage 15 outside allowed range 1-10
+2025-11-12 22:15:07,801 - src.utils.validation - ERROR - 
+❌ Risk Manager - TESTS FAILED
+2025-11-12 22:15:07,803 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:15:07,804 - src.utils.validation - INFO - Testing: Input Validation
+2025-11-12 22:15:07,805 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:15:07,808 - src.utils.validation - INFO - 
+✅ Testing Input Validation...
+2025-11-12 22:15:07,811 - src.utils.validation - INFO - ✅ ✅ Empty symbol rejected
+2025-11-12 22:15:07,813 - src.utils.validation - INFO - ✅ ✅ Negative size rejected
+2025-11-12 22:15:07,814 - src.utils.validation - INFO - ✅ ✅ Zero leverage rejected
+2025-11-12 22:15:07,816 - src.utils.validation - INFO - ✅ ✅ Negative price rejected
+2025-11-12 22:15:07,817 - src.utils.validation - INFO - ✅ 
+✅ Input Validation - ALL TESTS PASSED
+2025-11-12 22:16:02,226 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:16:02,226 - src.utils.validation - INFO - Testing: Rate Limiter
+2025-11-12 22:16:02,227 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:16:02,227 - src.utils.validation - INFO - 
+📊 Testing Rate Limiter...
+2025-11-12 22:16:02,293 - src.utils.validation - INFO - ✅ Kucoin client initialized - 🧪 TEST MODE (Paper Trading)
+2025-11-12 22:16:02,294 - src.utils.validation - INFO - 🛡️ Risk manager initialized - Max leverage: 10x, Daily loss limit: $10000.0
+2025-11-12 22:16:03,599 - src.utils.validation - INFO - ✅ ✅ Normal API call works
+2025-11-12 22:16:03,600 - src.utils.validation - INFO -    Testing rapid API calls (30 calls in quick succession)...
+2025-11-12 22:16:28,574 - src.utils.validation - INFO -    Completed 30 calls in 24.97s
+2025-11-12 22:16:28,576 - src.utils.validation - INFO - ✅ ✅ Rate limiter working - enforced delays: 24.97s
+2025-11-12 22:16:28,580 - src.utils.validation - INFO - ✅ 
+✅ Rate Limiter - ALL TESTS PASSED
+2025-11-12 22:16:28,581 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:16:28,583 - src.utils.validation - INFO - Testing: Circuit Breaker
+2025-11-12 22:16:28,584 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:16:28,585 - src.utils.validation - INFO - 
+🔌 Testing Circuit Breaker...
+2025-11-12 22:16:28,589 - src.utils.validation - INFO -    Circuit breaker OPEN after 3 failures
+2025-11-12 22:16:28,591 - src.utils.validation - INFO - ✅ ✅ Circuit breaker opened after threshold
+2025-11-12 22:16:28,592 - src.utils.validation - INFO - ✅ ✅ Circuit breaker blocked calls while OPEN
+2025-11-12 22:16:28,593 - src.utils.validation - INFO -    Waiting 5s for recovery...
+2025-11-12 22:16:34,595 - src.utils.validation - INFO - ✅ ✅ Circuit breaker recovered and allows calls
+2025-11-12 22:16:34,596 - src.utils.validation - INFO - ✅ 
+✅ Circuit Breaker - ALL TESTS PASSED
+2025-11-12 22:16:34,598 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:16:34,599 - src.utils.validation - INFO - Testing: Risk Manager
+2025-11-12 22:16:34,600 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:16:34,602 - src.utils.validation - INFO - 
+🛡️ Testing Risk Manager...
+2025-11-12 22:16:34,607 - src.utils.validation - INFO - ✅ Kucoin client initialized - 🧪 TEST MODE (Paper Trading)
+2025-11-12 22:16:34,608 - src.utils.validation - INFO - 🛡️ Risk manager initialized - Max leverage: 10x, Daily loss limit: $10000.0
+2025-11-12 22:16:50,362 - src.utils.validation - INFO - 🧪 TEST ORDER: BUY 1 XBTUSDTM @ Market [Leverage: 2x]
+2025-11-12 22:16:50,364 - src.utils.validation - INFO - ✅ ✅ Normal order passed risk checks
+2025-11-12 22:16:53,464 - src.utils.validation - ERROR - ❌ Failed to place order: Size 150 exceeds maximum 100
+2025-11-12 22:16:53,465 - src.utils.validation - INFO - ✅ ✅ Oversized order rejected (wrapped exception)
+2025-11-12 22:16:55,478 - src.utils.validation - ERROR - ❌ Failed to place order: Leverage 15 outside allowed range 1-10
+2025-11-12 22:16:55,480 - src.utils.validation - INFO - ✅ ✅ Excessive leverage rejected (wrapped exception)
+2025-11-12 22:16:57,464 - src.utils.validation - ERROR - ❌ Failed to place order: Invalid side: invalid. Must be 'buy' or 'sell'
+2025-11-12 22:16:57,465 - src.utils.validation - INFO - ✅ ✅ Invalid side rejected (wrapped exception)
+2025-11-12 22:16:57,466 - src.utils.validation - INFO - ✅ 
+✅ Risk Manager - ALL TESTS PASSED
+2025-11-12 22:16:57,468 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:16:57,469 - src.utils.validation - INFO - Testing: Input Validation
+2025-11-12 22:16:57,470 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:16:57,472 - src.utils.validation - INFO - 
+✅ Testing Input Validation...
+2025-11-12 22:16:57,476 - src.utils.validation - INFO - ✅ ✅ Empty symbol rejected
+2025-11-12 22:16:57,477 - src.utils.validation - INFO - ✅ ✅ Negative size rejected
+2025-11-12 22:16:57,478 - src.utils.validation - INFO - ✅ ✅ Zero leverage rejected
+2025-11-12 22:16:57,479 - src.utils.validation - INFO - ✅ ✅ Negative price rejected
+2025-11-12 22:16:57,480 - src.utils.validation - INFO - ✅ 
+✅ Input Validation - ALL TESTS PASSED
+2025-11-12 22:20:07,393 - src.utils.validation - INFO - 
+🔧 Loading credentials...
+2025-11-12 22:20:07,478 - src.utils.validation - INFO - ✅ ✅ Credentials loaded
+2025-11-12 22:20:07,480 - src.utils.validation - INFO - ✅ Kucoin client initialized - 🧪 TEST MODE (Paper Trading)
+2025-11-12 22:20:07,480 - src.utils.validation - INFO - 🛡️ Risk manager initialized - Max leverage: 10x, Daily loss limit: $10000.0
+2025-11-12 22:20:07,481 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:20:07,481 - src.utils.validation - INFO - 🚀 COMPREHENSIVE KUCOIN API TEST SUITE
+2025-11-12 22:20:07,482 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:20:07,483 - src.utils.validation - INFO - Symbol: XBTUSDTM
+2025-11-12 22:20:07,483 - src.utils.validation - INFO - Mode: 🧪 TEST MODE (Paper)
+2025-11-12 22:20:07,485 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:20:07,486 - src.utils.validation - INFO - 
+1️⃣  Testing Ticker Data...
+2025-11-12 22:20:08,236 - src.utils.validation - INFO - ✅ ✅ Fetch Ticker
+2025-11-12 22:20:08,237 - src.utils.validation - INFO -    Current price: $101832.8
+2025-11-12 22:20:08,239 - src.utils.validation - INFO - 
+2️⃣  Testing OHLCV Data...
+2025-11-12 22:20:09,164 - src.utils.validation - INFO - ✅ ✅ Fetch OHLCV 1m
+2025-11-12 22:20:09,166 - src.utils.validation - INFO -    Retrieved 10 candles
+2025-11-12 22:20:10,672 - src.utils.validation - INFO - ✅ ✅ Fetch OHLCV 5m
+2025-11-12 22:20:10,674 - src.utils.validation - INFO -    Retrieved 10 candles
+2025-11-12 22:20:11,106 - src.utils.validation - INFO - ✅ ✅ Fetch OHLCV 15m
+2025-11-12 22:20:11,108 - src.utils.validation - INFO -    Retrieved 10 candles
+2025-11-12 22:20:12,231 - src.utils.validation - INFO - ✅ ✅ Fetch OHLCV 1h
+2025-11-12 22:20:12,231 - src.utils.validation - INFO -    Retrieved 10 candles
+2025-11-12 22:20:12,232 - src.utils.validation - INFO - 
+3️⃣  Testing Position Query...
+2025-11-12 22:20:13,049 - src.utils.validation - INFO - ✅ ✅ Get Position
+2025-11-12 22:20:13,052 - src.utils.validation - INFO -    No active position (expected)
+2025-11-12 22:20:13,053 - src.utils.validation - INFO - 
+4️⃣  Testing Set Leverage...
+2025-11-12 22:20:13,054 - src.utils.validation - INFO - ✅ ✅ Set Leverage
+2025-11-12 22:20:13,057 - src.utils.validation - INFO -    Successfully set to 1x
+2025-11-12 22:20:13,058 - src.utils.validation - INFO - 
+5️⃣  Testing Market Order (Test Mode)...
+2025-11-12 22:20:16,941 - src.utils.validation - INFO - 🧪 TEST ORDER: BUY 1 XBTUSDTM @ Market [Leverage: 1x]
+2025-11-12 22:20:16,942 - src.utils.validation - INFO - ✅ ✅ Create Test Market Order
+2025-11-12 22:20:16,943 - src.utils.validation - INFO -    Order validated successfully
+2025-11-12 22:20:16,944 - src.utils.validation - INFO - 
+6️⃣  Testing Limit Order (Test Mode)...
+2025-11-12 22:20:21,154 - src.utils.validation - INFO - 🧪 TEST ORDER: BUY 1 XBTUSDTM @ $50916.4 [Leverage: 1x]
+2025-11-12 22:20:21,155 - src.utils.validation - INFO - ✅ ✅ Create Test Limit Order
+2025-11-12 22:20:21,157 - src.utils.validation - INFO -    Order validated at $50916.40
+2025-11-12 22:20:21,158 - src.utils.validation - INFO - ✅ ✅ Get Order
+2025-11-12 22:20:21,159 - src.utils.validation - INFO -    Skipped in test mode (test orders don't persist)
+2025-11-12 22:20:21,159 - src.utils.validation - INFO - ✅ ✅ Cancel Order
+2025-11-12 22:20:21,161 - src.utils.validation - INFO -    Skipped in test mode (test orders don't persist)
+2025-11-12 22:20:21,162 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:20:21,163 - src.utils.validation - INFO - 📊 TEST RESULTS SUMMARY
+2025-11-12 22:20:21,164 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:20:21,165 - src.utils.validation - INFO - Total Tests: 11
+2025-11-12 22:20:21,166 - src.utils.validation - INFO - ✅ ✅ Passed: 11
+2025-11-12 22:20:21,167 - src.utils.validation - WARNING - ⚠️  Warnings: 0
+2025-11-12 22:20:21,168 - src.utils.validation - ERROR - ❌ Failed: 0
+2025-11-12 22:20:21,169 - src.utils.validation - INFO - 
+📈 Success Rate: 100.0%
+2025-11-12 22:20:21,170 - src.utils.validation - INFO - ✅ 
+🎉 EXCELLENT! System is working well!
+2025-11-12 22:20:21,170 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:20:21,171 - src.utils.validation - INFO - 🏁 TEST SUITE COMPLETE
+2025-11-12 22:20:21,171 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:25:36,825 - src.utils.validation - INFO - GPU Device: Intel(R) UHD Graphics
+2025-11-12 22:25:36,830 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:25:36,832 - src.utils.validation - INFO - TEST 1: Indicator Calculation Parity
+2025-11-12 22:25:36,834 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:25:36,843 - src.utils.validation - ERROR - ❌ Indicator Parity Test
+2025-11-12 22:25:36,844 - src.utils.validation - ERROR -    Error: 'RealTimeIndicatorCalculator' object has no attribute 'calculate_sma'
+2025-11-12 22:25:36,846 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:25:36,847 - src.utils.validation - INFO - TEST 2: Signal Generation Parity
+2025-11-12 22:25:36,848 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:25:36,850 - src.utils.validation - ERROR - ❌ Signal Generation Test
+2025-11-12 22:25:36,851 - src.utils.validation - ERROR -    Error: CompactBotConfig.__init__() got an unexpected keyword argument 'indicators'
+2025-11-12 22:25:36,853 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:25:36,854 - src.utils.validation - INFO - TEST 3: Position Sizing Parity
+2025-11-12 22:25:36,855 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:25:36,856 - src.utils.validation - ERROR - ❌ Position Sizing Test
+2025-11-12 22:25:36,857 - src.utils.validation - ERROR -    Error: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:36,858 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:25:36,859 - src.utils.validation - INFO - TEST 4: Full Cycle Comparison (GPU Backtest vs Live Simulation)
+2025-11-12 22:25:36,860 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:25:36,874 - src.utils.validation - ERROR - ❌ Full Cycle Comparison
+2025-11-12 22:25:36,875 - src.utils.validation - ERROR -    Error: CompactBotConfig.__init__() got an unexpected keyword argument 'indicators'
+2025-11-12 22:25:36,877 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:25:36,878 - src.utils.validation - INFO - TEST 5: Main.py Integration Check
+2025-11-12 22:25:36,879 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:25:39,192 - src.utils.validation - INFO -    ✅ Main.py imports successful
+2025-11-12 22:25:39,193 - src.utils.validation - INFO -    - Default Population: 10000
+2025-11-12 22:25:39,195 - src.utils.validation - INFO -    - Default Generations: 50
+2025-11-12 22:25:39,196 - src.utils.validation - INFO -    - Default Backtest Days: 60
+2025-11-12 22:25:39,197 - src.utils.validation - INFO -    - Default Cycles: 1
+2025-11-12 22:25:39,198 - src.utils.validation - INFO -    - Available Modes: [1, 2, 3, 4]
+2025-11-12 22:25:39,199 - src.utils.validation - INFO -    - Implemented Modes: [1, 2, 3, 4]
+2025-11-12 22:25:39,200 - src.utils.validation - INFO -    ✅ Paper Trading (Mode 3) defined
+2025-11-12 22:25:39,200 - src.utils.validation - INFO -    ✅ Live Trading (Mode 4) defined
+2025-11-12 22:25:39,202 - src.utils.validation - INFO -    ✅ Paper Trading implemented
+2025-11-12 22:25:39,203 - src.utils.validation - INFO -    ✅ Live Trading implemented
+2025-11-12 22:25:39,204 - src.utils.validation - INFO - ✅ ✅ Main.py Integration
+2025-11-12 22:25:39,205 - src.utils.validation - INFO -    All main.py options and modes accessible
+2025-11-12 22:25:39,206 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:25:39,207 - src.utils.validation - INFO - TEST 6: Risk Strategy Completeness (15 Strategies)
+2025-11-12 22:25:39,208 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:25:39,210 - src.utils.validation - INFO -    Testing 15 risk strategies:
+2025-11-12 22:25:39,211 - src.utils.validation - ERROR -    ❌ Fixed Percentage: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,213 - src.utils.validation - ERROR -    ❌ Fixed USD Amount: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,214 - src.utils.validation - ERROR -    ❌ Kelly Criterion (Full): calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,215 - src.utils.validation - ERROR -    ❌ Kelly Criterion (Half): calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,216 - src.utils.validation - ERROR -    ❌ Kelly Criterion (Quarter): calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,217 - src.utils.validation - ERROR -    ❌ ATR Multiplier: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,218 - src.utils.validation - ERROR -    ❌ Volatility Percentage: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,220 - src.utils.validation - ERROR -    ❌ Equity Curve Adjustment: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,221 - src.utils.validation - ERROR -    ❌ Fixed Risk/Reward: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,222 - src.utils.validation - ERROR -    ❌ Martingale: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,222 - src.utils.validation - ERROR -    ❌ Anti-Martingale: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,223 - src.utils.validation - ERROR -    ❌ Fixed Ratio (Ryan Jones): calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,225 - src.utils.validation - ERROR -    ❌ Percent Volatility: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,225 - src.utils.validation - ERROR -    ❌ Williams Fixed Fractional: calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,226 - src.utils.validation - ERROR -    ❌ Optimal f (Ralph Vince): calculate_position_size() got an unexpected keyword argument 'current_price'
+2025-11-12 22:25:39,227 - src.utils.validation - ERROR - ❌ Risk Strategy Completeness
+2025-11-12 22:25:39,228 - src.utils.validation - ERROR -    Error: Some risk strategies failed
+2025-11-12 22:27:19,411 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:27:19,413 - src.utils.validation - INFO - TEST 1: Position Sizing Consistency
+2025-11-12 22:27:19,414 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:27:19,415 - src.utils.validation - INFO - ✅ ✅ Fixed % (2%): $200.00 (2.00 contracts)
+2025-11-12 22:27:19,416 - src.utils.validation - INFO - ✅ ✅ Fixed USD ($200): $200.00 (2.00 contracts)
+2025-11-12 22:27:19,418 - src.utils.validation - INFO - ✅ ✅ Kelly Half (50%): $2000.00 (20.00 contracts)
+2025-11-12 22:27:19,419 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:27:19,420 - src.utils.validation - INFO - TEST 2: Signal Generation
+2025-11-12 22:27:19,420 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:27:19,792 - src.utils.validation - ERROR - ❌ Signal generation failed: CompactBotGenerator.__init__() missing 2 required positional arguments: 'gpu_queue' and 'population_size'
+2025-11-12 22:27:19,800 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:27:19,801 - src.utils.validation - INFO - TEST 3: GPU Backtesting Execution
+2025-11-12 22:27:19,802 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:27:19,811 - src.utils.validation - ERROR - ❌ GPU backtest failed: CompactBotGenerator.__init__() missing 2 required positional arguments: 'gpu_queue' and 'population_size'
+2025-11-12 22:27:19,815 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:27:19,816 - src.utils.validation - INFO - TEST 4: Main.py Integration
+2025-11-12 22:27:19,817 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:27:21,776 - src.utils.validation - INFO -    Available modes: [1, 2, 3, 4]
+2025-11-12 22:27:21,778 - src.utils.validation - INFO -    Implemented modes: [1, 2, 3, 4]
+2025-11-12 22:27:21,780 - src.utils.validation - INFO - ✅ ✅ Mode 1 (Standard Evolution): Implemented
+2025-11-12 22:27:21,782 - src.utils.validation - INFO - ✅ ✅ Mode 2 (Batch Mode): Implemented
+2025-11-12 22:27:21,784 - src.utils.validation - INFO - ✅ ✅ Mode 3 (Paper Trading): Implemented
+2025-11-12 22:27:21,786 - src.utils.validation - INFO - ✅ ✅ Mode 4 (Live Trading): Implemented
+2025-11-12 22:27:21,788 - src.utils.validation - INFO - ✅ ✅ Live trading modules importable
+2025-11-12 22:27:21,790 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:27:21,792 - src.utils.validation - INFO - TEST 5: Risk Strategy Completeness (15 Total)
+2025-11-12 22:27:21,793 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:27:21,795 - src.utils.validation - INFO -    ✅ Fixed Percentage: $2000.00
+2025-11-12 22:27:21,798 - src.utils.validation - INFO -    ✅ Fixed USD Amount: $10.00
+2025-11-12 22:27:21,800 - src.utils.validation - INFO -    ✅ Kelly Criterion (Full): $2000.00
+2025-11-12 22:27:21,802 - src.utils.validation - INFO -    ✅ Kelly Criterion (Half): $2000.00
+2025-11-12 22:27:21,803 - src.utils.validation - INFO -    ✅ Kelly Criterion (Quarter): $2000.00
+2025-11-12 22:27:21,806 - src.utils.validation - INFO -    ✅ ATR Multiplier: $1000.00
+2025-11-12 22:27:21,807 - src.utils.validation - INFO -    ✅ Volatility Percentage: $2000.00
+2025-11-12 22:27:21,809 - src.utils.validation - INFO -    ✅ Equity Curve Adjustment: $1000.00
+2025-11-12 22:27:21,811 - src.utils.validation - INFO -    ✅ Fixed Risk/Reward: $2000.00
+2025-11-12 22:27:21,813 - src.utils.validation - INFO -    ✅ Martingale: $1000.00
+2025-11-12 22:27:21,815 - src.utils.validation - INFO -    ✅ Anti-Martingale: $1000.00
+2025-11-12 22:27:21,817 - src.utils.validation - INFO -    ✅ Fixed Ratio (Ryan Jones): $500.00
+2025-11-12 22:27:21,820 - src.utils.validation - INFO -    ✅ Percent Volatility: $2000.00
+2025-11-12 22:27:21,822 - src.utils.validation - INFO -    ✅ Williams Fixed Fractional: $2000.00
+2025-11-12 22:27:21,824 - src.utils.validation - INFO -    ✅ Optimal f (Ralph Vince): $2000.00
+2025-11-12 22:27:21,826 - src.utils.validation - INFO - ✅ ✅ All 15 risk strategies functional
+2025-11-12 22:27:21,827 - src.utils.validation - INFO - 
+================================================================================
+2025-11-12 22:27:21,830 - src.utils.validation - INFO - TEST 6: Live Trading API Configuration
+2025-11-12 22:27:21,833 - src.utils.validation - INFO - ================================================================================
+2025-11-12 22:27:21,836 - src.utils.validation - INFO - ✅ ✅ All safety modules importable
+2025-11-12 22:27:21,838 - src.utils.validation - INFO - ✅ ✅ Exception classes available
+2025-11-12 22:27:21,840 - src.utils.validation - INFO - ✅ ✅ Rate limiter available
+2025-11-12 22:27:21,842 - src.utils.validation - INFO - ✅ ✅ Circuit breaker available
+2025-11-12 22:27:21,844 - src.utils.validation - INFO - ✅ ✅ Risk manager available
+2025-11-12 22:27:21,847 - src.utils.validation - INFO -    Testing client structure...
+2025-11-12 22:27:21,850 - src.utils.validation - INFO - ✅ ✅ Live trading API fully configured
