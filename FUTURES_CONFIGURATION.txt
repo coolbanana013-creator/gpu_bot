@@ -1,0 +1,393 @@
+"""
+FUTURES TRADING CONFIGURATION - COMPLETE REFERENCE
+
+This document confirms that ALL components are configured for FUTURES trading,
+NOT spot trading.
+
+Last Updated: November 12, 2025
+"""
+
+================================================================================
+CRITICAL: FUTURES ONLY - NO SPOT TRADING
+================================================================================
+
+This system is designed EXCLUSIVELY for Kucoin FUTURES trading.
+All APIs, symbols, and configurations use FUTURES endpoints.
+
+Symbol Format: XBTUSDTM
+   - XBT = Bitcoin (BTC)
+   - USDT = Settled in USDT
+   - M = Perpetual (no expiry)
+
+Example Futures Symbols:
+   - XBTUSDTM = BTC Perpetual Futures
+   - ETHUSDTM = ETH Perpetual Futures
+   - All symbols ending in 'M' or 'USDTM' are perpetual futures
+
+================================================================================
+COMPONENT VERIFICATION
+================================================================================
+
+1. API CLIENT (src/live_trading/kucoin_universal_client.py)
+   ────────────────────────────────────────────────────────────────────────
+   Line 84: .set_futures_endpoint(GLOBAL_FUTURES_API_ENDPOINT)
+   Line 92: self.futures_service = self.rest_service.get_futures_service()
+   Line 95: self.order_api = self.futures_service.get_order_api()
+   Line 96: self.market_api = self.futures_service.get_market_api()
+   Line 97: self.position_api = self.futures_service.get_positions_api()
+   
+   ✅ STATUS: 100% FUTURES - All API calls use futures_service
+   ✅ ENDPOINT: https://api-futures.kucoin.com
+
+2. TEST SUITES
+   ────────────────────────────────────────────────────────────────────────
+   tests/test_api_comprehensive.py:
+      Line 27: self.symbol = "XBTUSDTM"  # BTC perpetual futures
+      ✅ STATUS: FUTURES ONLY
+   
+   tests/test_api_endpoints.py:
+      Line 39: self.symbol = "XBTUSDTM"  # BTC perpetual futures
+      ✅ STATUS: FUTURES ONLY (FIXED)
+   
+   tests/test_system_integration.py:
+      Uses XBTUSDTM throughout
+      ✅ STATUS: FUTURES ONLY
+   
+   tests/test_api_quick.py:
+      Uses XBTUSDTM throughout
+      ✅ STATUS: FUTURES ONLY
+   
+   check_futures_api.py:
+      Tests XBTUSDTM and ETHUSDTM
+      ✅ STATUS: FUTURES ONLY
+
+3. DEMO SCRIPTS
+   ────────────────────────────────────────────────────────────────────────
+   demo_working_systems.py:
+      Uses XBTUSDTM for all market data tests
+      ✅ STATUS: FUTURES ONLY
+
+4. KUCOIN SDK CONFIGURATION
+   ────────────────────────────────────────────────────────────────────────
+   SDK Version: kucoin-universal-sdk
+   Endpoint: GLOBAL_FUTURES_API_ENDPOINT
+   Service: futures_service (NOT spot_service)
+   
+   API Methods Used:
+      - futures_service.get_order_api()      ✅ FUTURES
+      - futures_service.get_market_api()     ✅ FUTURES
+      - futures_service.get_positions_api()  ✅ FUTURES
+   
+   ✅ STATUS: 100% FUTURES CONFIGURATION
+
+5. RISK MANAGEMENT (src/live_trading/gpu_kernel_port.py)
+   ────────────────────────────────────────────────────────────────────────
+   All calculations designed for FUTURES trading:
+      - Leverage support (1x-100x)
+      - Funding rates (8-hour cycles)
+      - Liquidation price calculation
+      - Margin requirements
+      - Maintenance margin (0.5% for BTC)
+   
+   Constants:
+      Line 20: MAKER_FEE = 0.0002  # Kucoin futures maker fee
+      Line 21: TAKER_FEE = 0.0006  # Kucoin futures taker fee
+      Line 23: FUNDING_RATE_INTERVAL = 480  # 8 hours
+      Line 24: BASE_FUNDING_RATE = 0.0001   # 0.01% per 8h
+      Line 25: MAINTENANCE_MARGIN_RATE = 0.005  # 0.5%
+   
+   ✅ STATUS: FUTURES-SPECIFIC CALCULATIONS
+
+6. BOT CONFIGURATIONS
+   ────────────────────────────────────────────────────────────────────────
+   Directory: bots/BTC_USDT/1m/
+   Note: "BTC_USDT" is the trading pair identifier
+   Actual Symbol Used: XBTUSDTM (perpetual futures)
+   
+   When loading bots:
+      - Pair "BTC_USDT" → Symbol "XBTUSDTM" (futures)
+      - Leverage is configured per bot
+      - Funding rates are applied
+   
+   ✅ STATUS: BOTS ARE FOR FUTURES TRADING
+
+================================================================================
+FUTURES VS SPOT - KEY DIFFERENCES
+================================================================================
+
+SPOT Trading (NOT USED):
+   - Symbol format: BTC-USDT or BTCUSDT
+   - Endpoint: https://api.kucoin.com
+   - No leverage
+   - No funding rates
+   - Physical delivery
+   - Service: spot_service
+
+FUTURES Trading (WHAT WE USE):
+   - Symbol format: XBTUSDTM
+   - Endpoint: https://api-futures.kucoin.com
+   - Leverage: 1x-100x
+   - Funding rates: Every 8 hours
+   - Cash-settled (no delivery)
+   - Service: futures_service
+   - Perpetual contracts (no expiry)
+
+================================================================================
+API PERMISSIONS REQUIRED
+================================================================================
+
+On Kucoin website (https://www.kucoin.com/account/api):
+
+Required Permissions:
+   ✅ General (Read) - View account info
+   ✅ Futures Trading (Read + Trade) - CRITICAL FOR FUTURES
+   ❌ Spot Trading - NOT NEEDED
+   ❌ Margin Trading - NOT NEEDED
+
+IP Restrictions:
+   Option A: Unrestricted (recommended for testing)
+   Option B: Add your IP address
+
+⚠️  CRITICAL: You MUST enable "Futures Trading" permission
+   Without this, you'll get "Invalid KC-API-TIMESTAMP" errors
+
+================================================================================
+ORDER TYPES (FUTURES)
+================================================================================
+
+Market Orders:
+   - Immediate execution at best available price
+   - Uses TAKER fee (0.06%)
+   - Guaranteed fill
+   - Price slippage possible
+
+Limit Orders:
+   - Execute only at specified price or better
+   - Uses MAKER fee (0.02%) if not immediately filled
+   - May not fill if price doesn't reach limit
+   - Better price control
+
+Stop Orders (Available but not implemented yet):
+   - Trigger market/limit order at specific price
+   - Used for stop-loss and take-profit
+   - Can be implemented later
+
+Post-Only Orders (Available):
+   - Guaranteed MAKER fee
+   - Canceled if would match immediately
+   - Best for reducing fees
+
+================================================================================
+LEVERAGE & MARGIN
+================================================================================
+
+Available Leverage: 1x to 100x
+   - Higher leverage = higher risk
+   - 1x = No leverage (safest)
+   - 5x-10x = Moderate risk
+   - 20x+ = High risk
+   - 100x = Extreme risk
+
+Margin Types:
+   - Cross Margin: Uses full account balance
+   - Isolated Margin: Risk limited to position margin
+   
+   Current Implementation: Cross Margin
+
+Liquidation:
+   - Occurs when maintenance margin < maintenance margin requirement
+   - Liquidation price calculated per position
+   - Account-level liquidation check implemented
+   - Liquidation price shown when opening position
+
+================================================================================
+FUNDING RATES (FUTURES SPECIFIC)
+================================================================================
+
+What are Funding Rates?
+   - Periodic payments between longs and shorts
+   - Keeps perpetual futures price close to spot
+   - Charged every 8 hours (00:00, 08:00, 16:00 UTC)
+
+How They Work:
+   - Positive rate: Longs pay shorts
+   - Negative rate: Shorts pay longs
+   - Typical range: -0.05% to +0.05%
+   - Base assumption: 0.01% per 8h
+
+Our Implementation:
+   Line 353: apply_funding_rates(position, funding_rate, periods)
+   - Automatically calculated
+   - Applied to open positions
+   - Tracked in position PnL
+
+================================================================================
+POSITION MANAGEMENT
+================================================================================
+
+Position Structure (src/live_trading/gpu_kernel_port.py):
+   @dataclass
+   class Position:
+       entry_price: float
+       size: float  # Quantity in contracts
+       side: int  # 1 = long, -1 = short
+       leverage: int
+       tp_price: float  # Take profit
+       sl_price: float  # Stop loss
+       entry_time: float
+       liquidation_price: float
+       unrealized_pnl: float
+       is_active: bool
+
+Position Operations:
+   1. Open Position:
+      - Calculate position size based on risk strategy
+      - Apply leverage
+      - Set TP/SL levels
+      - Calculate liquidation price
+   
+   2. Monitor Position:
+      - Track unrealized PnL
+      - Check for TP/SL hits
+      - Monitor margin levels
+      - Apply funding rates
+   
+   3. Close Position:
+      - Execute market or limit order
+      - Calculate realized PnL
+      - Free up margin
+      - Record trade statistics
+
+================================================================================
+TESTING & VALIDATION
+================================================================================
+
+Test Endpoint (Test Mode):
+   - Endpoint: /api/v1/orders/test
+   - Validates orders WITHOUT execution
+   - No real money used
+   - Perfect for testing logic
+   - Same validation as live orders
+
+Live Endpoint (Live Mode):
+   - Endpoint: /api/v1/orders
+   - REAL execution with REAL money
+   - Use only after thorough testing
+   - Start with minimum position size
+   - Monitor closely
+
+Current Configuration:
+   test_mode=True by default
+   - All orders go to test endpoint
+   - Safe for development and testing
+   - Switch to test_mode=False for live trading
+
+================================================================================
+VERIFICATION COMMANDS
+================================================================================
+
+Check API Configuration:
+   python check_futures_api.py
+   ✅ Verifies futures API access
+   ✅ Tests public and private endpoints
+   ✅ Confirms permissions
+   ✅ Provides fix instructions
+
+Run Comprehensive Tests:
+   python tests/test_api_comprehensive.py
+   ✅ Tests all API endpoints
+   ✅ Validates order creation
+   ✅ Checks position management
+   ✅ Confirms FUTURES-only operation
+
+Demo Working Systems:
+   python demo_working_systems.py
+   ✅ Shows market data fetching
+   ✅ Demonstrates indicator calculations
+   ✅ Tests risk management
+   ✅ Validates bot loading
+
+Quick API Test:
+   python tests/test_api_quick.py
+   ✅ Fast connectivity check
+   ✅ Diagnoses timestamp issues
+   ✅ Confirms futures access
+
+================================================================================
+COMMON ISSUES & SOLUTIONS
+================================================================================
+
+Issue: "Invalid KC-API-TIMESTAMP"
+   Cause: API key lacks Futures Trading permission
+   Fix: Enable "Futures Trading" on Kucoin website
+   URL: https://www.kucoin.com/account/api
+
+Issue: "Order validation failed"
+   Cause: Insufficient margin or invalid parameters
+   Fix: Check account balance and position size
+
+Issue: "Position not found"
+   Cause: No open position for symbol
+   Fix: Normal - means no position currently open
+
+Issue: "Insufficient balance"
+   Cause: Not enough margin for position
+   Fix: Reduce position size or add funds
+
+Issue: "Leverage out of range"
+   Cause: Leverage not supported for symbol
+   Fix: Use 1x-100x for BTC, check limits for other symbols
+
+================================================================================
+SAFETY CHECKLIST
+================================================================================
+
+Before Live Trading:
+   ✅ Run: python check_futures_api.py (all tests pass)
+   ✅ Test mode enabled (test_mode=True)
+   ✅ Test orders validate successfully
+   ✅ Position sizing calculated correctly
+   ✅ TP/SL levels set appropriately
+   ✅ Liquidation price acceptable
+   ✅ Understand funding rates
+   ✅ Set leverage appropriately (start with 1x-5x)
+   ✅ Monitor bot performance for 24-48 hours in test mode
+   ✅ Start with minimum position size (1 contract)
+
+Risk Management:
+   ✅ Never use more than 2% of account per trade
+   ✅ Always set stop-loss
+   ✅ Monitor liquidation price
+   ✅ Be aware of funding rate charges
+   ✅ Use lower leverage initially (1x-5x)
+   ✅ Have circuit breakers for max drawdown
+   ✅ Monitor bot performance continuously
+
+================================================================================
+SUMMARY
+================================================================================
+
+✅ ALL COMPONENTS: 100% FUTURES CONFIGURATION
+✅ API ENDPOINT: https://api-futures.kucoin.com
+✅ SYMBOLS: XBTUSDTM, ETHUSDTM (all ending in M)
+✅ SERVICE: futures_service (NOT spot_service)
+✅ LEVERAGE: Supported (1x-100x)
+✅ FUNDING RATES: Implemented
+✅ MARGIN: Cross margin with liquidation protection
+✅ TEST MODE: Available for safe testing
+
+⚠️  ACTION REQUIRED: Enable "Futures Trading" API permission
+   Without this, private endpoints will fail with timestamp errors
+
+🎯 NEXT STEPS:
+   1. Run: python check_futures_api.py
+   2. If any tests fail, follow the fix instructions
+   3. Once all tests pass (100%), system is ready
+   4. Start with test mode (paper trading)
+   5. Monitor for 24-48 hours
+   6. When confident, enable live trading with minimum size
+
+================================================================================
+END OF FUTURES CONFIGURATION REFERENCE
+================================================================================
+"""

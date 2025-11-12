@@ -417,6 +417,11 @@ def log_warning(message: str) -> None:
     logger.warning(message)
 
 
+def log_success(message: str) -> None:
+    """Log success message."""
+    logger.info(f"✅ {message}")
+
+
 def log_debug(message: str) -> None:
     """Log debug message."""
     logger.debug(message)

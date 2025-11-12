@@ -19,20 +19,28 @@ from kucoin_universal_sdk.generate.futures.order import (
     AddOrderReqBuilder,
     AddOrderReq,
     AddOrderTestReqBuilder,
-    CancelOrderByOrderIdReqBuilder,
+    CancelOrderByIdReqBuilder,
     GetOrderByOrderIdReqBuilder
 )
 from kucoin_universal_sdk.generate.futures.market import (
     GetKlinesReqBuilder,
     GetKlinesReq,
-    GetAllSymbolsReq
+    GetTickerReqBuilder
 )
-from kucoin_universal_sdk.generate.futures.position import (
+from kucoin_universal_sdk.generate.futures.positions import (
     GetPositionListReqBuilder,
     GetPositionDetailsReqBuilder
 )
 
 from ..utils.validation import log_info, log_error, log_warning
+from .direct_futures_client import DirectKucoinFuturesClient
+from .exceptions import (
+    TradingError, OrderError, OrderCreationError, OrderCancellationError,
+    NetworkError, RateLimitError, CircuitBreakerError
+)
+from .rate_limiter import rate_limit_order, rate_limit_general
+from .circuit_breaker import order_circuit_breaker
+from .enhanced_risk_manager import EnhancedRiskManager, RiskConfig
 
 
 class KucoinUniversalClient:
@@ -91,21 +99,42 @@ class KucoinUniversalClient:
         self.rest_service = self.client.rest_service()
         self.futures_service = self.rest_service.get_futures_service()
         
-        # Get API instances
+        # Get API instances (SDK - for public endpoints)
         self.order_api = self.futures_service.get_order_api()
         self.market_api = self.futures_service.get_market_api()
-        self.position_api = self.futures_service.get_position_api()
+        self.position_api = self.futures_service.get_positions_api()
+        
+        # Direct client (for private endpoints with timestamp sync)
+        self.direct_client = DirectKucoinFuturesClient(
+            api_key=api_key,
+            api_secret=api_secret,
+            api_passphrase=api_passphrase,
+            test_mode=test_mode
+        )
+        
+        # Initialize risk manager with appropriate limits
+        # Use more conservative limits for live trading, relaxed for paper trading
+        risk_config = RiskConfig()
+        if not test_mode:
+            # Live trading: strict limits
+            risk_config.max_position_size_btc = 10.0
+            risk_config.max_position_size_eth = 100.0
+            risk_config.max_leverage = 3
+            risk_config.daily_loss_limit_usd = 500.0
+            risk_config.max_daily_trades = 50
+        else:
+            # Paper trading: relaxed limits
+            risk_config.max_position_size_btc = 100.0
+            risk_config.max_position_size_eth = 1000.0
+            risk_config.max_leverage = 10
+            risk_config.daily_loss_limit_usd = 10000.0
+            risk_config.max_daily_trades = 500
+        
+        self.risk_manager = EnhancedRiskManager(config=risk_config)
         
         mode_str = "🧪 TEST MODE (Paper Trading)" if test_mode else "💰 LIVE MODE (Real Money)"
-        log_info(f"✅ Kucoin Universal SDK initialized - {mode_str}")
-        
-        # Test connection
-        try:
-            symbols = self.market_api.get_all_symbols(GetAllSymbolsReq())
-            log_info(f"   Connected to Kucoin Futures - {len(symbols.data)} contracts available")
-        except Exception as e:
-            log_error(f"❌ Failed to connect to Kucoin: {e}")
-            raise
+        log_info(f"✅ Kucoin client initialized - {mode_str}")
+        log_info(f"🛡️ Risk manager initialized - Max leverage: {risk_config.max_leverage}x, Daily loss limit: ${risk_config.daily_loss_limit_usd}")
     
     def set_leverage(self, symbol: str, leverage: int) -> bool:
         """
@@ -127,6 +156,7 @@ class KucoinUniversalClient:
             log_error(f"Failed to set leverage: {e}")
             return False
     
+    @rate_limit_order
     def create_market_order(
         self,
         symbol: str,
@@ -151,58 +181,63 @@ class KucoinUniversalClient:
             Order info dict or None if failed
         """
         try:
-            client_oid = str(uuid.uuid4())
+            # Pre-order risk check (comprehensive validation)
+            current_position = self.get_position(symbol)
+            self.risk_manager.pre_order_check(
+                symbol=symbol,
+                side=side,
+                size=size,
+                leverage=leverage,
+                position=current_position
+            )
             
-            # Build order request
-            if self.test_mode:
-                # PAPER TRADING: Use test endpoint
-                order_req = (
-                    AddOrderTestReqBuilder()
-                    .set_client_oid(client_oid)
-                    .set_symbol(symbol)
-                    .set_side(AddOrderReq.SideEnum.BUY if side == 'buy' else AddOrderReq.SideEnum.SELL)
-                    .set_type(AddOrderReq.TypeEnum.MARKET)
-                    .set_size(size)
-                    .set_leverage(str(leverage))
-                    .set_margin_mode(margin_mode)
-                    .set_reduce_only(reduce_only)
-                    .build()
+            # Use circuit breaker to protect against cascading failures
+            def place_order():
+                return self.direct_client.create_market_order(
+                    symbol=symbol,
+                    side=side,
+                    size=size,
+                    leverage=leverage
                 )
+            
+            response = order_circuit_breaker.call(place_order)
+            
+            if response:
+                # Record trade for daily limits tracking
+                self.risk_manager.record_trade()
                 
-                response = self.order_api.add_order_test(order_req)
-                log_info(f"🧪 TEST ORDER: {side.upper()} {size} {symbol} @ Market [Leverage: {leverage}x]")
+                # Update position tracking
+                updated_position = self.get_position(symbol)
+                if updated_position:
+                    self.risk_manager.update_position(symbol, updated_position)
                 
+                log_info(f"🧪 TEST ORDER: {side.upper()} {size} {symbol} @ Market [Leverage: {leverage}x]" if self.test_mode else f"💰 LIVE ORDER: {side.upper()} {size} {symbol} @ Market [Leverage: {leverage}x]")
+                
+                return {
+                    'orderId': response.get('orderId'),
+                    'clientOid': response.get('clientOid'),
+                    'symbol': symbol,
+                    'side': side,
+                    'size': size,
+                    'leverage': leverage
+                }
             else:
-                # LIVE TRADING: Use real endpoint
-                order_req = (
-                    AddOrderReqBuilder()
-                    .set_client_oid(client_oid)
-                    .set_symbol(symbol)
-                    .set_side(AddOrderReq.SideEnum.BUY if side == 'buy' else AddOrderReq.SideEnum.SELL)
-                    .set_type(AddOrderReq.TypeEnum.MARKET)
-                    .set_size(size)
-                    .set_leverage(str(leverage))
-                    .set_margin_mode(margin_mode)
-                    .set_reduce_only(reduce_only)
-                    .build()
-                )
+                raise OrderCreationError("Order placement returned no response")
                 
-                response = self.order_api.add_order(order_req)
-                log_info(f"✅ REAL ORDER: {side.upper()} {size} {symbol} @ Market [Leverage: {leverage}x]")
-            
-            return {
-                'order_id': response.order_id,
-                'client_oid': response.client_oid,
-                'symbol': symbol,
-                'side': side,
-                'size': size,
-                'leverage': leverage
-            }
-            
+        except CircuitBreakerError as e:
+            log_error(f"🚫 Circuit breaker OPEN - order blocked: {e}")
+            raise
+        except RateLimitError as e:
+            log_error(f"⏱️ Rate limit exceeded: {e}")
+            raise
+        except OrderCreationError as e:
+            log_error(f"❌ Order creation failed: {e}")
+            raise
         except Exception as e:
             log_error(f"❌ Failed to place order: {e}")
-            return None
+            raise OrderError(f"Unexpected error placing market order: {e}")
     
+    @rate_limit_order
     def create_limit_order(
         self,
         symbol: str,
@@ -231,150 +266,163 @@ class KucoinUniversalClient:
             Order info dict or None if failed
         """
         try:
-            client_oid = str(uuid.uuid4())
+            # Round price to 0.1 (Kucoin requirement)
+            price = round(price, 1)
             
-            if self.test_mode:
-                # PAPER TRADING
-                order_req = (
-                    AddOrderTestReqBuilder()
-                    .set_client_oid(client_oid)
-                    .set_symbol(symbol)
-                    .set_side(AddOrderReq.SideEnum.BUY if side == 'buy' else AddOrderReq.SideEnum.SELL)
-                    .set_type(AddOrderReq.TypeEnum.LIMIT)
-                    .set_price(str(price))
-                    .set_size(size)
-                    .set_leverage(str(leverage))
-                    .set_margin_mode(margin_mode)
-                    .set_reduce_only(reduce_only)
-                    .set_time_in_force(time_in_force)
-                    .build()
+            # Pre-order risk check (comprehensive validation)
+            current_position = self.get_position(symbol)
+            self.risk_manager.pre_order_check(
+                symbol=symbol,
+                side=side,
+                size=size,
+                leverage=leverage,
+                position=current_position
+            )
+            
+            # Use circuit breaker to protect against cascading failures
+            def place_order():
+                return self.direct_client.create_limit_order(
+                    symbol=symbol,
+                    side=side,
+                    price=price,
+                    size=size,
+                    leverage=leverage
                 )
+            
+            response = order_circuit_breaker.call(place_order)
+            
+            if response:
+                # Record trade for daily limits tracking
+                self.risk_manager.record_trade()
                 
-                response = self.order_api.add_order_test(order_req)
-                log_info(f"🧪 TEST ORDER: {side.upper()} {size} {symbol} @ ${price} [Leverage: {leverage}x]")
+                # Update position tracking
+                updated_position = self.get_position(symbol)
+                if updated_position:
+                    self.risk_manager.update_position(symbol, updated_position)
                 
+                log_info(f"🧪 TEST ORDER: {side.upper()} {size} {symbol} @ ${price} [Leverage: {leverage}x]" if self.test_mode else f"💰 LIVE ORDER: {side.upper()} {size} {symbol} @ ${price} [Leverage: {leverage}x]")
+                
+                return {
+                    'orderId': response.get('orderId'),
+                    'clientOid': response.get('clientOid'),
+                    'symbol': symbol,
+                    'side': side,
+                    'price': price,
+                    'size': size,
+                    'leverage': leverage
+                }
             else:
-                # LIVE TRADING
-                order_req = (
-                    AddOrderReqBuilder()
-                    .set_client_oid(client_oid)
-                    .set_symbol(symbol)
-                    .set_side(AddOrderReq.SideEnum.BUY if side == 'buy' else AddOrderReq.SideEnum.SELL)
-                    .set_type(AddOrderReq.TypeEnum.LIMIT)
-                    .set_price(str(price))
-                    .set_size(size)
-                    .set_leverage(str(leverage))
-                    .set_margin_mode(margin_mode)
-                    .set_reduce_only(reduce_only)
-                    .set_time_in_force(time_in_force)
-                    .build()
-                )
-                
-                response = self.order_api.add_order(order_req)
-                log_info(f"✅ REAL ORDER: {side.upper()} {size} {symbol} @ ${price} [Leverage: {leverage}x]")
+                raise OrderCreationError("Order placement returned no response")
             
-            return {
-                'order_id': response.order_id,
-                'client_oid': response.client_oid,
-                'symbol': symbol,
-                'side': side,
-                'price': price,
-                'size': size,
-                'leverage': leverage
-            }
-            
+        except CircuitBreakerError as e:
+            log_error(f"🚫 Circuit breaker OPEN - order blocked: {e}")
+            raise
+        except RateLimitError as e:
+            log_error(f"⏱️ Rate limit exceeded: {e}")
+            raise
+        except OrderCreationError as e:
+            log_error(f"❌ Order creation failed: {e}")
+            raise
         except Exception as e:
             log_error(f"❌ Failed to place limit order: {e}")
-            return None
+            raise OrderError(f"Unexpected error placing limit order: {e}")
     
+    @rate_limit_general
     def cancel_order(self, symbol: str, order_id: str) -> bool:
         """Cancel an order by order ID."""
         try:
-            cancel_req = (
-                CancelOrderByOrderIdReqBuilder()
-                .set_order_id(order_id)
-                .set_symbol(symbol)
-                .build()
-            )
+            # Use direct client to avoid SDK method signature issues
+            success = self.direct_client.cancel_order(order_id)
             
-            response = self.order_api.cancel_order_by_order_id(cancel_req)
-            log_info(f"✅ Order cancelled: {order_id}")
-            return True
+            if success:
+                log_info(f"✅ Order cancelled: {order_id}")
+                return True
+            else:
+                raise OrderCancellationError(f"Failed to cancel order: {order_id}", order_id=order_id)
             
+        except OrderCancellationError as e:
+            log_error(f"❌ {e}")
+            raise
         except Exception as e:
             log_error(f"❌ Failed to cancel order: {e}")
-            return False
+            raise OrderCancellationError(f"Unexpected error cancelling order: {e}", order_id=order_id)
     
+    @rate_limit_general
     def get_order(self, symbol: str, order_id: str) -> Optional[Dict]:
         """Get order details by order ID."""
         try:
-            order_req = (
-                GetOrderByOrderIdReqBuilder()
-                .set_order_id(order_id)
-                .set_symbol(symbol)
-                .build()
-            )
+            # Use direct client to avoid SDK method signature issues
+            response = self.direct_client.get_order(order_id)
             
-            response = self.order_api.get_order_by_order_id(order_req)
+            if not response:
+                return None
+            
             return {
-                'order_id': response.order_id,
-                'symbol': response.symbol,
-                'side': response.side,
-                'price': float(response.price) if response.price else None,
-                'size': response.size,
-                'filled_size': response.filled_size,
-                'status': response.status
+                'order_id': response.get('id'),
+                'symbol': response.get('symbol'),
+                'side': response.get('side'),
+                'price': float(response.get('price', 0)) if response.get('price') else None,
+                'size': response.get('size'),
+                'filled_size': response.get('filledSize', 0),
+                'status': response.get('status')
             }
             
         except Exception as e:
             log_error(f"❌ Failed to get order: {e}")
-            return None
+            raise NetworkError(f"Failed to retrieve order details: {e}")
     
+    @rate_limit_general
     def get_position(self, symbol: str) -> Optional[Dict]:
-        """Get current position for symbol."""
+        """Get current position for symbol using direct client."""
         try:
-            position_req = (
-                GetPositionDetailsReqBuilder()
-                .set_symbol(symbol)
-                .build()
-            )
+            # Use direct client to avoid timestamp issues
+            position_data = self.direct_client.get_position(symbol)
             
-            response = self.position_api.get_position_details(position_req)
+            if not position_data:
+                # No position found - return empty dict with symbol
+                return {'symbol': symbol, 'currentQty': 0}
             
-            if not response or not response.id:
-                return None
-            
-            return {
-                'symbol': response.symbol,
-                'side': 'long' if response.current_qty > 0 else 'short',
-                'size': abs(response.current_qty),
-                'entry_price': float(response.avg_entry_price),
-                'leverage': response.real_leverage,
-                'unrealized_pnl': float(response.unrealised_pnl),
-                'margin': float(response.position_margin),
-                'liquidation_price': float(response.liquidation_price) if response.liquidation_price else None
+            position = {
+                'symbol': position_data.get('symbol'),
+                'side': 'long' if position_data.get('currentQty', 0) > 0 else 'short',
+                'size': abs(position_data.get('currentQty', 0)),
+                'currentQty': position_data.get('currentQty', 0),
+                'entry_price': float(position_data.get('avgEntryPrice', 0)),
+                'leverage': position_data.get('realLeverage', 1),
+                'unrealized_pnl': float(position_data.get('unrealisedPnl', 0)),
+                'margin': float(position_data.get('positionMargin', 0)),
+                'liquidation_price': float(position_data.get('liquidationPrice', 0)) if position_data.get('liquidationPrice') else None
             }
+            
+            # Update risk manager position tracking
+            self.risk_manager.update_position(symbol, position)
+            
+            return position
             
         except Exception as e:
             log_error(f"❌ Failed to get position: {e}")
-            return None
+            return {'symbol': symbol, 'currentQty': 0, 'error': str(e)}
     
+    @rate_limit_general
     def fetch_ticker(self, symbol: str) -> Optional[Dict]:
         """Fetch current ticker data."""
         try:
-            # Use market API to get ticker
-            ticker = self.market_api.get_ticker(symbol)
+            # Build request
+            req = GetTickerReqBuilder().set_symbol(symbol).build()
+            ticker = self.market_api.get_ticker(req)
+            
             return {
                 'symbol': symbol,
-                'last': float(ticker.price),
-                'bid': float(ticker.best_bid_price) if ticker.best_bid_price else None,
-                'ask': float(ticker.best_ask_price) if ticker.best_ask_price else None,
-                'volume': float(ticker.volume_24h) if ticker.volume_24h else None
+                'last': float(ticker.price) if ticker.price else None,
+                'bid': float(ticker.best_bid_price) if hasattr(ticker, 'best_bid_price') and ticker.best_bid_price else None,
+                'ask': float(ticker.best_ask_price) if hasattr(ticker, 'best_ask_price') and ticker.best_ask_price else None,
+                'volume': float(ticker.volume_24h) if hasattr(ticker, 'volume_24h') and ticker.volume_24h else None
             }
         except Exception as e:
             log_error(f"❌ Failed to fetch ticker: {e}")
-            return None
+            raise NetworkError(f"Failed to fetch ticker data: {e}")
     
+    @rate_limit_general
     def fetch_ohlcv(
         self,
         symbol: str,
@@ -431,4 +479,4 @@ class KucoinUniversalClient:
             
         except Exception as e:
             log_error(f"❌ Failed to fetch OHLCV: {e}")
-            return []
+            raise NetworkError(f"Failed to fetch OHLCV data: {e}")
