@@ -2823,3 +2823,18 @@ Paper trading stopped by user
 2025-11-12 23:00:51,183 - src.utils.validation - INFO - Final Balance: $1000.00
 2025-11-12 23:00:51,184 - src.utils.validation - INFO - Total PnL: $+0.00
 2025-11-12 23:00:51,185 - src.utils.validation - INFO - Total Trades: 0
+2025-11-12 23:03:18,016 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-12 23:03:18,279 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:03:18,279 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-12 23:03:18,279 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:03:18,280 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-12 23:03:18,280 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-12 23:03:18,280 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-12 23:03:18,282 - src.utils.validation - INFO - Compute Units: 80
+2025-11-12 23:03:18,282 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-12 23:03:18,282 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-12 23:03:18,282 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-12 23:03:18,283 - src.utils.validation - INFO - ============================================================
+
+2025-11-12 23:05:39,666 - src.utils.validation - ERROR - Paper trading error: CompactBotConfig.__init__() got an unexpected keyword argument 'risk_strategy_bitmap'

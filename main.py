@@ -784,7 +784,8 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
                     num_indicators=config['num_indicators'],
                     indicator_indices=np.array(config['indicator_indices'] + [0] * (8 - len(config['indicator_indices'])), dtype=np.uint8),
                     indicator_params=np.array(config['indicator_params'] + [[0.0, 0.0, 0.0]] * (8 - len(config['indicator_params'])), dtype=np.float32),
-                    risk_strategy_bitmap=config['risk_strategy_bitmap'],
+                    risk_strategy=config['risk_strategy'],
+                    risk_param=config['risk_param'],
                     tp_multiplier=config['tp_multiplier'],
                     sl_multiplier=config['sl_multiplier'],
                     leverage=config['leverage'],
@@ -862,7 +863,7 @@ def run_mode4(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         for i in range(bot.num_indicators):
             print(f"    {i+1}. Indicator {bot.indicator_indices[i]} with params {bot.indicator_params[i]}")
         
-        print(f"\n  Risk Strategy Bitmap: {bin(bot.risk_strategy_bitmap)}")
+        print(f"\n  Risk Strategy: {bot.risk_strategy} (param: {bot.risk_param:.4f})")
         print(f"  TP Multiplier: {bot.tp_multiplier:.2f}")
         print(f"  SL Multiplier: {bot.sl_multiplier:.2f}")
         print(f"  Leverage: {bot.leverage}x")
@@ -972,7 +973,8 @@ def run_mode2(gpu_context, gpu_queue):
                     num_indicators=3,
                     indicator_indices=np.array([12, 26, 27, 0, 0, 0, 0, 0], dtype=np.uint8),
                     indicator_params=np.array([[14, 0, 0], [12, 26, 9], [14, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], dtype=np.float32),
-                    risk_strategy_bitmap=7,
+                    risk_strategy=0,  # RISK_FIXED_PCT
+                    risk_param=0.02,  # 2% of balance
                     tp_multiplier=0.02,
                     sl_multiplier=0.01,
                     leverage=10
@@ -984,7 +986,8 @@ def run_mode2(gpu_context, gpu_queue):
                 num_indicators=3,
                 indicator_indices=np.array([12, 26, 27, 0, 0, 0, 0, 0], dtype=np.uint8),  # RSI, MACD, ADX
                 indicator_params=np.array([[14, 0, 0], [12, 26, 9], [14, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], dtype=np.float32),
-                risk_strategy_bitmap=7,
+                risk_strategy=0,  # RISK_FIXED_PCT
+                risk_param=0.02,  # 2% of balance
                 tp_multiplier=0.02,
                 sl_multiplier=0.01,
                 leverage=10
@@ -1255,7 +1258,8 @@ def run_mode3(gpu_context, gpu_queue):
                     num_indicators=3,
                     indicator_indices=np.array([12, 26, 27, 0, 0, 0, 0, 0], dtype=np.uint8),
                     indicator_params=np.array([[14, 0, 0], [12, 26, 9], [14, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], dtype=np.float32),
-                    risk_strategy_bitmap=7,
+                    risk_strategy=0,  # RISK_FIXED_PCT
+                    risk_param=0.02,  # 2% of balance
                     tp_multiplier=0.02,
                     sl_multiplier=0.01,
                     leverage=10
@@ -1267,7 +1271,8 @@ def run_mode3(gpu_context, gpu_queue):
                 num_indicators=3,
                 indicator_indices=np.array([12, 26, 27, 0, 0, 0, 0, 0], dtype=np.uint8),
                 indicator_params=np.array([[14, 0, 0], [12, 26, 9], [14, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], dtype=np.float32),
-                risk_strategy_bitmap=7,
+                risk_strategy=0,  # RISK_FIXED_PCT
+                risk_param=0.02,  # 2% of balance
                 tp_multiplier=0.02,
                 sl_multiplier=0.01,
                 leverage=10
