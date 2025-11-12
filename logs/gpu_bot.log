@@ -2732,3 +2732,94 @@ Testing limit order (test mode)...
 2025-11-12 22:54:43,905 - src.utils.validation - WARNING - ⚠️  Kucoin LIVE mode - real money!
 2025-11-12 22:54:46,069 - src.utils.validation - ERROR - ❌ Failed to connect to Kucoin: kucoinfutures {"code":"400002","msg":"Invalid KC-API-TIMESTAMP"}
 2025-11-12 22:54:46,071 - src.utils.validation - ERROR - Paper trading error: kucoinfutures {"code":"400002","msg":"Invalid KC-API-TIMESTAMP"}
+2025-11-12 22:59:53,687 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-12 22:59:54,070 - src.utils.validation - INFO - ============================================================
+2025-11-12 22:59:54,071 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-12 22:59:54,073 - src.utils.validation - INFO - ============================================================
+2025-11-12 22:59:54,074 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-12 22:59:54,076 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-12 22:59:54,077 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-12 22:59:54,078 - src.utils.validation - INFO - Compute Units: 80
+2025-11-12 22:59:54,079 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-12 22:59:54,080 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-12 22:59:54,081 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-12 22:59:54,082 - src.utils.validation - INFO - ============================================================
+
+2025-11-12 23:00:14,960 - src.utils.validation - WARNING - 
+
+Live trading stopped by user
+2025-11-12 23:00:18,050 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-12 23:00:18,160 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:00:18,160 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-12 23:00:18,162 - src.utils.validation - INFO - ============================================================
+2025-11-12 23:00:18,163 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-12 23:00:18,164 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-12 23:00:18,165 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-12 23:00:18,165 - src.utils.validation - INFO - Compute Units: 80
+2025-11-12 23:00:18,167 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-12 23:00:18,168 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-12 23:00:18,168 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-12 23:00:18,168 - src.utils.validation - INFO - ============================================================
+
+2025-11-12 23:00:32,193 - src.utils.validation - INFO - ✅ Loaded bot 10 from bots\BTC_USDT\1m\bot_10.json
+2025-11-12 23:00:32,195 - src.utils.validation - INFO -    Indicators: 2, Leverage: 1x
+2025-11-12 23:00:32,196 - src.utils.validation - INFO -    TP: 0.104, SL: 0.032
+2025-11-12 23:00:32,196 - src.utils.validation - INFO - Connecting to Kucoin (Test Endpoint)...
+2025-11-12 23:00:32,198 - src.utils.validation - INFO - ✅ Kucoin client initialized - 🧪 TEST MODE (Paper Trading)
+2025-11-12 23:00:32,198 - src.utils.validation - INFO - 🛡️ Risk manager initialized - Max leverage: 10x, Daily loss limit: $10000.0
+2025-11-12 23:00:32,199 - src.utils.validation - INFO - ✅ Connected to Kucoin Test API
+2025-11-12 23:00:32,200 - src.utils.validation - INFO - Initializing paper trading engine...
+2025-11-12 23:00:32,200 - src.utils.validation - INFO - 🤖 Trading Engine initialized - PAPER (Test Endpoint)
+2025-11-12 23:00:32,201 - src.utils.validation - INFO -    Pair: XBTUSDTM
+2025-11-12 23:00:32,202 - src.utils.validation - INFO -    Bot ID: 10
+2025-11-12 23:00:32,202 - src.utils.validation - INFO -    Indicators: 2
+2025-11-12 23:00:32,202 - src.utils.validation - INFO -    Leverage: 1x
+2025-11-12 23:00:32,203 - src.utils.validation - INFO -    TP: 10.42%, SL: 3.15%
+2025-11-12 23:00:32,203 - src.utils.validation - INFO -    Risk Strategy: Fixed USD Amount (param: 2077.9473)
+2025-11-12 23:00:32,205 - src.utils.validation - INFO - Loading historical data...
+2025-11-12 23:00:33,560 - src.utils.validation - WARNING - Failed to load historical data: kucoinfutures does not have market symbol BTCUSDT:USDT
+2025-11-12 23:00:33,562 - src.utils.validation - INFO - Continuing without historical warmup...
+2025-11-12 23:00:33,562 - src.utils.validation - INFO - 🚀 PAPER TRADING ENGINE STARTED
+2025-11-12 23:00:33,563 - src.utils.validation - INFO - 
+============================================================
+2025-11-12 23:00:33,563 - src.utils.validation - INFO - 📄 PAPER TRADING STARTED - Press Ctrl+C to stop
+2025-11-12 23:00:33,563 - src.utils.validation - INFO - ============================================================
+
+2025-11-12 23:00:33,564 - src.utils.validation - ERROR - Error in trading loop: kucoinfutures does not have market symbol BTCUSDT:USDT
+2025-11-12 23:00:38,565 - src.utils.validation - ERROR - Error in trading loop: kucoinfutures does not have market symbol BTCUSDT:USDT
+2025-11-12 23:00:43,567 - src.utils.validation - ERROR - Error in trading loop: kucoinfutures does not have market symbol BTCUSDT:USDT
+2025-11-12 23:00:48,571 - src.utils.validation - ERROR - Error in trading loop: kucoinfutures does not have market symbol BTCUSDT:USDT
+2025-11-12 23:00:51,160 - src.utils.validation - WARNING - 
+
+Paper trading stopped by user
+2025-11-12 23:00:51,161 - src.utils.validation - INFO - 🛑 Trading engine stopped
+2025-11-12 23:00:51,162 - src.utils.validation - INFO - 
+======================================================================
+2025-11-12 23:00:51,163 - src.utils.validation - INFO - FINAL SUMMARY - PAPER MODE
+2025-11-12 23:00:51,164 - src.utils.validation - INFO - ======================================================================
+2025-11-12 23:00:51,167 - src.utils.validation - INFO - Initial Balance:     $1,000.00
+2025-11-12 23:00:51,168 - src.utils.validation - INFO - Realized PnL:        $0.00
+2025-11-12 23:00:51,169 - src.utils.validation - INFO - Unrealized PnL:      $0.00
+2025-11-12 23:00:51,169 - src.utils.validation - INFO - Final Balance:       $1,000.00
+2025-11-12 23:00:51,169 - src.utils.validation - INFO - Total PnL:           $0.00 (+0.00%)
+2025-11-12 23:00:51,170 - src.utils.validation - INFO - 
+2025-11-12 23:00:51,171 - src.utils.validation - INFO - Total Fees:          $0.00
+2025-11-12 23:00:51,171 - src.utils.validation - INFO - Total Slippage:      $0.00
+2025-11-12 23:00:51,171 - src.utils.validation - INFO - Total Funding:       $0.00
+2025-11-12 23:00:51,172 - src.utils.validation - INFO - 
+2025-11-12 23:00:51,173 - src.utils.validation - INFO - Positions Closed:    0
+2025-11-12 23:00:51,173 - src.utils.validation - INFO - Wins / Losses:       0 / 0
+2025-11-12 23:00:51,174 - src.utils.validation - INFO - Win Rate:            0.0%
+2025-11-12 23:00:51,174 - src.utils.validation - INFO - 
+2025-11-12 23:00:51,175 - src.utils.validation - INFO - Signals Generated:   0 (0 buy, 0 sell)
+2025-11-12 23:00:51,175 - src.utils.validation - INFO - Candles Processed:   0
+2025-11-12 23:00:51,176 - src.utils.validation - INFO - Uptime:              18 seconds
+2025-11-12 23:00:51,176 - src.utils.validation - INFO - ======================================================================
+
+2025-11-12 23:00:51,182 - src.utils.validation - INFO - 
+✅ Session saved to: sessions\paper_trading\session_20251112_230051_bot10.json
+2025-11-12 23:00:51,183 - src.utils.validation - INFO - Final Balance: $1000.00
+2025-11-12 23:00:51,184 - src.utils.validation - INFO - Total PnL: $+0.00
+2025-11-12 23:00:51,185 - src.utils.validation - INFO - Total Trades: 0

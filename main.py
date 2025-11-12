@@ -990,12 +990,18 @@ def run_mode2(gpu_context, gpu_queue):
                 leverage=10
             )
         
-        # Convert pair format (BTC/USDT -> XBTUSDTM for Kucoin perpetuals)
-        kucoin_symbol = pair.replace('/', '').replace('USDT', 'USDTM')
-        if kucoin_symbol == 'BTCUSDTM':
-            kucoin_symbol = 'XBTUSDTM'
-        elif kucoin_symbol == 'ETHUSDTM':
+        # Convert pair format for Kucoin perpetuals
+        # BTC/USDT -> XBTUSDTM (Universal SDK) and XBTUSDT:USDT (CCXT)
+        if pair == 'BTC/USDT':
+            kucoin_symbol = 'XBTUSDTM'  # For Universal SDK
+            ccxt_symbol = 'XBTUSDT:USDT'  # For CCXT
+        elif pair == 'ETH/USDT':
             kucoin_symbol = 'ETHUSDTM'
+            ccxt_symbol = 'ETHUSDT:USDT'
+        else:
+            # Generic conversion
+            kucoin_symbol = pair.replace('/', '') + 'M'
+            ccxt_symbol = pair.replace('/', '') + ':USDT'
         
         # Initialize Kucoin Universal SDK client (TEST MODE)
         log_info("Connecting to Kucoin (Test Endpoint)...")
@@ -1032,9 +1038,11 @@ def run_mode2(gpu_context, gpu_queue):
                 'enableRateLimit': True
             })
             
+            # Load markets to ensure symbol is available
+            ccxt_client.load_markets()
+            
             # Fetch 500 candles for indicator warmup
-            ohlcv_symbol = pair.replace('/', '') + ':USDT'
-            historical_candles = ccxt_client.fetch_ohlcv(ohlcv_symbol, timeframe, limit=500)
+            historical_candles = ccxt_client.fetch_ohlcv(ccxt_symbol, timeframe, limit=500)
             
             for candle in historical_candles:
                 timestamp_ms, open_, high, low, close, volume = candle
@@ -1060,7 +1068,7 @@ def run_mode2(gpu_context, gpu_queue):
         while True:
             try:
                 # Fetch latest candle
-                candles = ccxt_client.fetch_ohlcv(ohlcv_symbol, timeframe, limit=2)
+                candles = ccxt_client.fetch_ohlcv(ccxt_symbol, timeframe, limit=2)
                 if candles and len(candles) >= 2:
                     # Get completed candle (second to last)
                     candle = candles[-2]
@@ -1265,12 +1273,18 @@ def run_mode3(gpu_context, gpu_queue):
                 leverage=10
             )
         
-        # Convert pair format (BTC/USDT -> XBTUSDTM for Kucoin perpetuals)
-        kucoin_symbol = pair.replace('/', '').replace('USDT', 'USDTM')
-        if kucoin_symbol == 'BTCUSDTM':
-            kucoin_symbol = 'XBTUSDTM'
-        elif kucoin_symbol == 'ETHUSDTM':
+        # Convert pair format for Kucoin perpetuals
+        # BTC/USDT -> XBTUSDTM (Universal SDK) and XBTUSDT:USDT (CCXT)
+        if pair == 'BTC/USDT':
+            kucoin_symbol = 'XBTUSDTM'  # For Universal SDK
+            ccxt_symbol = 'XBTUSDT:USDT'  # For CCXT
+        elif pair == 'ETH/USDT':
             kucoin_symbol = 'ETHUSDTM'
+            ccxt_symbol = 'ETHUSDT:USDT'
+        else:
+            # Generic conversion
+            kucoin_symbol = pair.replace('/', '') + 'M'
+            ccxt_symbol = pair.replace('/', '') + ':USDT'
         
         # Initialize Kucoin Universal SDK client (LIVE MODE)
         log_info("Connecting to Kucoin (LIVE Endpoint)...")
@@ -1308,9 +1322,11 @@ def run_mode3(gpu_context, gpu_queue):
                 'enableRateLimit': True
             })
             
+            # Load markets to ensure symbol is available
+            ccxt_client.load_markets()
+            
             # Fetch 500 candles for indicator warmup
-            ohlcv_symbol = pair.replace('/', '') + ':USDT'
-            historical_candles = ccxt_client.fetch_ohlcv(ohlcv_symbol, timeframe, limit=500)
+            historical_candles = ccxt_client.fetch_ohlcv(ccxt_symbol, timeframe, limit=500)
             
             for candle in historical_candles:
                 timestamp_ms, open_, high, low, close, volume = candle
@@ -1337,7 +1353,7 @@ def run_mode3(gpu_context, gpu_queue):
         while True:
             try:
                 # Fetch latest candle
-                candles = ccxt_client.fetch_ohlcv(ohlcv_symbol, timeframe, limit=2)
+                candles = ccxt_client.fetch_ohlcv(ccxt_symbol, timeframe, limit=2)
                 if candles and len(candles) >= 2:
                     # Get completed candle (second to last)
                     candle = candles[-2]
