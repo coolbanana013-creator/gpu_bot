@@ -536,6 +536,11 @@ class RealTimeTradingEngine:
             'closed_positions': recent_closed,
             'closed_positions_count': len(self.closed_positions),
             
+            # Win/Loss stats (calculated from closed positions)
+            'wins': sum(1 for pos in self.closed_positions if pos.get('pnl', 0) > 0),
+            'losses': sum(1 for pos in self.closed_positions if pos.get('pnl', 0) < 0),
+            'win_rate': (sum(1 for pos in self.closed_positions if pos.get('pnl', 0) > 0) / len(self.closed_positions) * 100) if len(self.closed_positions) > 0 else 0,
+            
             # Stats
             'candles_processed': self.candles_processed,
             'bars_held': self.bars_held

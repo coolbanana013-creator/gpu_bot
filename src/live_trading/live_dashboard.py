@@ -281,17 +281,13 @@ class LiveTradingDashboard:
         print(f"{'Indicator':<20} {'Value':<15} {'Signal':<15} {'Condition':<50}")
         print(f"{'-'*100}")
         
-        # Get indicator values from state
-        indicator_values = state.get('indicator_values', {})
+        # Get indicator details from state
+        indicator_details = state.get('indicator_details', [])
         
         # Display each bot indicator
-        for i in range(self.bot_config.num_indicators):
-            ind_idx = self.bot_config.indicator_indices[i]
-            ind_name = self.get_indicator_name(ind_idx)
-            ind_params = self.bot_config.indicator_params[i]
-            
-            # Get current value
-            value = indicator_values.get(ind_idx, 0.0)
+        for detail in indicator_details:
+            ind_name = detail['name']
+            value = detail['value']
             
             # Get signal analysis
             signal_info = self.get_indicator_signal(
@@ -303,7 +299,7 @@ class LiveTradingDashboard:
             
             # Format output
             signal_color = signal_info['color']
-            params_str = f"({ind_params[0]:.1f}, {ind_params[1]:.1f}, {ind_params[2]:.1f})"
+            params_str = f"({detail['param0']:.1f}, {detail['param1']:.1f}, {detail['param2']:.1f})"
             
             print(f"{ind_name:<20} ", end='')
             print(f"{value:<15.4f} ", end='')
@@ -320,10 +316,9 @@ class LiveTradingDashboard:
         sell_signals = 0
         neutral_signals = 0
         
-        for i in range(self.bot_config.num_indicators):
-            ind_idx = self.bot_config.indicator_indices[i]
-            ind_name = self.get_indicator_name(ind_idx)
-            value = indicator_values.get(ind_idx, 0.0)
+        for detail in indicator_details:
+            ind_name = detail['name']
+            value = detail['value']
             
             signal_info = self.get_indicator_signal(ind_name, value, current_price, 0)
             
@@ -334,7 +329,7 @@ class LiveTradingDashboard:
             else:
                 neutral_signals += 1
         
-        total_signals = self.bot_config.num_indicators
+        total_signals = len(indicator_details) if indicator_details else self.bot_config.num_indicators
         
         print(f"{Colors.GREEN}BUY Signals: {buy_signals}/{total_signals} ({buy_signals/total_signals*100:.1f}%){Colors.RESET}  |  ", end='')
         print(f"{Colors.RED}SELL Signals: {sell_signals}/{total_signals} ({sell_signals/total_signals*100:.1f}%){Colors.RESET}  |  ", end='')
@@ -355,12 +350,12 @@ class LiveTradingDashboard:
         print(f"{Colors.BOLD}{'TRADING STATISTICS':^100}{Colors.RESET}")
         print(f"{'-'*100}")
         
-        closed_positions = state.get('closed_positions', 0)
+        closed_positions_count = state.get('closed_positions_count', 0)
         wins = state.get('wins', 0)
         losses = state.get('losses', 0)
         win_rate = state.get('win_rate', 0)
         
-        print(f"Closed Positions: {closed_positions}  |  ", end='')
+        print(f"Closed Positions: {closed_positions_count}  |  ", end='')
         print(f"Wins: {Colors.GREEN}{wins}{Colors.RESET}  |  ", end='')
         print(f"Losses: {Colors.RED}{losses}{Colors.RESET}  |  ", end='')
         

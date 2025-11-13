@@ -1,0 +1,39 @@
+{
+  "mode": "paper_trading",
+  "bot_id": 10,
+  "pair": "BTC/USDT",
+  "timeframe": "1m",
+  "start_time": "20251113_090348",
+  "initial_balance": 1000.0,
+  "final_balance": 1000.0,
+  "total_pnl": 0.0,
+  "total_trades": 0,
+  "win_rate": 0,
+  "candles_processed": 1442,
+  "bot_config": {
+    "bot_id": 10,
+    "num_indicators": 2,
+    "indicator_indices": [
+      15,
+      30
+    ],
+    "indicator_params": [
+      [
+        6.0770134925842285,
+        11.441743850708008,
+        0.0
+      ],
+      [
+        4.059047698974609,
+        8.944863319396973,
+        0.3456050455570221
+      ]
+    ],
+    "risk_strategy": 1,
+    "risk_param": 2077.947265625,
+    "tp_multiplier": 0.10424678772687912,
+    "sl_multiplier": 0.031549472361803055,
+    "leverage": 1,
+    "survival_generations": 2
+  }
+}
