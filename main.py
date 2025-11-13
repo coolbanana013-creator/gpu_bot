@@ -1068,7 +1068,7 @@ def run_mode2(gpu_context, gpu_queue):
         
         # Live trading loop - fetch new candles from DataFetcher
         timeframe_seconds = {'1m': 60, '5m': 300, '15m': 900}[timeframe]
-        last_timestamp = ohlcv[-1][0] if len(ohlcv) > 0 else 0
+        last_timestamp = ohlcv_array[-1][0] if len(ohlcv_array) > 0 else 0
         
         # Keep running until interrupted
         while True:
@@ -1359,7 +1359,7 @@ def run_mode3(gpu_context, gpu_queue):
         
         # Live trading loop - fetch new candles from DataFetcher
         timeframe_seconds = {'1m': 60, '5m': 300, '15m': 900}[timeframe]
-        last_timestamp = ohlcv[-1][0] if len(ohlcv) > 0 else 0
+        last_timestamp = ohlcv_array[-1][0] if len(ohlcv_array) > 0 else 0
         
         # Keep running until interrupted
         while True:
