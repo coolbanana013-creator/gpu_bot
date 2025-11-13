@@ -4421,3 +4421,143 @@ Evolution complete!
 2025-11-13 22:53:37,429 - src.utils.validation - INFO - Filtered to 0 bots where all cycles are profitable
 2025-11-13 22:53:37,515 - src.utils.validation - INFO - 
 Saved top 0 bots to bots/BTC_USDT/1m/run_20251113_225337/best_bots.json and individual files
+2025-11-13 22:55:42,604 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-13 22:55:42,777 - src.utils.validation - INFO - ============================================================
+2025-11-13 22:55:42,779 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-13 22:55:42,780 - src.utils.validation - INFO - ============================================================
+2025-11-13 22:55:42,781 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-13 22:55:42,781 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-13 22:55:42,781 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-13 22:55:42,781 - src.utils.validation - INFO - Compute Units: 80
+2025-11-13 22:55:42,781 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-13 22:55:42,782 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-13 22:55:42,782 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-13 22:55:42,783 - src.utils.validation - INFO - ============================================================
+
+2025-11-13 22:57:17,082 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: 'ù'
+2025-11-13 22:57:17,084 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-13 22:57:20,910 - src.utils.validation - WARNING - 
+Input cancelled. Using default value.
+2025-11-13 22:57:21,113 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '$terminal = Get-Process -Id (Get-WinEvent -FilterHashtable @{LogName=\'Microsoft-Windows-TerminalServices-LocalSessionManager/Operational\';ID=21} -MaxEvents 1).Properties[0].Value -ErrorAction Silen
+2025-11-13 22:57:21,113 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-13 22:57:44,824 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-13 22:57:44,925 - src.utils.validation - INFO - ============================================================
+2025-11-13 22:57:44,926 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-13 22:57:44,926 - src.utils.validation - INFO - ============================================================
+2025-11-13 22:57:44,927 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-13 22:57:44,927 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-13 22:57:44,927 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-13 22:57:44,927 - src.utils.validation - INFO - Compute Units: 80
+2025-11-13 22:57:44,927 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-13 22:57:44,928 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-13 22:57:44,928 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-13 22:57:44,928 - src.utils.validation - INFO - ============================================================
+
+2025-11-13 22:58:31,580 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-13 22:58:31,586 - src.utils.validation - INFO - Initialized Kucoin Spot API connection
+2025-11-13 22:58:33,311 - src.utils.validation - INFO - Fetching 840 days of BTC/USDT 1m data ending 2025-11-13
+2025-11-13 22:58:35,386 - src.utils.validation - INFO - [OK] All 840 data file(s) already cached - no downloading needed
+2025-11-13 22:58:35,387 - src.utils.validation - INFO - Data ready: 840 file(s) total (840 from cache, 0 newly downloaded)
+2025-11-13 22:58:35,389 - src.utils.validation - INFO - Set random seed to 42
+2025-11-13 22:58:35,390 - src.utils.validation - INFO - Loading 840 data files in parallel
+2025-11-13 22:58:36,948 - src.utils.validation - INFO - Loaded total of 1209660 candles
+2025-11-13 22:58:36,949 - src.utils.validation - INFO - Validating data integrity
+2025-11-13 22:58:37,074 - src.utils.validation - INFO - Data validation passed
+2025-11-13 22:58:37,135 - src.utils.validation - INFO - Generating 100 non-overlapping cycle ranges (7 days each)
+2025-11-13 22:58:37,138 - src.utils.validation - INFO - Successfully generated 100 non-overlapping cycle ranges
+2025-11-13 22:58:37,180 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-13 22:58:37,180 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-13 22:58:37,181 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-13 22:58:37,181 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-13 22:58:37,182 - src.utils.validation - INFO -   Risk strategies: 1-1 per bot
+2025-11-13 22:58:37,182 - src.utils.validation - INFO -   Leverage: 1-1x
+2025-11-13 22:58:37,187 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-13 22:58:38,928 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-13 22:58:38,932 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-13 22:58:38,933 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-13 22:58:38,934 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-13 22:58:38,934 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-13 22:58:38,935 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-13 22:58:38,935 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-13 22:58:38,942 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-13 22:58:38,942 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-13 22:58:38,943 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-13 22:58:38,947 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-13 22:58:38,947 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-13 22:58:38,948 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-13 22:58:38,949 - src.utils.validation - INFO -   Loading 1-indicator combinations from cache...
+2025-11-13 22:58:38,950 - src.utils.validation - INFO -     Loaded 50 combinations from cache
+2025-11-13 22:58:38,950 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-13 22:58:38,952 - src.utils.validation - INFO -     Loaded 1,225 combinations from cache
+2025-11-13 22:58:38,952 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-13 22:58:38,962 - src.utils.validation - INFO -     Loaded 19,600 combinations from cache
+2025-11-13 22:58:38,963 - src.utils.validation - INFO -   Loading 4-indicator combinations from cache...
+2025-11-13 22:58:39,260 - src.utils.validation - INFO -     Loaded 230,300 combinations from cache
+2025-11-13 22:58:39,261 - src.utils.validation - INFO -   Loading 5-indicator combinations from cache...
+2025-11-13 22:58:44,807 - src.utils.validation - INFO -     Loaded 2,118,760 combinations from cache
+2025-11-13 22:58:44,825 - src.utils.validation - INFO -   Total combinations ready: 2,369,935
+2025-11-13 22:58:44,826 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-13 22:58:44,827 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-13 22:58:44,827 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-13 22:58:44,827 - src.utils.validation - INFO -   Pre-computed combination pools: 2,369,935 total combinations
+2025-11-13 22:58:44,827 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-13 22:58:44,829 - src.utils.validation - INFO - 
+Starting Evolution: 2 generations, 100 cycles
+2025-11-13 22:58:44,830 - src.utils.validation - INFO - Evolution profiler started
+2025-11-13 22:58:44,831 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-13 22:58:44,831 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-13 22:58:44,840 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-13 22:58:44,869 - src.utils.validation - INFO - Launching GPU kernel: 10240 work items, 512 per group (20 groups)
+2025-11-13 22:58:44,895 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-13 22:58:44,997 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-13 22:58:44,999 - src.utils.validation - INFO - Distributing 10000 bots across indicator sizes 1-5
+2025-11-13 22:58:45,046 - src.utils.validation - INFO - Initial population: 10000 bots, 10000 unique (100.0% uniqueness)
+2025-11-13 22:58:45,047 - src.utils.validation - INFO - Global tracking: 10000 combinations marked as used
+2025-11-13 22:58:45,049 - src.utils.validation - INFO - Size distribution: {1: 50, 2: 1225, 3: 2929, 4: 2892, 5: 2904}
+2025-11-13 22:58:45,052 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-13 22:58:45,053 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-13 22:59:46,743 - src.utils.validation - INFO - Selecting survivors...
+2025-11-13 22:59:46,755 - src.utils.validation - ERROR - SURVIVAL FILTER: 3545 cycles with no trades, 6455 cycles with negative profit, 0 bots passed
+2025-11-13 22:59:46,755 - src.utils.validation - ERROR - No bots met strict criteria: ALL cycles must have trades AND positive profit
+2025-11-13 22:59:46,756 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-13 22:59:46,756 - src.utils.validation - INFO - Logging generation 0 results...
+2025-11-13 22:59:50,822 - src.utils.validation - INFO - GPU logging completed for generation 0 in 4.065s
+2025-11-13 22:59:50,849 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-13 22:59:50,850 - src.utils.validation - WARNING - No survivors! Generating completely new population
+2025-11-13 22:59:50,850 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-13 22:59:50,851 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-13 22:59:50,854 - src.utils.validation - INFO - Launching GPU kernel: 10240 work items, 512 per group (20 groups)
+2025-11-13 22:59:50,857 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-13 22:59:50,937 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-13 22:59:50,940 - src.utils.validation - INFO - Population refilled: 10000 bots
+2025-11-13 22:59:50,941 - src.utils.validation - INFO - Generation 0 completed in 65.889s
+2025-11-13 22:59:50,941 - src.utils.validation - INFO - 
+--- GENERATION 1 ---
+2025-11-13 22:59:50,942 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-13 23:00:46,797 - src.utils.validation - INFO - Selecting survivors...
+2025-11-13 23:00:46,811 - src.utils.validation - ERROR - SURVIVAL FILTER: 3838 cycles with no trades, 6162 cycles with negative profit, 0 bots passed
+2025-11-13 23:00:46,811 - src.utils.validation - ERROR - No bots met strict criteria: ALL cycles must have trades AND positive profit
+2025-11-13 23:00:46,812 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-13 23:00:46,812 - src.utils.validation - INFO - Logging generation 1 results...
+2025-11-13 23:00:50,857 - src.utils.validation - INFO - GPU logging completed for generation 1 in 4.044s
+2025-11-13 23:00:50,882 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-13 23:00:50,883 - src.utils.validation - WARNING - No survivors! Generating completely new population
+2025-11-13 23:00:50,883 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-13 23:00:50,884 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-13 23:00:50,886 - src.utils.validation - INFO - Launching GPU kernel: 10240 work items, 512 per group (20 groups)
+2025-11-13 23:00:50,890 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-13 23:00:50,962 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-13 23:00:50,966 - src.utils.validation - INFO - Population refilled: 10000 bots
+2025-11-13 23:00:50,967 - src.utils.validation - INFO - Generation 1 completed in 60.026s
+2025-11-13 23:00:50,968 - src.utils.validation - INFO - 
+--- FINAL EVALUATION ---
+2025-11-13 23:01:59,405 - src.utils.validation - INFO - GPU logging completed for generation 2 in 4.034s
+2025-11-13 23:01:59,441 - src.utils.validation - INFO - 
+Evolution complete!
+
+2025-11-13 23:01:59,443 - src.utils.validation - INFO - Filtered to 0 bots where all cycles are profitable
+2025-11-13 23:01:59,446 - src.utils.validation - INFO - 
+Saved top 0 bots to bots/BTC_USDT/1m/run_20251113_230159/best_bots.json and individual files
