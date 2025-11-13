@@ -442,12 +442,13 @@ float generate_signal_consensus(
         
         // === CATEGORY 1: MOVING AVERAGES (0-11) ===
         // Trend-following: price crosses or momentum
+        // FIXED: 0.1% threshold too high for 1m data, using 0.001% (10bps)
         if (ind_idx >= 0 && ind_idx <= 11) {
             if (bar > 0) {
                 float prev_value = precomputed_indicators[ind_idx * num_bars + (bar - 1)];
                 // Bullish: MA rising, Bearish: MA falling
-                if (ind_value > prev_value * 1.001f) signal = 1;
-                else if (ind_value < prev_value * 0.999f) signal = -1;
+                if (ind_value > prev_value * 1.00001f) signal = 1;       // 0.001% increase
+                else if (ind_value < prev_value * 0.99999f) signal = -1;  // 0.001% decrease
             }
         }
         
@@ -478,9 +479,10 @@ float generate_signal_consensus(
         }
         
         // ROC (18): percentage rate of change
+        // FIXED: 2% too high for 1m data, using 0.1%
         else if (ind_idx == 18) {
-            if (ind_value > 2.0f) signal = 1;         // Strong upward momentum
-            else if (ind_value < -2.0f) signal = -1;  // Strong downward momentum
+            if (ind_value > 0.1f) signal = 1;         // Upward momentum (0.1%)
+            else if (ind_value < -0.1f) signal = -1;  // Downward momentum (0.1%)
         }
         
         // Williams %R (19): overbought/oversold (inverted scale)
@@ -782,6 +784,9 @@ float generate_signal_consensus(
     
     // Need at least one valid indicator
     if (valid_indicators == 0) return 0.0f;
+    
+    // Calculate neutral count
+    int neutral_count = valid_indicators - bullish_count - bearish_count;
     
     // Neutral signals don't block consensus
     // Only count bullish vs bearish (ignore neutrals)

@@ -692,11 +692,12 @@ def get_indicator_signal(
     prev_value = indicator_history[-1] if len(indicator_history) > 0 else indicator_value
     
     # === CATEGORY 1: MOVING AVERAGES (0-11) ===
+    # FIXED: 0.1% threshold too high for 1m data, using 0.001% (10bps)
     if 0 <= indicator_index <= 11:
         # Trend-following: MA rising = bullish, MA falling = bearish
-        if indicator_value > prev_value * 1.001:
+        if indicator_value > prev_value * 1.00001:  # 0.001% increase
             return 1
-        elif indicator_value < prev_value * 0.999:
+        elif indicator_value < prev_value * 0.99999:  # 0.001% decrease
             return -1
         return 0
     
@@ -735,10 +736,11 @@ def get_indicator_signal(
         return 0
     
     # ROC (18): percentage rate of change
+    # FIXED: 2% too high for 1m data, using 0.1%
     if indicator_index == 18:
-        if indicator_value > 2.0:
+        if indicator_value > 0.1:  # 0.1% increase
             return 1
-        elif indicator_value < -2.0:
+        elif indicator_value < -0.1:  # 0.1% decrease
             return -1
         return 0
     
