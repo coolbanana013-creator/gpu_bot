@@ -90,8 +90,9 @@ void validate_and_fix_tp_sl(float *tp_multiplier, float *sl_multiplier, int leve
         *tp_multiplier = 0.25f;
     }
     
-    // SL must be at most TP/2 (risk/reward ratio)
-    float max_sl = *tp_multiplier / 2.0f;
+    // SL must be at most TP/2.5 (2.5:1 risk/reward ratio minimum)
+    // Balanced for crypto volatility: tight enough for edge, wide enough to avoid noise
+    float max_sl = *tp_multiplier / 2.5f;
     if (*sl_multiplier > max_sl) {
         *sl_multiplier = max_sl;
     }
@@ -107,9 +108,9 @@ void validate_and_fix_tp_sl(float *tp_multiplier, float *sl_multiplier, int leve
         *sl_multiplier = liq_threshold * 0.9f;  // 90% of safe threshold
     }
     
-    // Minimum SL is 0.2% (avoid market noise)
-    if (*sl_multiplier < 0.002f) {
-        *sl_multiplier = 0.002f;
+    // Minimum SL is 5% (wide enough to avoid 1m crypto noise)
+    if (*sl_multiplier < 0.05f) {
+        *sl_multiplier = 0.05f;
     }
 }
 
@@ -294,13 +295,10 @@ __kernel void generate_compact_bots(
     if (bot.leverage < 1) bot.leverage = 1;
     if (bot.leverage > 125) bot.leverage = 125;
     
-    // Generate TP/SL multipliers (percentage of price)
-    // Initial ranges: TP 0.5-25%, SL 0.2-10%
-    bot.tp_multiplier = rand_float(&rng_state, 0.005f, 0.25f);  // 0.5% - 25%
-    bot.sl_multiplier = rand_float(&rng_state, 0.002f, 0.10f);  // 0.2% - 10%
-    
-    // VALIDATE AND FIX TP/SL based on leverage and fees
-    validate_and_fix_tp_sl(&bot.tp_multiplier, &bot.sl_multiplier, bot.leverage);
+    // TP/SL are now calculated dynamically by risk strategies based on market conditions
+    // Set to 0 as placeholders (not used in backtest)
+    bot.tp_multiplier = 0.0f;
+    bot.sl_multiplier = 0.0f;
     
     // Zero padding (5 bytes for 128-byte alignment)
     for (int i = 0; i < 5; i++) {

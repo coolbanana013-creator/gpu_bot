@@ -248,6 +248,135 @@ float calculate_free_margin(
 }
 
 /**
+ * Calculate dynamic TP/SL based on risk strategy and market conditions
+ * Returns: tp_multiplier and sl_multiplier via pointers
+ */
+void calculate_dynamic_tp_sl(
+    unsigned char risk_strategy,
+    float risk_param,
+    float current_price,
+    float current_high,
+    float current_low,
+    float *tp_multiplier,
+    float *sl_multiplier
+) {
+    // Calculate current bar volatility (ATR proxy)
+    float bar_range = (current_high - current_low) / current_price;
+    float atr_proxy = fmax(bar_range, 0.001f);  // Minimum 0.1% to avoid division by zero
+    
+    switch(risk_strategy) {
+        case RISK_ATR_MULTIPLIER:
+            // ATR-based TP/SL: TP = ATR * risk_param * 3, SL = ATR * risk_param
+            // risk_param: 1.0-5.0 multiplier
+            *sl_multiplier = atr_proxy * risk_param;
+            *tp_multiplier = atr_proxy * risk_param * 3.0f;  // 3:1 R/R
+            break;
+            
+        case RISK_FIXED_RISK_REWARD:
+            // Fixed R/R ratio: risk_param determines SL, TP is 3x
+            // risk_param: 0.01-0.10 (1-10% risk)
+            *sl_multiplier = risk_param;
+            *tp_multiplier = risk_param * 3.0f;  // 3:1 R/R
+            break;
+            
+        case RISK_VOLATILITY_PCT:
+        case RISK_PERCENT_VOLATILITY:
+            // Volatility-adaptive: tighter in high vol, wider in low vol
+            // risk_param: 0.01-0.20 base multiplier
+            *sl_multiplier = atr_proxy * 2.0f;  // 2x ATR for SL
+            *tp_multiplier = atr_proxy * 6.0f;  // 6x ATR for TP (3:1 R/R)
+            break;
+            
+        case RISK_OPTIMAL_F:
+            // Optimal f: aggressive, tight stops
+            // risk_param: 0.01-0.30
+            *sl_multiplier = 0.03f + (risk_param * 0.1f);  // 3-6%
+            *tp_multiplier = (*sl_multiplier) * 4.0f;  // 4:1 R/R
+            break;
+            
+        case RISK_KELLY_FULL:
+            // Full Kelly: aggressive, wide targets
+            *sl_multiplier = 0.05f;
+            *tp_multiplier = 0.25f;  // 5:1 R/R
+            break;
+            
+        case RISK_KELLY_HALF:
+            // Half Kelly: balanced
+            *sl_multiplier = 0.06f;
+            *tp_multiplier = 0.20f;  // 3.3:1 R/R
+            break;
+            
+        case RISK_KELLY_QUARTER:
+            // Quarter Kelly: conservative
+            *sl_multiplier = 0.07f;
+            *tp_multiplier = 0.18f;  // 2.5:1 R/R
+            break;
+            
+        case RISK_MARTINGALE:
+            // Martingale: very tight stops (dangerous strategy)
+            *sl_multiplier = 0.04f;
+            *tp_multiplier = 0.12f;  // 3:1 R/R
+            break;
+            
+        case RISK_ANTI_MARTINGALE:
+            // Anti-Martingale: wider stops, let winners run
+            *sl_multiplier = 0.08f;
+            *tp_multiplier = 0.30f;  // 3.75:1 R/R
+            break;
+            
+        case RISK_FIXED_PCT:
+            // Fixed percentage: conservative, moderate stops
+            // risk_param: 0.01-0.20
+            *sl_multiplier = 0.06f;
+            *tp_multiplier = 0.18f;  // 3:1 R/R
+            break;
+            
+        case RISK_FIXED_USD:
+            // Fixed USD: moderate stops
+            // risk_param: 10-10000
+            *sl_multiplier = 0.06f;
+            *tp_multiplier = 0.20f;  // 3.3:1 R/R
+            break;
+            
+        case RISK_EQUITY_CURVE:
+            // Equity curve: adaptive based on performance
+            // risk_param: 0.5-2.0 multiplier
+            *sl_multiplier = 0.05f + (risk_param * 0.02f);  // 5-9%
+            *tp_multiplier = (*sl_multiplier) * 3.5f;  // 3.5:1 R/R
+            break;
+            
+        case RISK_FIXED_RATIO:
+            // Fixed Ratio (Ryan Jones): conservative
+            // risk_param: 1000-10000
+            *sl_multiplier = 0.07f;
+            *tp_multiplier = 0.20f;  // 2.85:1 R/R
+            break;
+            
+        case RISK_WILLIAMS_FIXED:
+            // Williams Fixed Fractional: very conservative
+            // risk_param: 0.01-0.10
+            *sl_multiplier = 0.08f;
+            *tp_multiplier = 0.22f;  // 2.75:1 R/R
+            break;
+            
+        default:
+            // Fallback for any undefined strategy: moderate 3:1 R/R
+            *sl_multiplier = 0.06f;
+            *tp_multiplier = 0.18f;
+            break;
+    }
+    
+    // Safety bounds
+    *sl_multiplier = fmax(0.02f, fmin(*sl_multiplier, 0.15f));  // 2-15%
+    *tp_multiplier = fmax(0.10f, fmin(*tp_multiplier, 0.40f));  // 10-40%
+    
+    // Ensure TP > SL (minimum 1.5:1 R/R)
+    if (*tp_multiplier < *sl_multiplier * 1.5f) {
+        *tp_multiplier = *sl_multiplier * 2.5f;
+    }
+}
+
+/**
  * Calculate position size based on SINGLE risk strategy (15 strategies total)
  * Each bot uses ONE strategy with ONE parameter
  */
@@ -832,8 +961,8 @@ void open_position(
     float price,
     float desired_position_value,  // Changed: this is the exposure we want
     int direction,
-    float tp_multiplier,
-    float sl_multiplier,
+    unsigned char risk_strategy,   // CHANGED: pass strategy instead of fixed multipliers
+    float risk_param,              // CHANGED: pass risk param for dynamic calculation
     int bar,
     float leverage,
     float *balance,
@@ -898,6 +1027,18 @@ void open_position(
     positions[slot].quantity = quantity;
     positions[slot].direction = direction;
     positions[slot].entry_bar = bar;
+    
+    // Calculate dynamic TP/SL based on risk strategy and market conditions
+    float tp_multiplier, sl_multiplier;
+    calculate_dynamic_tp_sl(
+        risk_strategy,
+        risk_param,
+        price,
+        current_high,
+        current_low,
+        &tp_multiplier,
+        &sl_multiplier
+    );
     
     // Calculate TP/SL prices based on entry price
     if (direction == 1) {
@@ -1150,15 +1291,8 @@ void manage_positions(
             close_reason = 1;
             exit_price = pos->sl_price;
         }
-        // RESTORED: Check signal reversal (third priority)
-        // If long and signal turns bearish, exit
-        // If short and signal turns bullish, exit
-        else if ((pos->direction == 1 && signal < 0.0f) ||
-                 (pos->direction == -1 && signal > 0.0f)) {
-            should_close = 1;
-            close_reason = 3;  // Signal reversal
-            exit_price = bar->close;
-        }
+        // REMOVED: Signal reversal exits - let TP/SL do the work
+        // This prevents premature exits and improves winrate
         
         if (should_close) {
             // Close position and get return amount
@@ -1422,24 +1556,7 @@ __kernel void backtest_with_signals(
             return;
     }
     
-    // Validate TP/SL are positive and respect leverage limits
-    // Maximum SL = 95% of margin (to avoid liquidation)
-    float max_sl = 0.95f / (float)bot.leverage;
-    if (bot.tp_multiplier <= 0.0f || bot.tp_multiplier > 1.0f ||
-        bot.sl_multiplier <= 0.0f || bot.sl_multiplier > max_sl) {
-        results[bot_idx].bot_id = -9985;
-        results[bot_idx].fitness_score = -999999.0f;
-        return;
-    }
-    
-    // NEW: Enforce minimum TP:SL ratio to prevent unprofitable configurations
-    // TP must be at least 80% of SL (allows slight disadvantage but prevents absurd ratios)
-    // Example: TP=0.01, SL=0.10 is rejected (10:1 loss ratio = guaranteed to lose money)
-    if (bot.tp_multiplier < bot.sl_multiplier * 0.8f) {
-        results[bot_idx].bot_id = -9975;
-        results[bot_idx].fitness_score = -999999.0f;
-        return;
-    }
+    // TP/SL validation removed - now calculated dynamically by risk strategies
     
     // Validate leverage is in reasonable range [1, 125]
     if (bot.leverage < 1 || bot.leverage > 125) {
@@ -1696,8 +1813,8 @@ __kernel void backtest_with_signals(
                         ohlcv[bar].close,
                         desired_position_value,  // Changed: pass value, not quantity
                         direction,
-                        bot.tp_multiplier,
-                        bot.sl_multiplier,
+                        bot.risk_strategy,   // CHANGED: pass strategy for dynamic TP/SL
+                        bot.risk_param,      // CHANGED: pass param for dynamic TP/SL
                         bar,
                         (float)bot.leverage,
                         &balance,
@@ -2024,8 +2141,8 @@ __kernel void backtest_parallel_bot_cycle(
                     ohlcv[bar].close,
                     desired_position_value,  // Changed: pass value, not quantity
                     direction,
-                    bot.tp_multiplier,
-                    bot.sl_multiplier,
+                    bot.risk_strategy,   // CHANGED: pass strategy for dynamic TP/SL
+                    bot.risk_param,      // CHANGED: pass param for dynamic TP/SL
                     bar,
                     (float)bot.leverage,
                     &balance,

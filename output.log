@@ -1,0 +1,12 @@
+
+============================================================
+GPU-ACCELERATED GENETIC ALGORITHM CRYPTO TRADING BOT
+============================================================
+
+Available Modes:
+  [OK] Mode 1: Genetic Algorithm Mode - Evolve trading bots over multiple generations
+  [OK] Mode 2: Paper Trading Mode - Live simulation with fake money (CPU-based, replicates GPU logic)
+  [OK] Mode 3: Live Trading Mode - Real trading with real money (CPU-based, replicates GPU logic)
+  [OK] Mode 4: Single Bot Backtest Mode - Test individual bots on historical data (supports loading saved bots)
+
+Select mode (1-4): 

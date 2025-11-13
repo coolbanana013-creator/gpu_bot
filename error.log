@@ -1,0 +1,14 @@
+INFO - Initializing GPU (OpenCL)...
+
+INFO - ============================================================
+INFO - GPU INITIALIZATION SUCCESSFUL
+INFO - ============================================================
+INFO - Device: Intel(R) UHD Graphics
+INFO - Vendor: Intel(R) Corporation
+INFO - Version: OpenCL 3.0 NEO 
+INFO - Compute Units: 80
+INFO - Max Work Group Size: 512
+INFO - Global Memory: 3.19 GB
+INFO - Local Memory: 64.00 KB
+INFO - ============================================================
+
