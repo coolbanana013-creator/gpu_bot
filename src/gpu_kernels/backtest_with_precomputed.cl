@@ -324,8 +324,43 @@ void calculate_dynamic_tp_sl(
             *tp_multiplier = 0.30f;  // 3.75:1 R/R
             break;
             
+        case RISK_FIXED_PCT:
+            // Fixed percentage: conservative, moderate stops
+            // risk_param: 0.01-0.20
+            *sl_multiplier = 0.06f;
+            *tp_multiplier = 0.18f;  // 3:1 R/R
+            break;
+            
+        case RISK_FIXED_USD:
+            // Fixed USD: moderate stops
+            // risk_param: 10-10000
+            *sl_multiplier = 0.06f;
+            *tp_multiplier = 0.20f;  // 3.3:1 R/R
+            break;
+            
+        case RISK_EQUITY_CURVE:
+            // Equity curve: adaptive based on performance
+            // risk_param: 0.5-2.0 multiplier
+            *sl_multiplier = 0.05f + (risk_param * 0.02f);  // 5-9%
+            *tp_multiplier = (*sl_multiplier) * 3.5f;  // 3.5:1 R/R
+            break;
+            
+        case RISK_FIXED_RATIO:
+            // Fixed Ratio (Ryan Jones): conservative
+            // risk_param: 1000-10000
+            *sl_multiplier = 0.07f;
+            *tp_multiplier = 0.20f;  // 2.85:1 R/R
+            break;
+            
+        case RISK_WILLIAMS_FIXED:
+            // Williams Fixed Fractional: very conservative
+            // risk_param: 0.01-0.10
+            *sl_multiplier = 0.08f;
+            *tp_multiplier = 0.22f;  // 2.75:1 R/R
+            break;
+            
         default:
-            // Default: moderate 3:1 R/R
+            // Fallback for any undefined strategy: moderate 3:1 R/R
             *sl_multiplier = 0.06f;
             *tp_multiplier = 0.18f;
             break;

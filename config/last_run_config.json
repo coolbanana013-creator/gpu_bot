@@ -7,7 +7,7 @@
   "backtest_days": 7,
   "timeframe": "1m",
   "min_leverage": 1,
-  "max_leverage": 1,
+  "max_leverage": 125,
   "min_indicators": 1,
   "max_indicators": 5,
   "min_risk_strategies": 1,
