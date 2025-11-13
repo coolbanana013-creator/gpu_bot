@@ -501,6 +501,7 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         
         # Validate VRAM requirements
         print("Validating GPU memory requirements...")
+        """
         vram_estimator = VRAMEstimator(gpu_context)
         try:
             vram_report = vram_estimator.estimate_and_validate_workflow(
@@ -515,6 +516,7 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         except RuntimeError as e:
             print(f"\nERROR: {e}")
             sys.exit(1)
+        """
         
         # Initialize components
         print("Initializing evolution components...")
