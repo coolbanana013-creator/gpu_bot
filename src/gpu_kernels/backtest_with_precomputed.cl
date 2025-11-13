@@ -407,13 +407,14 @@ int check_account_liquidation(
 }
 
 /**
- * Generate signal from indicators using 100% consensus (STRICT: ALL indicators must agree)
+ * Generate signal from indicators using 30-40% consensus (flexible voting)
  */
 float generate_signal_consensus(
     __global float *precomputed_indicators,
     CompactBotConfig *bot,
     int bar,
-    int num_bars
+    int num_bars,
+    int bot_id
 ) {
     if (bot->num_indicators == 0) return 0.0f;
     
@@ -803,8 +804,8 @@ float generate_signal_consensus(
     // Random consensus threshold between 30-40% for very flexible signals
     // This allows majority voting: 2 bulls + 1 bear = 67% bull signal (passes)
     // Even 2 bulls + 3 bears = 40% bull signal would pass at 30-40% threshold
-    // Generate random threshold per evaluation to explore different sensitivity levels
-    uint seed = (uint)(bar * 997 + valid_indicators * 991);
+    // CRITICAL: Include bot_id to ensure each bot has unique threshold
+    uint seed = (uint)(bot_id * 997 + bar * 991 + valid_indicators * 983);
     seed = seed * 1664525u + 1013904223u;
     float random_val = (float)(seed % 1000) / 1000.0f;  // 0.0 to 1.0
     float consensus_threshold = 0.3f + random_val * 0.1f;  // 30% to 40%
@@ -1600,7 +1601,8 @@ __kernel void backtest_with_signals(
                 precomputed_indicators,
                 &bot,
                 bar,
-                num_bars
+                num_bars,
+                bot.bot_id
             );
             
             // Manage existing positions
@@ -1974,7 +1976,8 @@ __kernel void backtest_parallel_bot_cycle(
             precomputed_indicators,
             &bot,
             bar,
-            num_bars
+            num_bars,
+            bot.bot_id
         );
         
         // Manage existing positions (close at TP/SL, update tracking)
