@@ -1,8 +1,8 @@
 {
   "pair": "BTC/USDT",
   "initial_balance": 1000.0,
-  "population": 100000,
-  "generations": 10,
+  "population": 10000,
+  "generations": 100,
   "cycles": 100,
   "backtest_days": 7,
   "timeframe": "1m",

@@ -1022,9 +1022,16 @@ def generate_signal_consensus(
     bullish_count = 0
     bearish_count = 0
     neutral_count = 0
+    valid_indicators = 0
     signals = {}
     
     for ind_idx, ind_value in indicator_values.items():
+        # Skip invalid indicator values (NaN, Inf, or during warmup)
+        if ind_value is None or (isinstance(ind_value, float) and (np.isnan(ind_value) or np.isinf(ind_value))):
+            continue  # Skip this indicator
+        
+        valid_indicators += 1
+        
         params = indicator_params.get(ind_idx, [0.0, 0.0, 0.0])
         history = indicator_history.get(ind_idx, [])
         
@@ -1041,10 +1048,18 @@ def generate_signal_consensus(
         else:
             neutral_count += 1
     
-    # Calculate consensus percentage
-    total_indicators = len(indicator_values)
-    bullish_pct = bullish_count / total_indicators
-    bearish_pct = bearish_count / total_indicators
+    # Need at least one valid indicator
+    if valid_indicators == 0:
+        return (0.0, {
+            'bullish_count': 0,
+            'bearish_count': 0,
+            'neutral_count': 0,
+            'signals': {}
+        })
+    
+    # Calculate consensus percentage based on VALID indicators only
+    bullish_pct = bullish_count / valid_indicators
+    bearish_pct = bearish_count / valid_indicators
     
     # 75% consensus required (STRONG: 3 out of 4 indicators must agree)
     if bullish_pct >= 0.75:

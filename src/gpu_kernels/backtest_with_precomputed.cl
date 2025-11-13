@@ -419,10 +419,18 @@ float generate_signal_consensus(
     
     int bullish_count = 0;
     int bearish_count = 0;
+    int valid_indicators = 0;  // Track how many valid (non-NaN) indicators we checked
     
     for (int i = 0; i < bot->num_indicators; i++) {
         int ind_idx = bot->indicator_indices[i];
         float ind_value = precomputed_indicators[ind_idx * num_bars + bar];
+        
+        // Skip invalid indicator values (NaN, Inf, or during warmup period)
+        if (isnan(ind_value) || isinf(ind_value)) {
+            continue;  // Skip this indicator, don't count it
+        }
+        
+        valid_indicators++;  // Count this as a valid indicator
         
         float param0 = bot->indicator_params[i][0];
         float param1 = bot->indicator_params[i][1];
@@ -431,9 +439,6 @@ float generate_signal_consensus(
         // COMPLETE SIGNAL LOGIC FOR ALL 50 INDICATORS
         // Each indicator has realistic, in-depth signal interpretation
         int signal = 0;  // 0 = neutral, 1 = bullish, -1 = bearish
-        
-        // Get current price for context
-        __global OHLCVBar *current_bar = &((__global OHLCVBar*)precomputed_indicators - num_bars)[bar];  // Hack to get OHLCV
         
         // === CATEGORY 1: MOVING AVERAGES (0-11) ===
         // Trend-following: price crosses or momentum
@@ -775,12 +780,12 @@ float generate_signal_consensus(
         else if (signal == -1) bearish_count++;
     }
     
-    // Calculate consensus percentage
-    int total_signals = bullish_count + bearish_count;
-    if (total_signals == 0) return 0.0f;
+    // Need at least one valid indicator
+    if (valid_indicators == 0) return 0.0f;
     
-    float bullish_pct = (float)bullish_count / (float)bot->num_indicators;
-    float bearish_pct = (float)bearish_count / (float)bot->num_indicators;
+    // Calculate consensus percentage based on VALID indicators only
+    float bullish_pct = (float)bullish_count / (float)valid_indicators;
+    float bearish_pct = (float)bearish_count / (float)valid_indicators;
     
     // 75% consensus required (STRONG: 3 out of 4 indicators must agree)
     if (bullish_pct >= 0.75f) return 1.0f;   // 75%+ bullish
