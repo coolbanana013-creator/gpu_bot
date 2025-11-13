@@ -248,6 +248,100 @@ float calculate_free_margin(
 }
 
 /**
+ * Calculate dynamic TP/SL based on risk strategy and market conditions
+ * Returns: tp_multiplier and sl_multiplier via pointers
+ */
+void calculate_dynamic_tp_sl(
+    unsigned char risk_strategy,
+    float risk_param,
+    float current_price,
+    float current_high,
+    float current_low,
+    float *tp_multiplier,
+    float *sl_multiplier
+) {
+    // Calculate current bar volatility (ATR proxy)
+    float bar_range = (current_high - current_low) / current_price;
+    float atr_proxy = fmax(bar_range, 0.001f);  // Minimum 0.1% to avoid division by zero
+    
+    switch(risk_strategy) {
+        case RISK_ATR_MULTIPLIER:
+            // ATR-based TP/SL: TP = ATR * risk_param * 3, SL = ATR * risk_param
+            // risk_param: 1.0-5.0 multiplier
+            *sl_multiplier = atr_proxy * risk_param;
+            *tp_multiplier = atr_proxy * risk_param * 3.0f;  // 3:1 R/R
+            break;
+            
+        case RISK_FIXED_RISK_REWARD:
+            // Fixed R/R ratio: risk_param determines SL, TP is 3x
+            // risk_param: 0.01-0.10 (1-10% risk)
+            *sl_multiplier = risk_param;
+            *tp_multiplier = risk_param * 3.0f;  // 3:1 R/R
+            break;
+            
+        case RISK_VOLATILITY_PCT:
+        case RISK_PERCENT_VOLATILITY:
+            // Volatility-adaptive: tighter in high vol, wider in low vol
+            // risk_param: 0.01-0.20 base multiplier
+            *sl_multiplier = atr_proxy * 2.0f;  // 2x ATR for SL
+            *tp_multiplier = atr_proxy * 6.0f;  // 6x ATR for TP (3:1 R/R)
+            break;
+            
+        case RISK_OPTIMAL_F:
+            // Optimal f: aggressive, tight stops
+            // risk_param: 0.01-0.30
+            *sl_multiplier = 0.03f + (risk_param * 0.1f);  // 3-6%
+            *tp_multiplier = (*sl_multiplier) * 4.0f;  // 4:1 R/R
+            break;
+            
+        case RISK_KELLY_FULL:
+            // Full Kelly: aggressive, wide targets
+            *sl_multiplier = 0.05f;
+            *tp_multiplier = 0.25f;  // 5:1 R/R
+            break;
+            
+        case RISK_KELLY_HALF:
+            // Half Kelly: balanced
+            *sl_multiplier = 0.06f;
+            *tp_multiplier = 0.20f;  // 3.3:1 R/R
+            break;
+            
+        case RISK_KELLY_QUARTER:
+            // Quarter Kelly: conservative
+            *sl_multiplier = 0.07f;
+            *tp_multiplier = 0.18f;  // 2.5:1 R/R
+            break;
+            
+        case RISK_MARTINGALE:
+            // Martingale: very tight stops (dangerous strategy)
+            *sl_multiplier = 0.04f;
+            *tp_multiplier = 0.12f;  // 3:1 R/R
+            break;
+            
+        case RISK_ANTI_MARTINGALE:
+            // Anti-Martingale: wider stops, let winners run
+            *sl_multiplier = 0.08f;
+            *tp_multiplier = 0.30f;  // 3.75:1 R/R
+            break;
+            
+        default:
+            // Default: moderate 3:1 R/R
+            *sl_multiplier = 0.06f;
+            *tp_multiplier = 0.18f;
+            break;
+    }
+    
+    // Safety bounds
+    *sl_multiplier = fmax(0.02f, fmin(*sl_multiplier, 0.15f));  // 2-15%
+    *tp_multiplier = fmax(0.10f, fmin(*tp_multiplier, 0.40f));  // 10-40%
+    
+    // Ensure TP > SL (minimum 1.5:1 R/R)
+    if (*tp_multiplier < *sl_multiplier * 1.5f) {
+        *tp_multiplier = *sl_multiplier * 2.5f;
+    }
+}
+
+/**
  * Calculate position size based on SINGLE risk strategy (15 strategies total)
  * Each bot uses ONE strategy with ONE parameter
  */
