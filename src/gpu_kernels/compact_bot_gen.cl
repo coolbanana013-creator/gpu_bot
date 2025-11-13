@@ -295,14 +295,10 @@ __kernel void generate_compact_bots(
     if (bot.leverage < 1) bot.leverage = 1;
     if (bot.leverage > 125) bot.leverage = 125;
     
-    // Generate TP/SL multipliers (percentage of price)
-    // BALANCED: TP 15-25%, SL 5-8% for 2:1 to 4:1 risk/reward
-    // Wider stops prevent getting stopped out by 1m crypto noise
-    bot.tp_multiplier = rand_float(&rng_state, 0.15f, 0.25f);  // 15% - 25%
-    bot.sl_multiplier = rand_float(&rng_state, 0.05f, 0.08f);  // 5% - 8%
-    
-    // VALIDATE AND FIX TP/SL based on leverage and fees
-    validate_and_fix_tp_sl(&bot.tp_multiplier, &bot.sl_multiplier, bot.leverage);
+    // TP/SL are now calculated dynamically by risk strategies based on market conditions
+    // Set to 0 as placeholders (not used in backtest)
+    bot.tp_multiplier = 0.0f;
+    bot.sl_multiplier = 0.0f;
     
     // Zero padding (5 bytes for 128-byte alignment)
     for (int i = 0; i < 5; i++) {

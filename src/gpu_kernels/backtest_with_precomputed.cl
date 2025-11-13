@@ -818,8 +818,8 @@ void open_position(
     float price,
     float desired_position_value,  // Changed: this is the exposure we want
     int direction,
-    float tp_multiplier,
-    float sl_multiplier,
+    unsigned char risk_strategy,   // CHANGED: pass strategy instead of fixed multipliers
+    float risk_param,              // CHANGED: pass risk param for dynamic calculation
     int bar,
     float leverage,
     float *balance,
@@ -884,6 +884,18 @@ void open_position(
     positions[slot].quantity = quantity;
     positions[slot].direction = direction;
     positions[slot].entry_bar = bar;
+    
+    // Calculate dynamic TP/SL based on risk strategy and market conditions
+    float tp_multiplier, sl_multiplier;
+    calculate_dynamic_tp_sl(
+        risk_strategy,
+        risk_param,
+        price,
+        current_high,
+        current_low,
+        &tp_multiplier,
+        &sl_multiplier
+    );
     
     // Calculate TP/SL prices based on entry price
     if (direction == 1) {
@@ -1401,24 +1413,7 @@ __kernel void backtest_with_signals(
             return;
     }
     
-    // Validate TP/SL are positive and respect leverage limits
-    // Maximum SL = 95% of margin (to avoid liquidation)
-    float max_sl = 0.95f / (float)bot.leverage;
-    if (bot.tp_multiplier <= 0.0f || bot.tp_multiplier > 1.0f ||
-        bot.sl_multiplier <= 0.0f || bot.sl_multiplier > max_sl) {
-        results[bot_idx].bot_id = -9985;
-        results[bot_idx].fitness_score = -999999.0f;
-        return;
-    }
-    
-    // NEW: Enforce minimum TP:SL ratio to prevent unprofitable configurations
-    // TP must be at least 80% of SL (allows slight disadvantage but prevents absurd ratios)
-    // Example: TP=0.01, SL=0.10 is rejected (10:1 loss ratio = guaranteed to lose money)
-    if (bot.tp_multiplier < bot.sl_multiplier * 0.8f) {
-        results[bot_idx].bot_id = -9975;
-        results[bot_idx].fitness_score = -999999.0f;
-        return;
-    }
+    // TP/SL validation removed - now calculated dynamically by risk strategies
     
     // Validate leverage is in reasonable range [1, 125]
     if (bot.leverage < 1 || bot.leverage > 125) {
@@ -1674,8 +1669,8 @@ __kernel void backtest_with_signals(
                         ohlcv[bar].close,
                         desired_position_value,  // Changed: pass value, not quantity
                         direction,
-                        bot.tp_multiplier,
-                        bot.sl_multiplier,
+                        bot.risk_strategy,   // CHANGED: pass strategy for dynamic TP/SL
+                        bot.risk_param,      // CHANGED: pass param for dynamic TP/SL
                         bar,
                         (float)bot.leverage,
                         &balance,
@@ -2001,8 +1996,8 @@ __kernel void backtest_parallel_bot_cycle(
                     ohlcv[bar].close,
                     desired_position_value,  // Changed: pass value, not quantity
                     direction,
-                    bot.tp_multiplier,
-                    bot.sl_multiplier,
+                    bot.risk_strategy,   // CHANGED: pass strategy for dynamic TP/SL
+                    bot.risk_param,      // CHANGED: pass param for dynamic TP/SL
                     bar,
                     (float)bot.leverage,
                     &balance,
