@@ -475,13 +475,14 @@ class DataFetcher:
         try:
             # Convert pair format for Kucoin Futures
             if self.exchange_type == 'futures':
-                # BTC/USDT -> XBTUSDT:USDT for Kucoin Futures
+                # BTC/USDT -> BTC/USDT:USDT for Kucoin Futures (standard CCXT format)
                 if pair == 'BTC/USDT':
-                    symbol = 'XBTUSDT:USDT'
+                    symbol = 'BTC/USDT:USDT'
                 elif pair == 'ETH/USDT':
-                    symbol = 'ETHUSDT:USDT'
+                    symbol = 'ETH/USDT:USDT'
                 else:
-                    symbol = pair.replace('/', '') + ':USDT'
+                    # Split pair and add :USDT suffix
+                    symbol = f"{pair}:USDT"
             else:
                 symbol = pair
             
