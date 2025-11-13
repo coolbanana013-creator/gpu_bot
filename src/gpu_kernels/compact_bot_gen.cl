@@ -90,9 +90,9 @@ void validate_and_fix_tp_sl(float *tp_multiplier, float *sl_multiplier, int leve
         *tp_multiplier = 0.25f;
     }
     
-    // SL must be at most TP/5 (5:1 risk/reward ratio minimum)
-    // This ensures high winrate: even 25% WR is profitable at 5:1 R/R
-    float max_sl = *tp_multiplier / 5.0f;
+    // SL must be at most TP/2.5 (2.5:1 risk/reward ratio minimum)
+    // Balanced for crypto volatility: tight enough for edge, wide enough to avoid noise
+    float max_sl = *tp_multiplier / 2.5f;
     if (*sl_multiplier > max_sl) {
         *sl_multiplier = max_sl;
     }
@@ -108,9 +108,9 @@ void validate_and_fix_tp_sl(float *tp_multiplier, float *sl_multiplier, int leve
         *sl_multiplier = liq_threshold * 0.9f;  // 90% of safe threshold
     }
     
-    // Minimum SL is 2% (tight but not too tight for crypto volatility)
-    if (*sl_multiplier < 0.02f) {
-        *sl_multiplier = 0.02f;
+    // Minimum SL is 5% (wide enough to avoid 1m crypto noise)
+    if (*sl_multiplier < 0.05f) {
+        *sl_multiplier = 0.05f;
     }
 }
 
@@ -296,10 +296,10 @@ __kernel void generate_compact_bots(
     if (bot.leverage > 125) bot.leverage = 125;
     
     // Generate TP/SL multipliers (percentage of price)
-    // AGGRESSIVE: TP 15-25%, SL 2-4% for 5:1 to 10:1 risk/reward
-    // At 5:1 R/R, even 25% winrate is profitable!
+    // BALANCED: TP 15-25%, SL 5-8% for 2:1 to 4:1 risk/reward
+    // Wider stops prevent getting stopped out by 1m crypto noise
     bot.tp_multiplier = rand_float(&rng_state, 0.15f, 0.25f);  // 15% - 25%
-    bot.sl_multiplier = rand_float(&rng_state, 0.02f, 0.04f);  // 2% - 4%
+    bot.sl_multiplier = rand_float(&rng_state, 0.05f, 0.08f);  // 5% - 8%
     
     // VALIDATE AND FIX TP/SL based on leverage and fees
     validate_and_fix_tp_sl(&bot.tp_multiplier, &bot.sl_multiplier, bot.leverage);
