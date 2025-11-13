@@ -993,11 +993,11 @@ def generate_signal_consensus(
     price: float = 0.0
 ) -> Tuple[float, Dict]:
     """
-    Generate signal from indicators using 100% consensus.
+    Generate signal from indicators using 75% consensus.
     
     EXACT PORT from GPU kernel lines 540-780.
     
-    STRICT: ALL indicators must agree for a signal.
+    STRONG: 75% of indicators must agree for a signal.
     
     Args:
         indicator_values: Dict of {indicator_index: current_value}
@@ -1046,13 +1046,13 @@ def generate_signal_consensus(
     bullish_pct = bullish_count / total_indicators
     bearish_pct = bearish_count / total_indicators
     
-    # 100% consensus required (STRICT: ALL indicators must agree)
-    if bullish_pct >= 1.0:
-        final_signal = 1.0  # ALL bullish
-    elif bearish_pct >= 1.0:
-        final_signal = -1.0  # ALL bearish
+    # 75% consensus required (STRONG: 3 out of 4 indicators must agree)
+    if bullish_pct >= 0.75:
+        final_signal = 1.0  # 75%+ bullish
+    elif bearish_pct >= 0.75:
+        final_signal = -1.0  # 75%+ bearish
     else:
-        final_signal = 0.0  # No consensus (not unanimous)
+        final_signal = 0.0  # No consensus (below 75% threshold)
     
     breakdown = {
         'bullish_count': bullish_count,

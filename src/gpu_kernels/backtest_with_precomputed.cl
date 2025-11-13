@@ -782,11 +782,11 @@ float generate_signal_consensus(
     float bullish_pct = (float)bullish_count / (float)bot->num_indicators;
     float bearish_pct = (float)bearish_count / (float)bot->num_indicators;
     
-    // 100% consensus required (STRICT: ALL indicators must agree)
-    if (bullish_pct >= 1.0f) return 1.0f;   // ALL bullish
-    if (bearish_pct >= 1.0f) return -1.0f;  // ALL bearish
+    // 75% consensus required (STRONG: 3 out of 4 indicators must agree)
+    if (bullish_pct >= 0.75f) return 1.0f;   // 75%+ bullish
+    if (bearish_pct >= 0.75f) return -1.0f;  // 75%+ bearish
     
-    return 0.0f;  // No consensus (not unanimous)
+    return 0.0f;  // No consensus (below 75% threshold)
 }
 
 /**
