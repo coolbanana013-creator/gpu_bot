@@ -993,11 +993,12 @@ def generate_signal_consensus(
     price: float = 0.0
 ) -> Tuple[float, Dict]:
     """
-    Generate signal from indicators using 75% consensus.
+    Generate signal from indicators using 100% consensus (ignoring neutrals).
     
     EXACT PORT from GPU kernel lines 540-780.
     
-    STRONG: 75% of indicators must agree for a signal.
+    STRICT: ALL directional (non-neutral) indicators must agree for a signal.
+    Neutrals don't block: bull+neutral=bull, bear+neutral=bear, bull+bear=conflict.
     
     Args:
         indicator_values: Dict of {indicator_index: current_value}
@@ -1057,12 +1058,26 @@ def generate_signal_consensus(
             'signals': {}
         })
     
-    # Calculate consensus percentage based on VALID indicators only
-    bullish_pct = bullish_count / valid_indicators
-    bearish_pct = bearish_count / valid_indicators
+    # Neutral signals don't block consensus
+    # Only count bullish vs bearish (ignore neutrals)
+    directional_signals = bullish_count + bearish_count
     
-    # 75% consensus required (STRONG: 3 out of 4 indicators must agree)
-    if bullish_pct >= 0.75:
+    # If no directional signals (all neutral), return neutral
+    if directional_signals == 0:
+        return (0.0, {
+            'bullish_count': bullish_count,
+            'bearish_count': bearish_count,
+            'neutral_count': neutral_count,
+            'signals': signals
+        })
+    
+    # Calculate consensus: bull/(bull+bear), bear/(bull+bear)
+    # Neutrals are ignored, so bull + neutral = bull if no bears
+    bullish_pct = bullish_count / directional_signals
+    bearish_pct = bearish_count / directional_signals
+    
+    # 100% consensus required (ALL directional signals must agree)
+    if bullish_pct >= 1.0:
         final_signal = 1.0  # 75%+ bullish
     elif bearish_pct >= 0.75:
         final_signal = -1.0  # 75%+ bearish

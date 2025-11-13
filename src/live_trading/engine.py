@@ -168,7 +168,7 @@ class RealTimeTradingEngine:
             if len(self.indicator_history[ind_idx]) > 100:
                 self.indicator_history[ind_idx].pop(0)
         
-        # === STEP 2: GENERATE SIGNAL (75% CONSENSUS) ===
+        # === STEP 2: GENERATE SIGNAL (100% CONSENSUS, NEUTRALS IGNORED) ===
         signal, breakdown = generate_signal_consensus(
             self.indicator_values,
             self.indicator_params,

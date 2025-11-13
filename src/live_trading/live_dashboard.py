@@ -335,17 +335,21 @@ class LiveTradingDashboard:
         print(f"{Colors.RED}SELL Signals: {sell_signals}/{total_signals} ({sell_signals/total_signals*100:.1f}%){Colors.RESET}  |  ", end='')
         print(f"{Colors.YELLOW}NEUTRAL: {neutral_signals}/{total_signals} ({neutral_signals/total_signals*100:.1f}%){Colors.RESET}")
         
-        # Overall consensus (requires 75% agreement)
-        CONSENSUS_THRESHOLD = 0.75
-        buy_pct = buy_signals / total_signals if total_signals > 0 else 0
-        sell_pct = sell_signals / total_signals if total_signals > 0 else 0
+        # Overall consensus (100% of DIRECTIONAL signals, neutrals ignored)
+        directional_signals = buy_signals + sell_signals
         
-        if buy_pct >= CONSENSUS_THRESHOLD:
-            consensus = f"{Colors.GREEN}BULLISH ↗ (Strong: {buy_pct*100:.0f}%){Colors.RESET}"
-        elif sell_pct >= CONSENSUS_THRESHOLD:
-            consensus = f"{Colors.RED}BEARISH ↘ (Strong: {sell_pct*100:.0f}%){Colors.RESET}"
+        if directional_signals == 0:
+            consensus = f"{Colors.YELLOW}NEUTRAL ↔ (All indicators neutral){Colors.RESET}"
         else:
-            consensus = f"{Colors.YELLOW}NEUTRAL ↔ (No 75% consensus){Colors.RESET}"
+            buy_pct = buy_signals / directional_signals
+            sell_pct = sell_signals / directional_signals
+            
+            if buy_pct >= 1.0:
+                consensus = f"{Colors.GREEN}BULLISH ↗ (100% agreement, {neutral_signals} neutral ignored){Colors.RESET}"
+            elif sell_pct >= 1.0:
+                consensus = f"{Colors.RED}BEARISH ↘ (100% agreement, {neutral_signals} neutral ignored){Colors.RESET}"
+            else:
+                consensus = f"{Colors.YELLOW}MIXED ↔ ({buy_signals} bull vs {sell_signals} bear){Colors.RESET}"
         
         print(f"\n{Colors.BOLD}Overall Consensus: {consensus}{Colors.RESET}")
         print()
