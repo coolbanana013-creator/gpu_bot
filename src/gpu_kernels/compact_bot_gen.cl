@@ -295,9 +295,9 @@ __kernel void generate_compact_bots(
     if (bot.leverage > 125) bot.leverage = 125;
     
     // Generate TP/SL multipliers (percentage of price)
-    // Initial ranges: TP 0.5-25%, SL 0.2-10%
-    bot.tp_multiplier = rand_float(&rng_state, 0.005f, 0.25f);  // 0.5% - 25%
-    bot.sl_multiplier = rand_float(&rng_state, 0.002f, 0.10f);  // 0.2% - 10%
+    // UPDATED: TP 10-20%, SL 3-10% for higher winrate (2:1+ risk/reward)
+    bot.tp_multiplier = rand_float(&rng_state, 0.10f, 0.20f);  // 10% - 20%
+    bot.sl_multiplier = rand_float(&rng_state, 0.03f, 0.10f);  // 3% - 10%
     
     // VALIDATE AND FIX TP/SL based on leverage and fees
     validate_and_fix_tp_sl(&bot.tp_multiplier, &bot.sl_multiplier, bot.leverage);

@@ -1136,15 +1136,8 @@ void manage_positions(
             close_reason = 1;
             exit_price = pos->sl_price;
         }
-        // RESTORED: Check signal reversal (third priority)
-        // If long and signal turns bearish, exit
-        // If short and signal turns bullish, exit
-        else if ((pos->direction == 1 && signal < 0.0f) ||
-                 (pos->direction == -1 && signal > 0.0f)) {
-            should_close = 1;
-            close_reason = 3;  // Signal reversal
-            exit_price = bar->close;
-        }
+        // REMOVED: Signal reversal exits - let TP/SL do the work
+        // This prevents premature exits and improves winrate
         
         if (should_close) {
             // Close position and get return amount

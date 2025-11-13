@@ -4215,3 +4215,25 @@ Starting Evolution: 10 generations, 10 cycles
 2025-11-14 00:13:59,388 - src.utils.validation - INFO - Global tracking: 49991 combinations used across all generations
 2025-11-14 00:13:59,391 - src.utils.validation - INFO - Generating 9997 new globally unique bots (no crossover/mutation/reuse)
 2025-11-14 00:13:59,394 - src.utils.validation - INFO - Available combinations: 2,319,944 unused, 49,991 used globally
+2025-11-14 00:15:32,931 - src.utils.validation - INFO - After refill: 10000 bots, 10000 unique combinations (100.0% diversity)
+2025-11-14 00:15:32,939 - src.utils.validation - INFO - Remaining unused combinations: 2,309,947
+2025-11-14 00:15:32,992 - src.utils.validation - INFO - Population refilled: 10000 bots
+2025-11-14 00:15:32,994 - src.utils.validation - INFO - Generation 4 completed in 107.839s
+2025-11-14 00:15:32,994 - src.utils.validation - INFO - 
+--- GENERATION 5 ---
+2025-11-14 00:15:32,994 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-14 00:15:42,933 - src.utils.validation - INFO - Selecting survivors...
+2025-11-14 00:15:42,943 - src.utils.validation - INFO - SURVIVAL FILTER: 4304 cycles with no trades, 5693 cycles with negative profit, 3 bots passed (ALL cycles profitable)
+2025-11-14 00:15:42,943 - src.utils.validation - INFO - Survivors: 3 unique bots kept (no cap applied)
+2025-11-14 00:15:42,944 - src.utils.validation - INFO - SURVIVAL: 3 survivors (from 3 bots where ALL cycles have trades AND positive profit)
+2025-11-14 00:15:42,944 - src.utils.validation - INFO - ELIMINATED: 9997 bots total
+2025-11-14 00:15:42,945 - src.utils.validation - INFO - Logging generation 5 results...
+2025-11-14 00:15:43,663 - src.utils.validation - INFO - GPU logging completed for generation 5 in 0.717s
+2025-11-14 00:15:43,668 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-14 00:15:43,670 - src.utils.validation - INFO - Survivors: 3 total, 3 unique combinations (100.0% diversity)
+2025-11-14 00:15:43,671 - src.utils.validation - INFO - Global tracking: 59988 combinations used across all generations
+2025-11-14 00:15:43,672 - src.utils.validation - INFO - Generating 9997 new globally unique bots (no crossover/mutation/reuse)
+2025-11-14 00:15:43,672 - src.utils.validation - INFO - Available combinations: 2,309,947 unused, 59,988 used globally
+2025-11-14 00:16:21,759 - src.utils.validation - WARNING - 
+
+Execution interrupted by user
