@@ -3199,3 +3199,71 @@ Input cancelled. Using default value.
 
 2025-11-13 08:57:03,248 - src.utils.validation - ERROR - Failed to fetch latest candles for BTC/USDT: kucoinfutures does not have market symbol XBTUSDT:USDT
 2025-11-13 08:57:03,249 - src.utils.validation - ERROR - Paper trading error: Cannot fetch latest candles: kucoinfutures does not have market symbol XBTUSDT:USDT
+2025-11-13 08:58:46,090 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-13 08:58:46,395 - src.utils.validation - INFO - ============================================================
+2025-11-13 08:58:46,397 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-13 08:58:46,399 - src.utils.validation - INFO - ============================================================
+2025-11-13 08:58:46,400 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-13 08:58:46,401 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-13 08:58:46,402 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-13 08:58:46,403 - src.utils.validation - INFO - Compute Units: 80
+2025-11-13 08:58:46,404 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-13 08:58:46,404 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-13 08:58:46,406 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-13 08:58:46,407 - src.utils.validation - INFO - ============================================================
+
+2025-11-13 08:58:53,628 - src.utils.validation - WARNING - 
+Selection cancelled. Defaulting to Mode 1.
+2025-11-13 08:59:09,589 - src.utils.validation - WARNING - 
+Input cancelled. Using default value.
+2025-11-13 08:59:24,595 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-13 08:59:24,696 - src.utils.validation - INFO - ============================================================
+2025-11-13 08:59:24,698 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-13 08:59:24,699 - src.utils.validation - INFO - ============================================================
+2025-11-13 08:59:24,699 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-13 08:59:24,700 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-13 08:59:24,700 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-13 08:59:24,700 - src.utils.validation - INFO - Compute Units: 80
+2025-11-13 08:59:24,701 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-13 08:59:24,701 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-13 08:59:24,701 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-13 08:59:24,702 - src.utils.validation - INFO - ============================================================
+
+2025-11-13 09:01:11,508 - src.utils.validation - INFO - ✅ Loaded bot 10 from bots\BTC_USDT\1m\bot_10.json
+2025-11-13 09:01:11,509 - src.utils.validation - INFO -    Indicators: 2, Leverage: 1x
+2025-11-13 09:01:11,510 - src.utils.validation - INFO -    TP: 0.104, SL: 0.032
+2025-11-13 09:01:11,511 - src.utils.validation - INFO - Connecting to Kucoin (Test Endpoint)...
+2025-11-13 09:01:11,514 - src.utils.validation - INFO - ✅ Kucoin client initialized - 🧪 TEST MODE (Paper Trading)
+2025-11-13 09:01:11,516 - src.utils.validation - INFO - 🛡️ Risk manager initialized - Max leverage: 10x, Daily loss limit: $10000.0
+2025-11-13 09:01:11,517 - src.utils.validation - INFO - ✅ Connected to Kucoin Test API
+2025-11-13 09:01:11,517 - src.utils.validation - INFO - Initializing paper trading engine...
+2025-11-13 09:01:11,518 - src.utils.validation - INFO - 🤖 Trading Engine initialized - PAPER (Test Endpoint)
+2025-11-13 09:01:11,519 - src.utils.validation - INFO -    Pair: XBTUSDTM
+2025-11-13 09:01:11,521 - src.utils.validation - INFO -    Bot ID: 10
+2025-11-13 09:01:11,522 - src.utils.validation - INFO -    Indicators: 2
+2025-11-13 09:01:11,523 - src.utils.validation - INFO -    Leverage: 1x
+2025-11-13 09:01:11,523 - src.utils.validation - INFO -    TP: 10.42%, SL: 3.15%
+2025-11-13 09:01:11,525 - src.utils.validation - INFO -    Risk Strategy: Fixed USD Amount (param: 2077.9473)
+2025-11-13 09:01:11,526 - src.utils.validation - INFO - Loading historical data...
+2025-11-13 09:01:11,531 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-13 09:01:13,197 - src.utils.validation - INFO - Fetching 2 days of BTC/USDT 1m data ending 2025-11-13
+2025-11-13 09:01:13,350 - src.utils.validation - INFO - [CACHE] 1/2 files cached (50.0%), 1 need download
+2025-11-13 09:01:13,351 - src.utils.validation - INFO - [DOWNLOAD] Fetching 1 missing day(s) using 4 parallel threads...
+2025-11-13 09:01:13,351 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-12: kucoinfutures does not have market symbol BTC/USDT
+2025-11-13 09:01:13,352 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-12: Exchange error for 2025-11-12: kucoinfutures does not have market symbol BTC/USDT
+2025-11-13 09:01:13,353 - src.utils.validation - INFO - [OK] Downloaded and saved 0 new file(s)
+2025-11-13 09:01:13,354 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 1 newly downloaded)
+2025-11-13 09:01:13,354 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-13 09:01:13,373 - src.utils.validation - INFO - Loaded total of 1440 candles
+2025-11-13 09:01:13,375 - src.utils.validation - INFO - Validating data integrity
+2025-11-13 09:01:13,381 - src.utils.validation - INFO - Data validation passed
+2025-11-13 09:01:13,460 - src.utils.validation - INFO - ✅ Loaded 1440 historical candles
+2025-11-13 09:01:13,460 - src.utils.validation - INFO - 🚀 PAPER TRADING ENGINE STARTED
+2025-11-13 09:01:13,460 - src.utils.validation - INFO - 
+============================================================
+2025-11-13 09:01:13,461 - src.utils.validation - INFO - 📄 PAPER TRADING STARTED - Live Dashboard Active
+2025-11-13 09:01:13,462 - src.utils.validation - INFO - ============================================================
+
+2025-11-13 09:01:13,817 - src.utils.validation - ERROR - Paper trading error: '>' not supported between instances of 'list' and 'int'

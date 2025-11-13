@@ -252,11 +252,11 @@ class LiveTradingDashboard:
         print()
         
         # Position status
-        open_positions = state.get('open_positions', 0)
+        open_positions = state.get('open_positions', [])
         position_side = state.get('position_side', 'NONE')
         position_size = state.get('position_size', 0)
         
-        if open_positions > 0:
+        if len(open_positions) > 0:
             position_color = Colors.GREEN if position_side == 'LONG' else Colors.RED
             print(f"Position: {position_color}{position_side} {position_size:.4f} contracts{Colors.RESET}")
         else:
