@@ -895,6 +895,7 @@ def run_mode2(gpu_context, gpu_queue):
         from src.live_trading.credentials import CredentialsManager
         from src.live_trading.kucoin_universal_client import KucoinUniversalClient
         from src.live_trading.engine import RealTimeTradingEngine
+        from src.live_trading.live_dashboard import LiveTradingDashboard
         from src.bot_generator.compact_generator import CompactBotConfig
         from src.data_provider.fetcher import DataFetcher
         from src.utils.config import EXCHANGE_TYPE
@@ -1058,8 +1059,11 @@ def run_mode2(gpu_context, gpu_queue):
         # Start engine
         engine.start()
         
+        # Initialize live dashboard
+        dashboard = LiveTradingDashboard(bot_config, mode="PAPER")
+        
         log_info("\n" + "="*60)
-        log_info("📄 PAPER TRADING STARTED - Press Ctrl+C to stop")
+        log_info("📄 PAPER TRADING STARTED - Live Dashboard Active")
         log_info("="*60 + "\n")
         
         # Live trading loop - fetch new candles from DataFetcher
@@ -1087,12 +1091,13 @@ def run_mode2(gpu_context, gpu_queue):
                         open_, high, low, close, volume = candle[1], candle[2], candle[3], candle[4], candle[5]
                         engine.process_candle(open_, high, low, close, volume, timestamp_ms / 1000.0)
                         
-                        # Display state
+                        # Render live dashboard
                         state = engine.get_current_state()
-                        log_info(f"[{datetime.fromtimestamp(timestamp_ms/1000).strftime('%H:%M:%S')}] "
-                                f"Price: ${close:.2f} | Balance: ${state.get('balance', initial_balance):.2f} | "
-                                f"PnL: ${state.get('balance', initial_balance) - initial_balance:+.2f} | "
-                                f"Positions: {state.get('open_positions', 0)}")
+                        dashboard.render(state)
+                else:
+                    # No new candle yet, just update dashboard with current state
+                    state = engine.get_current_state()
+                    dashboard.render(state)
                 
                 time.sleep(timeframe_seconds)
                 
@@ -1163,6 +1168,7 @@ def run_mode3(gpu_context, gpu_queue):
     """
     try:
         from src.live_trading.credentials import CredentialsManager
+        from src.live_trading.live_dashboard import LiveTradingDashboard
         from src.live_trading.kucoin_universal_client import KucoinUniversalClient
         from src.live_trading.engine import RealTimeTradingEngine
         from src.bot_generator.compact_generator import CompactBotConfig
@@ -1343,8 +1349,11 @@ def run_mode3(gpu_context, gpu_queue):
         # Start engine
         engine.start()
         
+        # Initialize live dashboard
+        dashboard = LiveTradingDashboard(bot_config, mode="LIVE")
+        
         log_info("\n" + "="*60)
-        log_info("💰 LIVE TRADING STARTED - Press Ctrl+C to stop")
+        log_info("💰 LIVE TRADING STARTED - Live Dashboard Active")
         log_warning("⚠️  ALL TRADES ARE REAL - MONITOR CAREFULLY!")
         log_info("="*60 + "\n")
         
@@ -1373,12 +1382,13 @@ def run_mode3(gpu_context, gpu_queue):
                         open_, high, low, close, volume = candle[1], candle[2], candle[3], candle[4], candle[5]
                         engine.process_candle(open_, high, low, close, volume, timestamp_ms / 1000.0)
                         
-                        # Display state
+                        # Render live dashboard
                         state = engine.get_current_state()
-                        log_info(f"[{datetime.fromtimestamp(timestamp_ms/1000).strftime('%H:%M:%S')}] "
-                                f"Price: ${close:.2f} | Balance: ${state.get('balance', initial_balance):.2f} | "
-                                f"PnL: ${state.get('balance', initial_balance) - initial_balance:+.2f} | "
-                                f"Positions: {state.get('open_positions', 0)}")
+                        dashboard.render(state)
+                else:
+                    # No new candle yet, just update dashboard with current state
+                    state = engine.get_current_state()
+                    dashboard.render(state)
                 
                 time.sleep(timeframe_seconds)
                 
