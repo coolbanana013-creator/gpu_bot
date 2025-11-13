@@ -1078,12 +1078,12 @@ def generate_signal_consensus(
     bullish_pct = bullish_count / directional_signals
     bearish_pct = bearish_count / directional_signals
     
-    # Random consensus threshold between 30-50% for more flexible signals
-    # This allows majority voting: 2 bulls + 1 bear = 67% bull signal (would pass even at 50%)
-    # Even 3 bulls + 2 bears = 60% bull signal would pass at 50% threshold
+    # Random consensus threshold between 30-40% for very flexible signals
+    # This allows majority voting: 2 bulls + 1 bear = 67% bull signal (passes)
+    # Even 2 bulls + 3 bears = 40% bull signal would pass at 30-40% threshold
     # Generate random threshold per evaluation to explore different sensitivity levels
     import random
-    consensus_threshold = random.uniform(0.3, 0.5)  # 30% to 50%
+    consensus_threshold = random.uniform(0.3, 0.4)  # 30% to 40%
     
     if bullish_pct >= consensus_threshold:
         final_signal = 1.0  # ≥30-50% bullish
