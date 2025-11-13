@@ -800,11 +800,17 @@ float generate_signal_consensus(
     float bullish_pct = (float)bullish_count / (float)directional_signals;
     float bearish_pct = (float)bearish_count / (float)directional_signals;
     
-    // 75% consensus required (allow some disagreement)
-    // This allows: 3 bulls + 1 bear = 75% bull signal
-    // Prevents: 2 bulls + 2 bears = 50% (no signal)
-    if (bullish_pct >= 0.75f) return 1.0f;   // ≥75% bullish
-    if (bearish_pct >= 0.75f) return -1.0f;  // ≥75% bearish
+    // Random consensus threshold between 30-50% for more flexible signals
+    // This allows majority voting: 2 bulls + 1 bear = 67% bull signal (would pass even at 50%)
+    // Even 3 bulls + 2 bears = 60% bull signal would pass at 50% threshold
+    // Generate random threshold per evaluation to explore different sensitivity levels
+    uint seed = (uint)(bar * 997 + valid_indicators * 991);
+    seed = seed * 1664525u + 1013904223u;
+    float random_val = (float)(seed % 1000) / 1000.0f;  // 0.0 to 1.0
+    float consensus_threshold = 0.3f + random_val * 0.2f;  // 30% to 50%
+    
+    if (bullish_pct >= consensus_threshold) return 1.0f;   // ≥30-50% bullish
+    if (bearish_pct >= consensus_threshold) return -1.0f;  // ≥30-50% bearish
     
     return 0.0f;  // Mixed signals (not enough agreement)
 }
