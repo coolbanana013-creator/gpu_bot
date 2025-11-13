@@ -800,11 +800,13 @@ float generate_signal_consensus(
     float bullish_pct = (float)bullish_count / (float)directional_signals;
     float bearish_pct = (float)bearish_count / (float)directional_signals;
     
-    // 100% consensus required (ALL directional signals must agree)
-    if (bullish_pct >= 1.0f) return 1.0f;   // ALL bullish (ignoring neutrals)
-    if (bearish_pct >= 1.0f) return -1.0f;  // ALL bearish (ignoring neutrals)
+    // 75% consensus required (allow some disagreement)
+    // This allows: 3 bulls + 1 bear = 75% bull signal
+    // Prevents: 2 bulls + 2 bears = 50% (no signal)
+    if (bullish_pct >= 0.75f) return 1.0f;   // ≥75% bullish
+    if (bearish_pct >= 0.75f) return -1.0f;  // ≥75% bearish
     
-    return 0.0f;  // Mixed signals (bull + bear conflict)
+    return 0.0f;  // Mixed signals (not enough agreement)
 }
 
 /**
