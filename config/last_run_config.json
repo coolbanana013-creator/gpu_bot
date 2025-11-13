@@ -2,8 +2,8 @@
   "pair": "BTC/USDT",
   "initial_balance": 1000.0,
   "population": 10000,
-  "generations": 2,
-  "cycles": 100,
+  "generations": 10,
+  "cycles": 10,
   "backtest_days": 7,
   "timeframe": "1m",
   "min_leverage": 1,
@@ -13,7 +13,7 @@
   "min_risk_strategies": 1,
   "max_risk_strategies": 1,
   "data_chunk_days": 200,
-  "random_seed": 42,
-  "use_seed": "y",
+  "random_seed": null,
+  "use_seed": "n",
   "interactive_mode": false
 }
