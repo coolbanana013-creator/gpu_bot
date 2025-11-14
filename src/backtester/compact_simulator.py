@@ -1180,7 +1180,10 @@ class CompactBacktester:
         return results
     
     def _calculate_max_drawdown(self, per_cycle_pnl: List[float]) -> float:
-        """Calculate maximum drawdown from per-cycle PnL."""
+        """
+        Calculate maximum drawdown from per-cycle PnL.
+        Returns decimal format (0.0-1.0) to match GPU kernel output.
+        """
         if not per_cycle_pnl:
             return 0.0
         
@@ -1192,11 +1195,13 @@ class CompactBacktester:
             cumulative += pnl
             if cumulative > peak:
                 peak = cumulative
-            dd = ((peak - cumulative) / peak * 100) if peak > 0 else 0.0
+            # Calculate as decimal (0.0-1.0), not percentage
+            dd = ((peak - cumulative) / peak) if peak > 0 else 0.0
             if dd > max_dd:
                 max_dd = dd
         
-        return max_dd
+        # Cap at 1.0 (100% loss maximum)
+        return min(max_dd, 1.0)
     
     def _calculate_sharpe_ratio(self, per_cycle_pnl: List[float]) -> float:
         """Calculate Sharpe ratio from per-cycle PnL."""
@@ -1385,6 +1390,7 @@ class CompactBacktester:
             # Calculate metrics
             win_rate = (total_wins / total_trades * 100.0) if total_trades > 0 else 0.0
             sharpe = self._calculate_sharpe_ratio(per_cycle_pnl)
+            max_dd = self._calculate_max_drawdown(per_cycle_pnl)
             
             losing_trades = total_trades - total_wins
             final_balance = self.initial_balance + total_pnl
@@ -1398,7 +1404,7 @@ class CompactBacktester:
                 per_cycle_wins=per_cycle_wins,
                 per_cycle_pnl=per_cycle_pnl,
                 total_pnl=total_pnl,
-                max_drawdown=0.0,
+                max_drawdown=max_dd,
                 sharpe_ratio=sharpe,
                 win_rate=win_rate,
                 avg_win=0.0,
@@ -2002,18 +2008,18 @@ class CompactBacktester:
         """Serialize bots to raw bytes matching OpenCL struct."""
         raw_data = np.empty(len(bots) * COMPACT_BOT_SIZE, dtype=np.uint8)
         
-        # Define struct layout (128 bytes total) - MUST MATCH OpenCL struct!
+        # Define struct layout (132 bytes total) - MUST MATCH OpenCL struct!
         dt = np.dtype([
             ('bot_id', np.int32),
             ('num_indicators', np.uint8),
             ('indicator_indices', np.uint8, 8),
             ('indicator_params', np.float32, (8, 3)),
-            ('risk_strategy', np.uint8),  # Single risk strategy enum (0-14)
-            ('risk_param', np.float32),   # Risk parameter value
+            ('indicator_risk_strategies', np.uint8, 8),  # Risk strategy per indicator (0-14)
+            ('risk_param', np.float32),                  # Global risk parameter
             ('tp_multiplier', np.float32),
             ('sl_multiplier', np.float32),
             ('leverage', np.uint8),
-            ('padding', np.uint8, 5)  # 5 bytes padding for 128-byte alignment
+            ('padding', np.uint8, 2)  # 2 bytes padding for 132-byte alignment
         ])
         
         structured = np.zeros(len(bots), dtype=dt)
@@ -2023,7 +2029,7 @@ class CompactBacktester:
             structured[i]['num_indicators'] = bot.num_indicators
             structured[i]['indicator_indices'] = bot.indicator_indices
             structured[i]['indicator_params'] = bot.indicator_params
-            structured[i]['risk_strategy'] = bot.risk_strategy
+            structured[i]['indicator_risk_strategies'] = bot.indicator_risk_strategies
             structured[i]['risk_param'] = bot.risk_param
             structured[i]['tp_multiplier'] = bot.tp_multiplier
             structured[i]['sl_multiplier'] = bot.sl_multiplier

@@ -15,25 +15,31 @@ from ..indicators.gpu_indicators import get_all_gpu_indicators, get_gpu_indicato
 from ..utils.validation import log_info, log_error
 
 
-# Compact bot: 128 bytes (packed struct)
-COMPACT_BOT_SIZE = 128
+# Compact bot: 132 bytes (packed struct) - MUST match OpenCL kernel exactly!
+COMPACT_BOT_SIZE = 132
 MAX_INDICATORS_PER_BOT = 8
 MAX_PARAMS_PER_INDICATOR = 3
 
 
 @dataclass
 class CompactBotConfig:
-    """Compact bot configuration (128 bytes)."""
+    """Compact bot configuration (132 bytes)."""
     bot_id: int
     num_indicators: int
-    indicator_indices: np.ndarray  # uint8[8] - indices 0-49
-    indicator_params: np.ndarray   # float32[8][3] - parameters
-    risk_strategy: int             # uint8 - single strategy enum (0=FIXED_USD, 1=PCT_BALANCE, 2=KELLY)
-    risk_param: float              # float32 - strategy parameter
+    indicator_indices: np.ndarray          # uint8[8] - indices 0-49
+    indicator_params: np.ndarray           # float32[8][3] - parameters
+    indicator_risk_strategies: np.ndarray  # uint8[8] - risk strategy per indicator (0-14)
+    risk_param: float                      # float32 - global risk parameter
     tp_multiplier: float
     sl_multiplier: float
     leverage: int
     survival_generations: int = 0  # Track how many generations this bot survived
+    
+    # Keep risk_strategy as deprecated alias for backward compatibility
+    @property
+    def risk_strategy(self) -> int:
+        """Deprecated: Use indicator_risk_strategies[0] instead."""
+        return int(self.indicator_risk_strategies[0]) if len(self.indicator_risk_strategies) > 0 else 0
     
     def __post_init__(self):
         """Ensure survival_generations is valid."""
@@ -55,7 +61,7 @@ class CompactBotConfig:
             num_indicators=self.num_indicators,
             indicator_indices=copy.deepcopy(self.indicator_indices, memo),
             indicator_params=copy.deepcopy(self.indicator_params, memo),
-            risk_strategy=self.risk_strategy,
+            indicator_risk_strategies=copy.deepcopy(self.indicator_risk_strategies, memo),
             risk_param=self.risk_param,
             tp_multiplier=self.tp_multiplier,
             sl_multiplier=self.sl_multiplier,
@@ -82,7 +88,7 @@ class CompactBotConfig:
             "num_indicators": self.num_indicators,
             "indicator_indices": self.indicator_indices[:self.num_indicators].tolist(),
             "indicator_params": self.indicator_params[:self.num_indicators].tolist(),
-            "risk_strategy": self.risk_strategy,
+            "indicator_risk_strategies": self.indicator_risk_strategies[:self.num_indicators].tolist(),
             "risk_param": float(self.risk_param),
             "tp_multiplier": float(self.tp_multiplier),
             "sl_multiplier": float(self.sl_multiplier),
@@ -116,19 +122,27 @@ class CompactBotConfig:
         # Pad indicator arrays to 8 elements
         indicator_indices = config['indicator_indices']
         indicator_params = config.get('indicator_params', [])
+        indicator_risk_strategies = config.get('indicator_risk_strategies', [])
+        
+        # Backward compatibility: if indicator_risk_strategies is empty but risk_strategy exists
+        if not indicator_risk_strategies and 'risk_strategy' in config:
+            # Use the old single risk_strategy for all indicators
+            indicator_risk_strategies = [config['risk_strategy']] * 8
         
         # Ensure arrays are exactly 8 elements (pad with zeros)
         while len(indicator_indices) < 8:
             indicator_indices.append(0)
         while len(indicator_params) < 8:
             indicator_params.append([0.0, 0.0, 0.0])
+        while len(indicator_risk_strategies) < 8:
+            indicator_risk_strategies.append(0)
         
         return cls(
             bot_id=bot_id,
             num_indicators=config['num_indicators'],
             indicator_indices=np.array(indicator_indices[:8], dtype=np.uint8),
             indicator_params=np.array(indicator_params[:8], dtype=np.float32),
-            risk_strategy=config['risk_strategy'],
+            indicator_risk_strategies=np.array(indicator_risk_strategies[:8], dtype=np.uint8),
             risk_param=config['risk_param'],
             tp_multiplier=config['tp_multiplier'],
             sl_multiplier=config['sl_multiplier'],
@@ -409,19 +423,19 @@ class CompactBotGenerator:
         """Parse compact bot structs from raw bytes."""
         bots = []
         
-        # Define struct layout (must match OpenCL exactly - 128 bytes total)
+        # Define struct layout (must match OpenCL exactly - 132 bytes total)
         dt = np.dtype([
             ('bot_id', np.int32),                                      # 4 bytes (offset 0)
             ('num_indicators', np.uint8),                              # 1 byte (offset 4)
             ('indicator_indices', np.uint8, 8),                        # 8 bytes (offset 5)
             ('indicator_params', np.float32, (8, 3)),                  # 96 bytes (offset 13)
-            ('risk_strategy', np.uint8),                               # 1 byte (offset 109, 0-14 for 15 strategies)
-            ('risk_param', np.float32),                                # 4 bytes (offset 110)
-            ('tp_multiplier', np.float32),                             # 4 bytes (offset 114)
-            ('sl_multiplier', np.float32),                             # 4 bytes (offset 118)
-            ('leverage', np.uint8),                                    # 1 byte (offset 122)
-            ('padding', np.uint8, 5)                                   # 5 bytes (offset 123)
-        ])  # Total: 128 bytes
+            ('indicator_risk_strategies', np.uint8, 8),                # 8 bytes (offset 109)
+            ('risk_param', np.float32),                                # 4 bytes (offset 117)
+            ('tp_multiplier', np.float32),                             # 4 bytes (offset 121)
+            ('sl_multiplier', np.float32),                             # 4 bytes (offset 125)
+            ('leverage', np.uint8),                                    # 1 byte (offset 129)
+            ('padding', np.uint8, 2)                                   # 2 bytes (offset 130)
+        ])  # Total: 132 bytes
         
         # Parse all bots
         structured = np.frombuffer(raw_data, dtype=dt)
@@ -432,7 +446,7 @@ class CompactBotGenerator:
                 num_indicators=int(bot_struct['num_indicators']),
                 indicator_indices=bot_struct['indicator_indices'].copy(),
                 indicator_params=bot_struct['indicator_params'].copy(),
-                risk_strategy=int(bot_struct['risk_strategy']),
+                indicator_risk_strategies=bot_struct['indicator_risk_strategies'].copy(),
                 risk_param=float(bot_struct['risk_param']),
                 tp_multiplier=float(bot_struct['tp_multiplier']),
                 sl_multiplier=float(bot_struct['sl_multiplier']),

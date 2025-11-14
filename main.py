@@ -291,9 +291,9 @@ def get_mode1_parameters() -> dict:
     
     # Initial balance
     params['initial_balance'] = get_user_input(
-        "Initial balance (USDT)",
-        last_defaults.get('initial_balance', DEFAULT_INITIAL_BALANCE),
-        lambda x: validate_float(x, "initial_balance", strict_positive=True),
+        "Initial balance (USDT, min 100)",
+        last_defaults.get('initial_balance', max(DEFAULT_INITIAL_BALANCE, 100)),
+        lambda x: validate_float(x, "initial_balance", min_val=100.0),
         input_type=float
     )
     
@@ -338,9 +338,9 @@ def get_mode1_parameters() -> dict:
     
     # Leverage range (NEW: min and max)
     params['min_leverage'] = get_user_input(
-        "Min leverage (1-25x)",
+        "Min leverage (1-125x)",
         last_defaults.get('min_leverage', 1),
-        lambda x: validate_int(x, "min_leverage", min_val=1, max_val=25),
+        lambda x: validate_int(x, "min_leverage", min_val=1, max_val=125),
         input_type=int
     )
     

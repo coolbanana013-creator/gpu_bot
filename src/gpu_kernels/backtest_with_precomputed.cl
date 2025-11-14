@@ -119,7 +119,7 @@ typedef struct {
 // CONSTANTS
 // ============================================================================
 
-#define MAX_POSITIONS 1  // Most trading bots only hold 1 position at a time
+#define MAX_POSITIONS 10  // Allow up to 10 concurrent positions
 #define MAKER_FEE 0.0002f      // 0.02% Kucoin maker
 #define TAKER_FEE 0.0006f      // 0.06% Kucoin taker
 #define BASE_SLIPPAGE 0.0001f  // 0.01% base slippage (low volatility, small orders)
@@ -236,15 +236,26 @@ float calculate_free_margin(
     
     for (int i = 0; i < max_positions; i++) {
         if (positions[i].is_active) {
-            // Margin used = entry_price * quantity
-            used_margin += positions[i].entry_price * positions[i].quantity;
+            // FIXED: quantity represents full notional, so margin = notional / leverage
+            float notional = positions[i].entry_price * positions[i].quantity;
+            used_margin += notional / leverage;
             
             // Add unrealized PnL
-            unrealized_pnl += calculate_unrealized_pnl(&positions[i], current_price, leverage);
+            float pnl = calculate_unrealized_pnl(&positions[i], current_price, leverage);
+            
+            // Only validate for NaN/Inf (critical errors)
+            if (isnan(pnl) || isinf(pnl)) {
+                pnl = 0.0f;
+            }
+            
+            unrealized_pnl += pnl;
         }
     }
     
-    return balance + unrealized_pnl - used_margin;
+    // Free margin = balance + unrealized PnL - used margin
+    // Can't have negative free margin (would trigger liquidation)
+    float free = balance + unrealized_pnl - used_margin;
+    return fmax(free, 0.0f);
 }
 
 /**
@@ -944,14 +955,14 @@ float generate_signal_consensus(
     float bullish_pct = weighted_bullish / total_weight;
     float bearish_pct = weighted_bearish / total_weight;
     
-    // Threshold: 40% weighted consensus required
-    // With weighted voting, aggressive strategies have more influence
-    float consensus_threshold = 0.4f;
+    // Threshold: 100% unanimous consensus required
+    // ALL indicators must agree for signal generation (strict quality filter)
+    float consensus_threshold = 1.0f;
     
     if (bullish_pct >= consensus_threshold) return 1.0f;
     if (bearish_pct >= consensus_threshold) return -1.0f;
     
-    return 0.0f;  // Mixed signals (not enough weighted agreement)
+    return 0.0f;  // Mixed signals (not unanimous)
 }
 
 /**
@@ -1007,28 +1018,31 @@ void open_position(
     );
     
     // Fees and slippage are based on FULL position value (leverage amplifies costs)
+    // desired_position_value is already the notional (margin * leverage equivalent)
     float entry_fee = desired_position_value * TAKER_FEE;
     float slippage_cost = desired_position_value * slippage_rate;
     
     // Total cost = margin we reserve + fees we pay upfront
+    // Note: Fees are paid on notional, deducted from balance in USD
     float total_cost = margin_required + entry_fee + slippage_cost;
     
-    // IMPROVED: Check free margin (balance + unrealized PnL - used margin)
-    float free_margin = calculate_free_margin(*balance, positions, MAX_POSITIONS, price, leverage);
-    if (free_margin < total_cost) return;
+    // FIXED: Check if we have enough balance BEFORE deducting
+    if (*balance < total_cost) return;
     
-    // Deduct cost from balance
+    // Calculate what balance would be after this trade
+    float balance_after_trade = *balance - total_cost;
+    
+    // IMPROVED: Check free margin with projected balance (including unrealized PnL from other positions)
+    float free_margin = calculate_free_margin(balance_after_trade, positions, MAX_POSITIONS, price, leverage);
+    if (free_margin < 0.0f) return;  // Not enough free margin after this trade
+    
+    // Safe to deduct cost from balance
     *balance -= total_cost;
     
-    // Ensure balance didn't go negative (shouldn't happen with check above, but safety)
-    if (*balance < 0.0f) {
-        *balance += total_cost; // Rollback
-        return;
-    }
-    
-    // Calculate quantity based on MARGIN (not full position value)
-    // This ensures PnL is automatically leveraged
-    float quantity = margin_required / price;
+    // Calculate quantity based on FULL NOTIONAL VALUE to get leveraged exposure
+    // quantity = desired_position_value / price
+    // This represents the actual BTC amount traded (leveraged)
+    float quantity = desired_position_value / price;
     
     // Set position
     positions[slot].is_active = 1;
@@ -1056,24 +1070,28 @@ void open_position(
         positions[slot].tp_price = price * (1.0f + tp_multiplier);
         positions[slot].sl_price = price * (1.0f - sl_multiplier);
         
-        // IMPROVED LIQUIDATION PRICE FORMULA WITH MAINTENANCE MARGIN
-        // Maintenance margin: 0.5% for BTC (typical for crypto exchanges)
-        // Liquidation occurs when: (margin - loss) < maintenance_margin * position_value
-        // Simplified: liquidation when price moves (1 - maintenance_margin_rate) / leverage
-        // This is more accurate than simple 0.95/leverage, especially at high leverage
-        float maintenance_margin_rate = 0.005f;  // 0.5% maintenance margin for BTC
-        float liquidation_threshold = (1.0f - maintenance_margin_rate) / leverage;
-        positions[slot].liquidation_price = price * (1.0f - liquidation_threshold);
+        // CORRECTED LIQUIDATION PRICE FORMULA
+        // At leverage L, initial margin = 100%/L (e.g., 125x = 0.8%)
+        // Maintenance margin = 0.5% of position value
+        // Liquidation when: margin_left = initial_margin - losses < maintenance_margin
+        // Price move % = (initial_margin - maintenance) / leverage
+        // At 125x: (0.8% - 0.5%) = 0.3% → liquidation at 0.3%/125 = 0.0024% price move
+        // Correct formula: price can drop by (1/leverage - maintenance_margin_rate) before liquidation
+        float initial_margin_pct = 1.0f / leverage;  // e.g., 125x = 0.008 (0.8%)
+        float maintenance_margin_rate = 0.005f;  // 0.5% of notional value
+        float price_drop_to_liquidation = initial_margin_pct - maintenance_margin_rate;
+        positions[slot].liquidation_price = price * (1.0f - price_drop_to_liquidation);
     } else {
         // Short
         positions[slot].tp_price = price * (1.0f - tp_multiplier);
         positions[slot].sl_price = price * (1.0f + sl_multiplier);
         
-        // IMPROVED LIQUIDATION PRICE FORMULA FOR SHORT WITH MAINTENANCE MARGIN
+        // CORRECTED LIQUIDATION PRICE FORMULA FOR SHORT
         // Same calculation as long, but price moves upward
-        float maintenance_margin_rate = 0.005f;  // 0.5% maintenance margin for BTC
-        float liquidation_threshold = (1.0f - maintenance_margin_rate) / leverage;
-        positions[slot].liquidation_price = price * (1.0f + liquidation_threshold);
+        float initial_margin_pct = 1.0f / leverage;  // e.g., 125x = 0.008 (0.8%)
+        float maintenance_margin_rate = 0.005f;  // 0.5% of notional value
+        float price_rise_to_liquidation = initial_margin_pct - maintenance_margin_rate;
+        positions[slot].liquidation_price = price * (1.0f + price_rise_to_liquidation);
     }
     
     (*num_positions)++;
@@ -1111,17 +1129,13 @@ float close_position(
     }
     
     // TRUE MARGIN TRADING PnL CALCULATION
-    // quantity = margin / entry_price (from open_position)
-    // margin = entry_price * quantity
-    // Raw PnL before leverage = price_diff * quantity
-    // But this is already on the margin amount, so we need to apply leverage
-    // Leveraged PnL = price_diff * quantity * leverage
-    float margin_reserved = pos->entry_price * pos->quantity;
-    float raw_pnl = price_diff * pos->quantity;
-    float leveraged_pnl = raw_pnl * leverage;
-    
-    // Calculate position value for fees (full notional value)
-    float notional_position_value = pos->entry_price * pos->quantity * leverage;
+    // quantity = notional_value / entry_price (full leveraged position size)
+    // notional_value = entry_price * quantity
+    // margin_reserved = notional_value / leverage
+    // PnL = price_diff * quantity (this is the leveraged gain/loss in USD)
+    float notional_value = pos->entry_price * pos->quantity;
+    float margin_reserved = notional_value / leverage;
+    float position_pnl = price_diff * pos->quantity;
     
     // CORRECTED: TP and SL are both limit orders → maker fee
     // Only signal reversals (reason=3) are market orders → taker fee
@@ -1130,24 +1144,24 @@ float close_position(
     if (reason == 2) {
         exit_fee = 0.0f;  // Liquidation = exchange takes everything
     } else if (reason == 0 || reason == 1) {
-        exit_fee = notional_position_value * MAKER_FEE;  // TP/SL = limit orders
+        exit_fee = notional_value * MAKER_FEE;  // TP/SL = limit orders on notional
     } else {
-        exit_fee = notional_position_value * TAKER_FEE;  // Signal reversal = market order
+        exit_fee = notional_value * TAKER_FEE;  // Signal reversal = market order on notional
     }
     
     // DYNAMIC SLIPPAGE on exit (optimized - no historical lookups)
     float slippage_rate = calculate_dynamic_slippage(
-        notional_position_value,
+        notional_value,
         current_volume,
         leverage,
         exit_price,
         current_high,
         current_low
     );
-    float slippage_cost = notional_position_value * slippage_rate;
+    float slippage_cost = notional_value * slippage_rate;
     
     // Net PnL after fees
-    float net_pnl = leveraged_pnl - exit_fee - slippage_cost;
+    float net_pnl = position_pnl - exit_fee - slippage_cost;
     
     // Total return = margin we get back + net PnL
     float total_return = margin_reserved + net_pnl;
@@ -1234,6 +1248,7 @@ void manage_positions(
             }
         }
         
+        // Cap balance at zero (maximum 100% loss)
         if (*balance < 0.0f) *balance = 0.0f;
         return;  // Exit early - all positions closed
     }
@@ -1250,8 +1265,9 @@ void manage_positions(
         
         if (curr_funding_periods > prev_funding_periods) {
             // Funding rate payment due
-            float position_value = positions[i].entry_price * positions[i].quantity * leverage;
-            float funding_cost = position_value * BASE_FUNDING_RATE;
+            // FIXED: quantity already represents full notional, don't multiply by leverage again
+            float notional_value = positions[i].entry_price * positions[i].quantity;
+            float funding_cost = notional_value * BASE_FUNDING_RATE;
             
             // In bull markets (positive funding), longs pay, shorts receive
             // In bear markets (negative funding), shorts pay, longs receive
@@ -1319,7 +1335,9 @@ void manage_positions(
             *balance += return_amount;
             
             // Calculate actual PnL
-            float margin_was = pos->entry_price * pos->quantity;
+            // quantity now represents full notional position, so margin = notional / leverage
+            float notional_was = pos->entry_price * pos->quantity;
+            float margin_was = notional_was / leverage;
             float actual_pnl = return_amount - margin_was;
             
             // Update PnL trackers
@@ -1336,10 +1354,10 @@ void manage_positions(
                 *sum_losses += fabs(actual_pnl);  // Accumulate losing PnL (absolute value)
             }
             
-            // Ensure balance never goes negative
+            // Ensure balance never goes negative (cap at -100% loss)
             if (*balance < 0.0f) *balance = 0.0f;
             
-            // Update max drawdown
+            // Update max drawdown (capped at 100%)
             float current_drawdown = (initial_balance - *balance) / initial_balance;
             if (current_drawdown > *max_drawdown) {
                 *max_drawdown = current_drawdown;
@@ -1784,31 +1802,26 @@ __kernel void backtest_with_signals(
                 max_drawdown = current_dd;
             }
             
-            // CIRCUIT BREAKER: Stop trading if drawdown exceeds 30%
-            // This prevents unrealistic "death spirals" where bots lose 99% and keep trading
-            if (current_dd > 0.30f) {
-                // Close all positions and exit cycle early
-                for (int i = 0; i < MAX_POSITIONS; i++) {
-                    if (positions[i].is_active) {
-                        float return_amount = close_position(
-                            &positions[i],
-                            ohlcv[bar].close,
-                            (float)bot.leverage,
-                            &num_positions,
-                            3,  // Emergency close
-                            ohlcv[bar].volume,
-                            ohlcv[bar].high,
-                            ohlcv[bar].low
-                        );
-                        balance += return_amount;
-                    }
-                }
-                break;  // Exit bar loop - stop trading this cycle
-            }
-            
             // Open new positions if signal and balance allows
             if (signal != 0.0f && balance > initial_balance * MIN_BALANCE_PCT) {
                 if (num_positions < MAX_POSITIONS) {
+                    // Check free margin before attempting to open position
+                    float free_margin = calculate_free_margin(
+                        balance, 
+                        positions, 
+                        MAX_POSITIONS, 
+                        ohlcv[bar].close, 
+                        (float)bot.leverage
+                    );
+                    
+                    // Only open if we have free margin available
+                    if (free_margin <= 0.0f) {
+                        // No free margin - skip this signal
+                        prev_trades = total_trades;
+                        prev_total_pnl = total_pnl;
+                        continue;
+                    }
+                    
                     // UPDATED: calculate_position_size uses first indicator's strategy
                     float desired_position_value = calculate_position_size(
                         balance,
@@ -1860,8 +1873,9 @@ __kernel void backtest_with_signals(
                 balance += return_amount;
                 
                 // Calculate actual PnL
-                // FIXED: With new margin system, margin = entry_price * quantity (no division by leverage)
-                float margin_was = positions[i].entry_price * positions[i].quantity;
+                // quantity represents full notional position, so margin = notional / leverage
+                float notional_was = positions[i].entry_price * positions[i].quantity;
+                float margin_was = notional_was / (float)bot.leverage;
                 float actual_pnl = return_amount - margin_was;
                 
                 total_pnl += actual_pnl;
@@ -1887,14 +1901,17 @@ __kernel void backtest_with_signals(
             }
         }
         
-        // Ensure balance is capped at zero (never negative)
+        // Ensure balance is capped at zero (never negative = max 100% loss)
         if (balance < 0.0f) balance = 0.0f;
         
         // Compute per-cycle aggregates and store
         if (cycle < MAX_CYCLES) {
-            cycle_trades_arr[cycle] = total_trades - cycle_start_trades;
-            cycle_wins_arr[cycle] = winning_trades - cycle_start_wins;
-            cycle_pnl_arr[cycle] = cycle_pnl;  // Use isolated cycle PnL
+            int cycle_trades_count = total_trades - cycle_start_trades;
+            int cycle_wins_count = winning_trades - cycle_start_wins;
+            
+            cycle_trades_arr[cycle] = cycle_trades_count;
+            cycle_wins_arr[cycle] = cycle_wins_count;
+            cycle_pnl_arr[cycle] = cycle_pnl;
         }
     }
     
@@ -1905,27 +1922,30 @@ __kernel void backtest_with_signals(
     result.winning_trades = winning_trades;
     result.losing_trades = losing_trades;
     
-    // Calculate average PnL across cycles (not sum!)
-    float avg_pnl = (num_cycles > 0) ? (total_pnl / (float)num_cycles) : 0.0f;
-    result.total_pnl = avg_pnl;
+    // Store the TOTAL PnL (cumulative across all cycles)
+    // Only handle critical errors (NaN/Inf)
+    if (isnan(total_pnl) || isinf(total_pnl)) {
+        total_pnl = 0.0f;  // Reset on data corruption
+    }
+    result.total_pnl = total_pnl;
     
-    // Calculate final balance based on average cycle performance
-    float final_bal = initial_balance + avg_pnl;
+    // Calculate final balance based on total PnL
+    float final_bal = initial_balance + total_pnl;
     if (isnan(final_bal) || isinf(final_bal) || final_bal < 0.0f) {
         final_bal = 0.0f;
     }
     result.final_balance = final_bal;
     
-    // Cap max drawdown at 100% (can't lose more than 100%)
-    if (max_drawdown > 1.0f) max_drawdown = 1.0f;
+    // Store actual max drawdown
+    if (max_drawdown < 0.0f) max_drawdown = 0.0f;
     result.max_drawdown = max_drawdown;
     
     result.max_consecutive_wins = (float)max_consecutive_wins;
     result.max_consecutive_losses = (float)max_consecutive_losses;
     
-    // Win rate (average across all cycles)
+    // Win rate as percentage (0-100)
     result.win_rate = (total_trades > 0) ? 
-        ((float)winning_trades / (float)total_trades) : 0.0f;
+        ((float)winning_trades / (float)total_trades * 100.0f) : 0.0f;
     
     // FIXED: Average win/loss (now properly accumulated)
     result.avg_win = (winning_trades > 0) ? (sum_wins / (float)winning_trades) : 0.0f;
@@ -1975,7 +1995,7 @@ __kernel void backtest_with_signals(
     // Reward: profitability, consistency (win rate), risk-adjusted returns
     
     float fitness = 0.0f;
-    float avg_roi = (initial_balance > 0.0f) ? (avg_pnl / initial_balance) : 0.0f;
+    float total_roi = (initial_balance > 0.0f) ? (total_pnl / initial_balance) : 0.0f;
     
     // Trade count penalty: heavily penalize < 10 trades (not statistically significant)
     float trade_penalty = 0.0f;
@@ -1998,10 +2018,11 @@ __kernel void backtest_with_signals(
     }
     
     // Consistency: win rate bonus (but capped - high win rate doesn't mean good strategy)
-    float win_rate_bonus = result.win_rate * 25.0f;  // Max 25 points at 100% win rate
+    // win_rate is now percentage (0-100), so divide by 100 to get ratio
+    float win_rate_bonus = (result.win_rate / 100.0f) * 25.0f;  // Max 25 points at 100% win rate
     
     // ROI contribution (primary objective)
-    float roi_contribution = avg_roi * 80.0f;  // ROI weight: very high
+    float roi_contribution = total_roi * 80.0f;  // ROI weight: very high
     
     // Profit factor bonus (>1 = profitable, <1 = losing)
     float pf_bonus = 0.0f;

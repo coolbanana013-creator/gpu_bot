@@ -263,11 +263,13 @@ class DataFetcher:
         timeframe = validate_timeframe(timeframe)
         total_days = validate_int(total_days, "total_days", min_val=1, max_val=1000)
         
-        # Default to today (KuCoin has current data available)
+        # Default to YESTERDAY (exclude today's incomplete data)
+        # This ensures we always use complete historical data for backtesting
         if end_date is None:
-            end_date = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+            yesterday = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
+            end_date = yesterday
         
-        log_info(f"Fetching {total_days} days of {pair} {timeframe} data ending {end_date.strftime('%Y-%m-%d')}")
+        log_info(f"Fetching {total_days} days of {pair} {timeframe} data ending {end_date.strftime('%Y-%m-%d')} (excludes today)")
         
         file_paths = []
         dates_to_fetch = []

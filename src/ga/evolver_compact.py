@@ -145,6 +145,9 @@ class GeneticAlgorithmEvolver:
         self.elite_pct = elite_pct
         self.pair = pair
         self.timeframe = timeframe
+        
+        # Store initial balance from backtester for survival calculations
+        self.initial_balance = backtester.initial_balance
 
         # GPU acceleration
         self.gpu_processor = None
@@ -370,9 +373,9 @@ class GeneticAlgorithmEvolver:
         survival_rate: float = 0.5
     ) -> Tuple[List[CompactBotConfig], List[BacktestResult]]:
         """
-        Select bots with UNIQUE indicator combinations where ALL cycles meet BOTH criteria:
-        1) At least 1 trade per cycle
-        2) Positive profit percentage per cycle (> 0%)
+        Select bots with UNIQUE indicator combinations where:
+        1) Average profit percentage is positive (> 0%)
+        2) Max drawdown is less than 30% (< 0.30)
         
         Enforces 100% diversity among survivors by keeping only the BEST bot per unique indicator combination.
         
@@ -384,46 +387,47 @@ class GeneticAlgorithmEvolver:
         Returns:
             Tuple of (surviving_bots, surviving_results) with 100% unique indicator combinations
         """
-        # Step 1: Filter bots where ALL cycles meet BOTH criteria:
-        # a) At least 1 trade per cycle
-        # b) Positive profit percentage per cycle (> 0%)
+        # Step 1: Filter bots where BOTH criteria are met:
+        # a) Positive average profit percentage (> 0%)
+        # b) Max drawdown < 30% (< 0.30)
         profitable_pairs = []
-        eliminated_no_trades = 0
-        eliminated_negative_cycle = 0
+        eliminated_negative_profit = 0
+        eliminated_high_drawdown = 0
+        eliminated_no_cycles = 0
         
-        initial_balance = 1000.0  # Standard initial balance
+        MAX_DRAWDOWN_THRESHOLD = 0.30  # 30% maximum drawdown allowed
         
         for bot, result in zip(population, results):
-            # Check all cycles
-            passes_all_cycles = True
-            
-            for cycle_idx, (cycle_trades, cycle_pnl) in enumerate(zip(result.per_cycle_trades, result.per_cycle_pnl)):
-                # Check 1: Cycle must have at least 1 trade
-                if cycle_trades < 1:
-                    eliminated_no_trades += 1
-                    passes_all_cycles = False
-                    break
+            # Calculate average profit percentage across all cycles
+            num_cycles = len(result.per_cycle_pnl)
+            if num_cycles == 0:
+                eliminated_no_cycles += 1
+                continue
                 
-                # Check 2: Cycle must have positive profit percentage
-                cycle_profit_pct = (cycle_pnl / initial_balance) * 100
-                if cycle_profit_pct <= 0:
-                    eliminated_negative_cycle += 1
-                    passes_all_cycles = False
-                    break
+            avg_profit_pct = (result.total_pnl / self.initial_balance) * 100
             
-            # Only keep bots where ALL cycles passed BOTH criteria
-            if passes_all_cycles:
-                profitable_pairs.append((bot, result))
+            # Check 1: Positive average profit percentage
+            if avg_profit_pct <= 0:
+                eliminated_negative_profit += 1
+                continue
+            
+            # Check 2: Max drawdown < 30%
+            if result.max_drawdown >= MAX_DRAWDOWN_THRESHOLD:
+                eliminated_high_drawdown += 1
+                continue
+            
+            # Bot passed both criteria
+            profitable_pairs.append((bot, result))
         
-        # STRICT CRITERIA ONLY - No relaxation
+        # Check if any bots passed
         if not profitable_pairs:
-            log_error(f"SURVIVAL FILTER: {eliminated_no_trades} cycles with no trades, {eliminated_negative_cycle} cycles with negative profit, 0 bots passed")
-            log_error("No bots met strict criteria: ALL cycles must have trades AND positive profit")
+            log_error(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} high drawdown (>30%), {eliminated_no_cycles} no cycles, 0 bots passed")
+            log_error("No bots met criteria: average profit % must be positive AND max drawdown < 30%")
             log_error("Generating completely new population for next generation")
             # Return empty survivors - refill_population will generate all new bots
             return [], []
         
-        log_info(f"SURVIVAL FILTER: {eliminated_no_trades} cycles with no trades, {eliminated_negative_cycle} cycles with negative profit, {len(profitable_pairs)} bots passed (ALL cycles profitable)")
+        log_info(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} high drawdown (>30%), {len(profitable_pairs)} bots passed")
         
         # Step 2: Sort by fitness score (best first)
         profitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
@@ -468,10 +472,10 @@ class GeneticAlgorithmEvolver:
         self._update_all_time_best(surviving_pairs)
         
         # Log diversity and filtering stats
-        total_all_cycles_profitable = len(profitable_pairs)
+        total_passed_filters = len(profitable_pairs)
         unique_count = len(surviving_pairs)
         eliminated_total = len(population) - len(profitable_pairs)
-        log_info(f"SURVIVAL: {unique_count} survivors (from {total_all_cycles_profitable} bots where ALL cycles have trades AND positive profit)")
+        log_info(f"SURVIVAL: {unique_count} survivors (from {total_passed_filters} bots with positive profit % AND max DD < 30%)")
         log_info(f"ELIMINATED: {eliminated_total} bots total")
         
         return survivor_bots, survivor_results
@@ -771,11 +775,12 @@ class GeneticAlgorithmEvolver:
         avg_winrate = np.mean([r.win_rate for r in results])  # Already stored as percentage (0-100)
         avg_trades = np.mean([r.total_trades for r in results])
         avg_sharpe = np.mean([r.sharpe_ratio for r in results])
+        avg_drawdown = np.mean([r.max_drawdown for r in results]) * 100  # Convert to percentage
         max_pnl = max([r.total_pnl for r in results])
         
         # Print compact summary showing survivors
         print(f"Gen {gen}: {survivor_count} survivors | "
-              f"Avg: {avg_pnl_pct:+.1f}% profit, {avg_winrate:.1f}% WR, "
+              f"Avg: {avg_pnl_pct:+.1f}% profit, {avg_winrate:.1f}% WR, {avg_drawdown:.1f}% DD, "
               f"{avg_trades:.0f} trades, {avg_sharpe:.2f} Sharpe | "
               f"Best: ${max_pnl:.2f}")
     
@@ -850,17 +855,17 @@ class GeneticAlgorithmEvolver:
                 row = [
                     gen,
                     bot.bot_id,
-                    f"{profit_pct:.2f}".replace('.', ','),
-                    f"{result.win_rate:.4f}".replace('.', ','),
+                    round(profit_pct, 2),
+                    round(result.win_rate, 4),
                     result.total_trades,
-                    f"{result.final_balance:.2f}".replace('.', ','),
-                    f"{result.fitness_score:.2f}".replace('.', ','),
-                    f"{result.sharpe_ratio:.2f}".replace('.', ','),
-                    f"{result.max_drawdown:.4f}".replace('.', ','),
+                    round(result.final_balance, 2),
+                    round(result.fitness_score, 2),
+                    round(result.sharpe_ratio, 2),
+                    round(result.max_drawdown, 4),
                     bot.survival_generations,
                     bot.num_indicators,
                     bot.leverage,
-                    f"{result.total_pnl:.2f}".replace('.', ','),
+                    round(result.total_pnl, 2),
                     num_cycles,
                     indicators_str,
                     'TRUE' if all_cycles_have_trades else 'FALSE',
@@ -884,8 +889,8 @@ class GeneticAlgorithmEvolver:
 
                     row.extend([
                         c_trades,
-                        f"{c_profit_pct:.2f}".replace('.', ','),
-                        f"{c_winrate:.4f}".replace('.', ',')
+                        round(c_profit_pct, 2),
+                        round(c_winrate, 4)
                     ])
 
                 writer.writerow(row)
@@ -988,7 +993,7 @@ class GeneticAlgorithmEvolver:
                     'num_indicators': int(bot.num_indicators),
                     'indicator_indices': bot.indicator_indices[:bot.num_indicators].tolist(),
                     'indicator_params': bot.indicator_params[:bot.num_indicators].tolist(),  # CRITICAL: Save params!
-                    'risk_strategy': int(bot.risk_strategy),
+                    'indicator_risk_strategies': bot.indicator_risk_strategies[:bot.num_indicators].tolist(),
                     'risk_param': float(bot.risk_param),
                     'tp_multiplier': float(bot.tp_multiplier),
                     'sl_multiplier': float(bot.sl_multiplier),
