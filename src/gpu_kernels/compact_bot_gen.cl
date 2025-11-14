@@ -50,13 +50,13 @@ typedef struct __attribute__((packed)) {
     unsigned char num_indicators;                        // 1 byte (offset 4, max 8)
     unsigned char indicator_indices[MAX_INDICATORS_PER_BOT];  // 8 bytes (offset 5, indices 0-49)
     float indicator_params[MAX_INDICATORS_PER_BOT][MAX_PARAMS_PER_INDICATOR]; // 96 bytes (offset 13)
-    unsigned char risk_strategy;                         // 1 byte (offset 109, enum 0-14 for 15 strategies)
-    float risk_param;                                    // 4 bytes (offset 110, strategy parameter)
-    float tp_multiplier;                                 // 4 bytes (offset 114)
-    float sl_multiplier;                                 // 4 bytes (offset 118)
-    unsigned char leverage;                              // 1 byte (offset 122)
-    unsigned char padding[5];                            // 5 bytes (offset 123, align to 128)
-} CompactBotConfig;  // Total: 128 bytes
+    unsigned char indicator_risk_strategies[MAX_INDICATORS_PER_BOT]; // 8 bytes (offset 109, enum 0-14 per indicator)
+    float risk_param;                                    // 4 bytes (offset 117, global risk parameter)
+    float tp_multiplier;                                 // 4 bytes (offset 121, placeholder)
+    float sl_multiplier;                                 // 4 bytes (offset 125, placeholder)
+    unsigned char leverage;                              // 1 byte (offset 129)
+    unsigned char padding[2];                            // 2 bytes (offset 130, align to 132)
+} CompactBotConfig;  // Total: 132 bytes
 
 // Parameter ranges for each indicator type
 typedef struct {
@@ -218,12 +218,22 @@ __kernel void generate_compact_bots(
         }
     }
     
-    // Generate SINGLE risk strategy from 15 available strategies
-    int strategy_choice = rand_int(&rng_state, 0, 15);  // 0 to 14
-    bot.risk_strategy = (unsigned char)strategy_choice;
+    // === RISK STRATEGIES (1 per indicator) ===
+    // Each indicator gets its own risk management strategy
+    for (int i = 0; i < bot.num_indicators; i++) {
+        int strategy_choice = rand_int(&rng_state, 0, NUM_RISK_STRATEGIES);
+        bot.indicator_risk_strategies[i] = (unsigned char)strategy_choice;
+    }
     
-    // Generate appropriate parameter for selected strategy
-    switch(bot.risk_strategy) {
+    // Fill unused slots with strategy 0 (FIXED_PCT)
+    for (int i = bot.num_indicators; i < MAX_INDICATORS_PER_BOT; i++) {
+        bot.indicator_risk_strategies[i] = 0;
+    }
+    
+    // Generate global risk_param (can be used as fallback or scaling factor)
+    // Use first indicator's strategy as reference for global param
+    unsigned char primary_strategy = bot.indicator_risk_strategies[0];
+    switch(primary_strategy) {
         case RISK_FIXED_PCT:
             // Fixed percentage: 1% to 20%
             bot.risk_param = rand_float(&rng_state, 0.01f, 0.20f);

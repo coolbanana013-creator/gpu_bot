@@ -69,13 +69,13 @@ typedef struct __attribute__((packed)) {
     unsigned char num_indicators; // 1 byte (offset 4)
     unsigned char indicator_indices[8]; // 8 bytes (offset 5)
     float indicator_params[8][3]; // 96 bytes (offset 13)
-    unsigned char risk_strategy;  // 1 byte (offset 109) - enum 0-14 for 15 strategies
-    float risk_param;             // 4 bytes (offset 110) - parameter for selected strategy
-    float tp_multiplier;          // 4 bytes (offset 114)
-    float sl_multiplier;          // 4 bytes (offset 118)
-    unsigned char leverage;       // 1 byte (offset 122)
-    unsigned char padding[5];     // 5 bytes (offset 123) - for 128 byte alignment
-} CompactBotConfig;  // Total: 128 bytes
+    unsigned char indicator_risk_strategies[8]; // 8 bytes (offset 109) - enum 0-14 per indicator
+    float risk_param;             // 4 bytes (offset 117) - global risk parameter
+    float tp_multiplier;          // 4 bytes (offset 121) - placeholder
+    float sl_multiplier;          // 4 bytes (offset 125) - placeholder
+    unsigned char leverage;       // 1 byte (offset 129)
+    unsigned char padding[2];     // 2 bytes (offset 130) - for 132 byte alignment
+} CompactBotConfig;  // Total: 132 bytes
 
 // Ensure MAX_CYCLES is defined before BacktestResult uses it
 #ifndef MAX_CYCLES
@@ -536,7 +536,8 @@ int check_account_liquidation(
 }
 
 /**
- * Generate signal from indicators using 30-40% consensus (flexible voting)
+ * Generate signal from indicators using per-indicator risk strategies
+ * Each indicator follows its own strategy for TP/SL and position sizing
  */
 float generate_signal_consensus(
     __global float *precomputed_indicators,
@@ -547,8 +548,9 @@ float generate_signal_consensus(
 ) {
     if (bot->num_indicators == 0) return 0.0f;
     
-    int bullish_count = 0;
-    int bearish_count = 0;
+    float weighted_bullish = 0.0f;
+    float weighted_bearish = 0.0f;
+    float total_weight = 0.0f;
     int valid_indicators = 0;  // Track how many valid (non-NaN) indicators we checked
     
     for (int i = 0; i < bot->num_indicators; i++) {
@@ -908,41 +910,48 @@ float generate_signal_consensus(
             else if (ind_value < -10.0f) signal = -1;  // Strong volume decrease = bearish
         }
         
-        if (signal == 1) bullish_count++;
-        else if (signal == -1) bearish_count++;
+        // Weight each indicator's signal based on its risk strategy
+        // More aggressive strategies (Kelly, Martingale) get higher weight
+        // Conservative strategies (Fixed %, Williams) get lower weight
+        unsigned char strategy = bot->indicator_risk_strategies[i];
+        float weight = 1.0f;  // Default weight
+        
+        // Assign weights based on risk strategy aggressiveness
+        if (strategy == RISK_KELLY_FULL || strategy == RISK_MARTINGALE) {
+            weight = 2.0f;  // Aggressive strategies: 2x weight
+        } else if (strategy == RISK_KELLY_HALF || strategy == RISK_ANTI_MARTINGALE || strategy == RISK_OPTIMAL_F) {
+            weight = 1.5f;  // Moderate-aggressive: 1.5x weight
+        } else if (strategy == RISK_KELLY_QUARTER || strategy == RISK_ATR_MULTIPLIER || strategy == RISK_VOLATILITY_PCT || strategy == RISK_PERCENT_VOLATILITY) {
+            weight = 1.2f;  // Adaptive strategies: 1.2x weight
+        } else if (strategy == RISK_FIXED_PCT || strategy == RISK_FIXED_USD || strategy == RISK_WILLIAMS_FIXED) {
+            weight = 0.8f;  // Conservative strategies: 0.8x weight
+        }
+        // Others (FIXED_RISK_REWARD, EQUITY_CURVE, FIXED_RATIO) remain at 1.0x
+        
+        if (signal == 1) {
+            weighted_bullish += weight;
+        } else if (signal == -1) {
+            weighted_bearish += weight;
+        }
+        
+        total_weight += weight;
     }
     
     // Need at least one valid indicator
-    if (valid_indicators == 0) return 0.0f;
+    if (valid_indicators == 0 || total_weight == 0.0f) return 0.0f;
     
-    // Calculate neutral count
-    int neutral_count = valid_indicators - bullish_count - bearish_count;
+    // Calculate weighted consensus percentages
+    float bullish_pct = weighted_bullish / total_weight;
+    float bearish_pct = weighted_bearish / total_weight;
     
-    // Neutral signals don't block consensus
-    // Only count bullish vs bearish (ignore neutrals)
-    int directional_signals = bullish_count + bearish_count;
+    // Threshold: 40% weighted consensus required
+    // With weighted voting, aggressive strategies have more influence
+    float consensus_threshold = 0.4f;
     
-    // If no directional signals (all neutral), return neutral
-    if (directional_signals == 0) return 0.0f;
+    if (bullish_pct >= consensus_threshold) return 1.0f;
+    if (bearish_pct >= consensus_threshold) return -1.0f;
     
-    // Calculate consensus: bull/(bull+bear), bear/(bull+bear)
-    // Neutrals are ignored, so bull + neutral = bull if no bears
-    float bullish_pct = (float)bullish_count / (float)directional_signals;
-    float bearish_pct = (float)bearish_count / (float)directional_signals;
-    
-    // Random consensus threshold between 30-40% for very flexible signals
-    // This allows majority voting: 2 bulls + 1 bear = 67% bull signal (passes)
-    // Even 2 bulls + 3 bears = 40% bull signal would pass at 30-40% threshold
-    // CRITICAL: Include bot_id to ensure each bot has unique threshold
-    uint seed = (uint)(bot_id * 997 + bar * 991 + valid_indicators * 983);
-    seed = seed * 1664525u + 1013904223u;
-    float random_val = (float)(seed % 1000) / 1000.0f;  // 0.0 to 1.0
-    float consensus_threshold = 0.3f + random_val * 0.1f;  // 30% to 40%
-    
-    if (bullish_pct >= consensus_threshold) return 1.0f;   // ≥30-50% bullish
-    if (bearish_pct >= consensus_threshold) return -1.0f;  // ≥30-50% bearish
-    
-    return 0.0f;  // Mixed signals (not enough agreement)
+    return 0.0f;  // Mixed signals (not enough weighted agreement)
 }
 
 /**
@@ -961,8 +970,8 @@ void open_position(
     float price,
     float desired_position_value,  // Changed: this is the exposure we want
     int direction,
-    unsigned char risk_strategy,   // CHANGED: pass strategy instead of fixed multipliers
-    float risk_param,              // CHANGED: pass risk param for dynamic calculation
+    CompactBotConfig *bot,         // CHANGED: pass entire bot for per-indicator strategies
+    int triggered_indicator_idx,   // NEW: which indicator triggered this trade
     int bar,
     float leverage,
     float *balance,
@@ -1028,11 +1037,12 @@ void open_position(
     positions[slot].direction = direction;
     positions[slot].entry_bar = bar;
     
-    // Calculate dynamic TP/SL based on risk strategy and market conditions
+    // Calculate TP/SL based on the specific indicator's risk strategy
+    unsigned char indicator_strategy = bot->indicator_risk_strategies[triggered_indicator_idx];
     float tp_multiplier, sl_multiplier;
     calculate_dynamic_tp_sl(
-        risk_strategy,
-        risk_param,
+        indicator_strategy,
+        bot->risk_param,
         price,
         current_high,
         current_low,
@@ -1459,15 +1469,18 @@ __kernel void backtest_with_signals(
         // Pattern recognition indicators: no params to validate (use prev candles)
     }
     
-    // Validate risk strategy (0-14 for 15 strategies)
-    if (bot.risk_strategy > 14) {
-        results[bot_idx].bot_id = -9989;
-        results[bot_idx].fitness_score = -999999.0f;
-        return;
+    // Validate each indicator's risk strategy (0-14 for 15 strategies)
+    for (int i = 0; i < bot.num_indicators; i++) {
+        if (bot.indicator_risk_strategies[i] > 14) {
+            results[bot_idx].bot_id = -9989;
+            results[bot_idx].fitness_score = -999999.0f;
+            return;
+        }
     }
     
-    // Validate risk parameter based on strategy
-    switch(bot.risk_strategy) {
+    // Validate risk parameter based on first indicator's strategy
+    unsigned char primary_strategy = bot.indicator_risk_strategies[0];
+    switch(primary_strategy) {
         case RISK_FIXED_PCT:
             if (bot.risk_param < 0.01f || bot.risk_param > 0.20f) {
                 results[bot_idx].bot_id = -9988;
@@ -1796,11 +1809,11 @@ __kernel void backtest_with_signals(
             // Open new positions if signal and balance allows
             if (signal != 0.0f && balance > initial_balance * MIN_BALANCE_PCT) {
                 if (num_positions < MAX_POSITIONS) {
-                    // UPDATED: calculate_position_size uses single risk strategy
+                    // UPDATED: calculate_position_size uses first indicator's strategy
                     float desired_position_value = calculate_position_size(
                         balance,
                         ohlcv[bar].close,
-                        bot.risk_strategy,
+                        bot.indicator_risk_strategies[0],
                         bot.risk_param
                     );
                     
@@ -1813,8 +1826,8 @@ __kernel void backtest_with_signals(
                         ohlcv[bar].close,
                         desired_position_value,  // Changed: pass value, not quantity
                         direction,
-                        bot.risk_strategy,   // CHANGED: pass strategy for dynamic TP/SL
-                        bot.risk_param,      // CHANGED: pass param for dynamic TP/SL
+                        &bot,                // CHANGED: pass bot for per-indicator strategies
+                        0,                   // First indicator triggered (simplified for now)
                         bar,
                         (float)bot.leverage,
                         &balance,
@@ -2124,11 +2137,11 @@ __kernel void backtest_parallel_bot_cycle(
         // Open new positions if signal present and balance allows
         if (signal != 0.0f && balance > initial_balance * MIN_BALANCE_PCT) {
             if (num_positions < MAX_POSITIONS) {
-                // UPDATED: calculate_position_size uses single risk strategy
+                // UPDATED: calculate_position_size uses first indicator's strategy
                 float desired_position_value = calculate_position_size(
                     balance,
                     ohlcv[bar].close,
-                    bot.risk_strategy,
+                    bot.indicator_risk_strategies[0],
                     bot.risk_param
                 );
                 
@@ -2141,8 +2154,8 @@ __kernel void backtest_parallel_bot_cycle(
                     ohlcv[bar].close,
                     desired_position_value,  // Changed: pass value, not quantity
                     direction,
-                    bot.risk_strategy,   // CHANGED: pass strategy for dynamic TP/SL
-                    bot.risk_param,      // CHANGED: pass param for dynamic TP/SL
+                    &bot,                // CHANGED: pass bot for per-indicator strategies
+                    0,                   // First indicator triggered (simplified for now)
                     bar,
                     (float)bot.leverage,
                     &balance,
