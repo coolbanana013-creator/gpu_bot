@@ -137,7 +137,7 @@ typedef struct {
 // CONSTANTS
 // ============================================================================
 
-#define MAX_POSITIONS 20  // Allow up to 20 concurrent positions (balance realism vs GPU memory)
+#define MAX_POSITIONS 15  // Allow up to 15 concurrent positions (optimized for GPU memory)
 #define MAKER_FEE 0.0002f      // 0.02% KuCoin maker fee (limit orders)
 #define TAKER_FEE 0.0006f      // 0.06% KuCoin taker fee (market orders)
 #define BASE_SLIPPAGE 0.0001f  // 0.01% base slippage (low volatility, small orders)
@@ -181,14 +181,13 @@ float calculate_dynamic_slippage(
     // Base slippage (ideal conditions)
     float slippage = BASE_SLIPPAGE;
     
-    // 1. Volume impact: QUADRATIC market impact (realistic exchange behavior)
-    // Real market impact is non-linear - larger orders have disproportionate impact
+    // 1. Volume impact: position size as % of current volume
+    // Simplified: use current volume as proxy for liquidity
     float volume_impact = 0.0f;
     if (current_volume > 0.0f) {
         float position_pct = position_value / (current_volume * current_price);
-        // Quadratic scaling: pow(position_pct, 1.5) for realistic market impact
-        volume_impact = pow(fmax(position_pct, 0.0f), 1.5f) * 0.05f;
-        volume_impact = fmin(volume_impact, 0.01f);  // Cap at 1.0% additional
+        volume_impact = position_pct * 0.01f;  // 1% of volume = 0.01% additional slippage
+        volume_impact = fmin(volume_impact, 0.005f);  // Cap at 0.5% additional
     }
     
     // 2. Volatility multiplier: use current bar's high-low range
@@ -209,16 +208,8 @@ float calculate_dynamic_slippage(
     // 125x leverage = 3.0x slippage
     float leverage_multiplier = 1.0f + (leverage / 62.5f);
     
-    // 4. Time-of-day liquidity multiplier (assuming 1-minute bars)
-    // Note: This is a proxy - actual bar index doesn't directly map to time
-    // Asian hours (0-8 UTC): lower liquidity = 1.3x
-    // US hours (13-21 UTC): higher liquidity = 0.9x
-    // European hours (8-16 UTC): medium liquidity = 1.0x
-    // We can't get actual time, so this is approximate based on typical patterns
-    float liquidity_multiplier = 1.0f;  // Default: normal liquidity
-    
     // Combine all factors
-    float total_slippage = (slippage + volume_impact) * volatility_multiplier * leverage_multiplier * liquidity_multiplier;
+    float total_slippage = (slippage + volume_impact) * volatility_multiplier * leverage_multiplier;
     
     // Final bounds: min 0.005% (ideal conditions), max 0.5% (terrible conditions)
     // Reduced max to prevent excessive costs

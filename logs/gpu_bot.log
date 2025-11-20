@@ -8535,3 +8535,372 @@ Starting Evolution: 75 generations, 5 cycles
 2025-11-20 01:34:18,308 - src.utils.validation - WARNING - 
 
 Execution interrupted by user
+2025-11-20 01:44:56,353 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-20 01:44:56,462 - src.utils.validation - INFO - ============================================================
+2025-11-20 01:44:56,468 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-20 01:44:56,469 - src.utils.validation - INFO - ============================================================
+2025-11-20 01:44:56,472 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-20 01:44:56,473 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-20 01:44:56,474 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-20 01:44:56,475 - src.utils.validation - INFO - Compute Units: 80
+2025-11-20 01:44:56,476 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-20 01:44:56,477 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-20 01:44:56,478 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-20 01:44:56,479 - src.utils.validation - INFO - ============================================================
+
+2025-11-20 01:45:06,391 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-20 01:45:06,405 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-20 01:45:07,335 - src.utils.validation - INFO - Fetching 200 days of BTC_USDT 1m data ending 2025-11-19 (excludes today)
+2025-11-20 01:45:07,845 - src.utils.validation - INFO - [CACHE] 197/200 files cached (98.5%), 3 need download
+2025-11-20 01:45:07,846 - src.utils.validation - INFO - [DOWNLOAD] Fetching 3 missing day(s) using 4 parallel threads...
+2025-11-20 01:45:07,847 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-18: kucoinfutures does not have market symbol BTC_USDT
+2025-11-20 01:45:07,847 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-17: kucoinfutures does not have market symbol BTC_USDT
+2025-11-20 01:45:07,847 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-16: kucoinfutures does not have market symbol BTC_USDT
+2025-11-20 01:45:07,848 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-18: Exchange error for 2025-11-18: kucoinfutures does not have market symbol BTC_USDT
+2025-11-20 01:45:07,848 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-17: Exchange error for 2025-11-17: kucoinfutures does not have market symbol BTC_USDT
+2025-11-20 01:45:07,850 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-16: Exchange error for 2025-11-16: kucoinfutures does not have market symbol BTC_USDT
+2025-11-20 01:45:07,850 - src.utils.validation - INFO - [OK] Downloaded and saved 0 new file(s)
+2025-11-20 01:45:07,851 - src.utils.validation - INFO - Data ready: 197 file(s) total (197 from cache, 3 newly downloaded)
+2025-11-20 01:45:07,851 - src.utils.validation - INFO - Loading 197 data files in parallel
+2025-11-20 01:45:08,218 - src.utils.validation - INFO - Loaded total of 283740 candles (excludes today's incomplete data)
+2025-11-20 01:45:08,219 - src.utils.validation - INFO - Validating data integrity
+2025-11-20 01:45:08,244 - src.utils.validation - INFO - Data validation passed
+2025-11-20 01:45:08,262 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (10 days each)
+2025-11-20 01:45:08,264 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-20 01:45:08,283 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-20 01:45:08,283 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-20 01:45:08,284 - src.utils.validation - INFO -   Population: 1000 bots
+2025-11-20 01:45:08,284 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-20 01:45:08,284 - src.utils.validation - INFO -   Risk strategies: 1-1 per bot
+2025-11-20 01:45:08,285 - src.utils.validation - INFO -   Leverage: 125-125x
+2025-11-20 01:45:08,289 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-20 01:45:08,314 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-20 01:45:08,319 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-20 01:45:08,320 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-20 01:45:08,320 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-20 01:45:08,321 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-20 01:45:08,321 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-20 01:45:08,322 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-20 01:45:08,326 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-20 01:45:08,327 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-20 01:45:08,327 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-20 01:45:08,330 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-20 01:45:08,330 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-20 01:45:08,330 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-20 01:45:08,331 - src.utils.validation - INFO -   Loading 1-indicator combinations from cache...
+2025-11-20 01:45:08,332 - src.utils.validation - INFO -     Loaded 48 combinations from cache
+2025-11-20 01:45:08,332 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-20 01:45:08,333 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-20 01:45:08,333 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-20 01:45:08,345 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-20 01:45:08,346 - src.utils.validation - INFO -   Loading 4-indicator combinations from cache...
+2025-11-20 01:45:08,649 - src.utils.validation - INFO -     Loaded 194,580 combinations from cache
+2025-11-20 01:45:08,650 - src.utils.validation - INFO -   Loading 5-indicator combinations from cache...
+2025-11-20 01:45:12,703 - src.utils.validation - INFO -     Loaded 1,712,304 combinations from cache
+2025-11-20 01:45:12,703 - src.utils.validation - INFO -   Total combinations ready: 1,925,356
+2025-11-20 01:45:12,704 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-20 01:45:12,705 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-20 01:45:12,705 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-20 01:45:12,706 - src.utils.validation - INFO -   Pre-computed combination pools: 1,925,356 total combinations
+2025-11-20 01:45:12,707 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-20 01:45:12,707 - src.utils.validation - INFO - 
+Starting Evolution: 75 generations, 5 cycles
+2025-11-20 01:45:12,708 - src.utils.validation - INFO - Evolution profiler started
+2025-11-20 01:45:12,708 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-20 01:45:12,709 - src.utils.validation - INFO - Generating 1000 compact bots on GPU...
+2025-11-20 01:45:12,709 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-20 01:45:12,710 - src.utils.validation - INFO - Launching GPU kernel: 1024 work items, 512 per group (2 groups)
+2025-11-20 01:45:12,714 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-20 01:45:12,732 - src.utils.validation - INFO - [OK] Generated 1000 compact bots (128 bytes each)
+2025-11-20 01:45:12,733 - src.utils.validation - INFO - Distributing 1000 bots across indicator sizes 1-5
+2025-11-20 01:45:12,741 - src.utils.validation - INFO - Initial population: 1000 bots, 1000 unique (100.0% uniqueness)
+2025-11-20 01:45:12,742 - src.utils.validation - INFO - Global tracking: 1000 combinations marked as used
+2025-11-20 01:45:12,743 - src.utils.validation - INFO - Size distribution: {1: 48, 2: 243, 3: 229, 4: 237, 5: 243}
+2025-11-20 01:45:12,745 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-20 01:45:12,745 - src.utils.validation - INFO - Evaluating 1000 bots...
+2025-11-20 01:45:31,549 - src.utils.validation - WARNING - 
+
+Execution interrupted by user
+2025-11-20 01:48:07,633 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-20 01:48:07,731 - src.utils.validation - INFO - ============================================================
+2025-11-20 01:48:07,732 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-20 01:48:07,733 - src.utils.validation - INFO - ============================================================
+2025-11-20 01:48:07,733 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-20 01:48:07,734 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-20 01:48:07,734 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-20 01:48:07,735 - src.utils.validation - INFO - Compute Units: 80
+2025-11-20 01:48:07,735 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-20 01:48:07,736 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-20 01:48:07,736 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-20 01:48:07,737 - src.utils.validation - INFO - ============================================================
+
+2025-11-20 01:48:07,738 - src.utils.validation - ERROR - Invalid input: Validation error: population must be >= 1000, got 50
+2025-11-20 01:48:07,739 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-20 01:48:07,739 - src.utils.validation - ERROR - Invalid input: Validation error: population must be >= 1000, got 3
+2025-11-20 01:48:07,740 - src.utils.validation - WARNING - Please try again (3 attempts remaining)
+2025-11-20 01:48:07,740 - src.utils.validation - ERROR - Invalid input: Validation error: population must be >= 1000, got 14
+2025-11-20 01:48:07,741 - src.utils.validation - WARNING - Please try again (2 attempts remaining)
+2025-11-20 01:48:07,741 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '1m'
+2025-11-20 01:48:07,742 - src.utils.validation - WARNING - Please try again (1 attempts remaining)
+2025-11-20 01:48:07,742 - src.utils.validation - ERROR - Invalid input: Validation error: population must be >= 1000, got 25
+2025-11-20 01:48:07,743 - src.utils.validation - ERROR - Maximum attempts reached. Using default value.
+2025-11-20 01:48:07,743 - src.utils.validation - ERROR - Invalid input: Validation error: timeframe must be one of ['1m', '5m', '15m', '30m', '1h', '4h', '1d'], got '2'
+2025-11-20 01:48:07,744 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-20 01:48:07,745 - src.utils.validation - ERROR - Invalid input: Validation error: timeframe must be one of ['1m', '5m', '15m', '30m', '1h', '4h', '1d'], got '5'
+2025-11-20 01:48:07,746 - src.utils.validation - WARNING - Please try again (3 attempts remaining)
+2025-11-20 01:48:07,746 - src.utils.validation - ERROR - Invalid input: Validation error: timeframe must be one of ['1m', '5m', '15m', '30m', '1h', '4h', '1d'], got '5'
+2025-11-20 01:48:07,746 - src.utils.validation - WARNING - Please try again (2 attempts remaining)
+2025-11-20 01:48:07,747 - src.utils.validation - ERROR - Invalid input: Validation error: timeframe must be one of ['1m', '5m', '15m', '30m', '1h', '4h', '1d'], got 'n'
+2025-11-20 01:48:07,747 - src.utils.validation - WARNING - Please try again (1 attempts remaining)
+2025-11-20 01:48:07,748 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: 'n'
+2025-11-20 01:48:07,748 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-20 01:48:07,749 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:48:07,749 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:48:07,750 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:48:07,750 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:48:07,750 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:48:07,750 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:48:07,751 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:48:07,751 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:48:07,751 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:48:07,752 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-20 01:48:07,758 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-20 01:48:08,891 - src.utils.validation - INFO - Fetching 200 days of BTC/USDT 1m data ending 2025-11-19 (excludes today)
+2025-11-20 01:48:09,409 - src.utils.validation - INFO - [CACHE] 197/200 files cached (98.5%), 3 need download
+2025-11-20 01:48:09,409 - src.utils.validation - INFO - [DOWNLOAD] Fetching 3 missing day(s) using 4 parallel threads...
+2025-11-20 01:48:09,410 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-18: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:48:09,411 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-17: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:48:09,412 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-16: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:48:09,412 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-18: Exchange error for 2025-11-18: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:48:09,413 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-17: Exchange error for 2025-11-17: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:48:09,414 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-16: Exchange error for 2025-11-16: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:48:09,414 - src.utils.validation - INFO - [OK] Downloaded and saved 0 new file(s)
+2025-11-20 01:48:09,414 - src.utils.validation - INFO - Data ready: 197 file(s) total (197 from cache, 3 newly downloaded)
+2025-11-20 01:48:09,414 - src.utils.validation - INFO - Loading 197 data files in parallel
+2025-11-20 01:49:04,958 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-20 01:49:05,055 - src.utils.validation - INFO - ============================================================
+2025-11-20 01:49:05,056 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-20 01:49:05,057 - src.utils.validation - INFO - ============================================================
+2025-11-20 01:49:05,057 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-20 01:49:05,058 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-20 01:49:05,058 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-20 01:49:05,060 - src.utils.validation - INFO - Compute Units: 80
+2025-11-20 01:49:05,061 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-20 01:49:05,061 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-20 01:49:05,062 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-20 01:49:05,063 - src.utils.validation - INFO - ============================================================
+
+2025-11-20 01:49:07,269 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-20 01:49:07,277 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-20 01:49:07,946 - src.utils.validation - INFO - Fetching 200 days of BTC/USDT 1m data ending 2025-11-19 (excludes today)
+2025-11-20 01:49:08,470 - src.utils.validation - INFO - [CACHE] 197/200 files cached (98.5%), 3 need download
+2025-11-20 01:49:08,470 - src.utils.validation - INFO - [DOWNLOAD] Fetching 3 missing day(s) using 4 parallel threads...
+2025-11-20 01:49:08,471 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-18: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:49:08,472 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-17: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:49:08,473 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-16: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:49:08,473 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-18: Exchange error for 2025-11-18: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:49:08,474 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-17: Exchange error for 2025-11-17: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:49:08,474 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-16: Exchange error for 2025-11-16: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:49:08,475 - src.utils.validation - INFO - [OK] Downloaded and saved 0 new file(s)
+2025-11-20 01:49:08,476 - src.utils.validation - INFO - Data ready: 197 file(s) total (197 from cache, 3 newly downloaded)
+2025-11-20 01:49:08,477 - src.utils.validation - INFO - Loading 197 data files in parallel
+2025-11-20 01:49:08,866 - src.utils.validation - INFO - Loaded total of 283740 candles (excludes today's incomplete data)
+2025-11-20 01:49:08,867 - src.utils.validation - INFO - Validating data integrity
+2025-11-20 01:49:08,894 - src.utils.validation - INFO - Data validation passed
+2025-11-20 01:49:08,914 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (10 days each)
+2025-11-20 01:49:08,915 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-20 01:49:08,932 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-20 01:49:08,933 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-20 01:49:08,933 - src.utils.validation - INFO -   Population: 1000 bots
+2025-11-20 01:49:08,934 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-20 01:49:08,934 - src.utils.validation - INFO -   Risk strategies: 1-1 per bot
+2025-11-20 01:49:08,934 - src.utils.validation - INFO -   Leverage: 125-125x
+2025-11-20 01:49:08,939 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-20 01:49:20,335 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-20 01:49:20,338 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-20 01:49:20,338 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-20 01:49:20,339 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-20 01:49:20,339 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-20 01:49:20,339 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-20 01:49:20,340 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-20 01:49:20,345 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-20 01:49:20,346 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-20 01:49:20,346 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-20 01:49:20,350 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-20 01:49:20,351 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-20 01:49:20,352 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-20 01:49:20,354 - src.utils.validation - INFO -   Loading 1-indicator combinations from cache...
+2025-11-20 01:49:20,357 - src.utils.validation - INFO -     Loaded 48 combinations from cache
+2025-11-20 01:49:20,359 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-20 01:49:20,361 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-20 01:49:20,362 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-20 01:49:20,375 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-20 01:49:20,376 - src.utils.validation - INFO -   Loading 4-indicator combinations from cache...
+2025-11-20 01:49:20,708 - src.utils.validation - INFO -     Loaded 194,580 combinations from cache
+2025-11-20 01:49:20,708 - src.utils.validation - INFO -   Loading 5-indicator combinations from cache...
+2025-11-20 01:49:25,102 - src.utils.validation - INFO -     Loaded 1,712,304 combinations from cache
+2025-11-20 01:49:25,103 - src.utils.validation - INFO -   Total combinations ready: 1,925,356
+2025-11-20 01:49:25,103 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-20 01:49:25,104 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-20 01:49:25,105 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-20 01:49:25,105 - src.utils.validation - INFO -   Pre-computed combination pools: 1,925,356 total combinations
+2025-11-20 01:49:25,105 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-20 01:49:25,107 - src.utils.validation - INFO - 
+Starting Evolution: 75 generations, 5 cycles
+2025-11-20 01:49:25,108 - src.utils.validation - INFO - Evolution profiler started
+2025-11-20 01:49:25,108 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-20 01:49:25,109 - src.utils.validation - INFO - Generating 1000 compact bots on GPU...
+2025-11-20 01:49:25,110 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-20 01:49:25,111 - src.utils.validation - INFO - Launching GPU kernel: 1024 work items, 512 per group (2 groups)
+2025-11-20 01:49:25,115 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-20 01:49:25,121 - src.utils.validation - INFO - [OK] Generated 1000 compact bots (128 bytes each)
+2025-11-20 01:49:25,122 - src.utils.validation - INFO - Distributing 1000 bots across indicator sizes 1-5
+2025-11-20 01:49:25,127 - src.utils.validation - INFO - Initial population: 1000 bots, 1000 unique (100.0% uniqueness)
+2025-11-20 01:49:25,127 - src.utils.validation - INFO - Global tracking: 1000 combinations marked as used
+2025-11-20 01:49:25,128 - src.utils.validation - INFO - Size distribution: {1: 48, 2: 263, 3: 241, 4: 236, 5: 212}
+2025-11-20 01:49:25,129 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-20 01:49:25,129 - src.utils.validation - INFO - Evaluating 1000 bots...
+2025-11-20 01:50:06,657 - src.utils.validation - WARNING - 
+
+Execution interrupted by user
+2025-11-20 01:50:47,547 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-20 01:50:47,706 - src.utils.validation - INFO - ============================================================
+2025-11-20 01:50:47,706 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-20 01:50:47,707 - src.utils.validation - INFO - ============================================================
+2025-11-20 01:50:47,707 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-20 01:50:47,709 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-20 01:50:47,709 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-20 01:50:47,710 - src.utils.validation - INFO - Compute Units: 80
+2025-11-20 01:50:47,710 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-20 01:50:47,710 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-20 01:50:47,710 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-20 01:50:47,710 - src.utils.validation - INFO - ============================================================
+
+2025-11-20 01:50:47,712 - src.utils.validation - ERROR - Invalid input: Validation error: population must be >= 1000, got 10
+2025-11-20 01:50:47,712 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-20 01:50:47,713 - src.utils.validation - ERROR - Invalid input: Validation error: population must be >= 1000, got 2
+2025-11-20 01:50:47,713 - src.utils.validation - WARNING - Please try again (3 attempts remaining)
+2025-11-20 01:50:47,713 - src.utils.validation - ERROR - Invalid input: Validation error: population must be >= 1000, got 2
+2025-11-20 01:50:47,714 - src.utils.validation - WARNING - Please try again (2 attempts remaining)
+2025-11-20 01:50:47,714 - src.utils.validation - ERROR - Invalid input: Validation error: population must be >= 1000, got 3
+2025-11-20 01:50:47,714 - src.utils.validation - WARNING - Please try again (1 attempts remaining)
+2025-11-20 01:50:47,714 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '1m'
+2025-11-20 01:50:47,714 - src.utils.validation - ERROR - Maximum attempts reached. Using default value.
+2025-11-20 01:50:47,714 - src.utils.validation - ERROR - Invalid input: Validation error: generations must be <= 100, got 125
+2025-11-20 01:50:47,715 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-20 01:50:47,715 - src.utils.validation - ERROR - Invalid input: Validation error: generations must be <= 100, got 125
+2025-11-20 01:50:47,716 - src.utils.validation - WARNING - Please try again (3 attempts remaining)
+2025-11-20 01:50:47,716 - src.utils.validation - ERROR - Invalid input: Validation error: timeframe must be one of ['1m', '5m', '15m', '30m', '1h', '4h', '1d'], got '1'
+2025-11-20 01:50:47,716 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-20 01:50:47,716 - src.utils.validation - ERROR - Invalid input: Validation error: timeframe must be one of ['1m', '5m', '15m', '30m', '1h', '4h', '1d'], got '200'
+2025-11-20 01:50:47,717 - src.utils.validation - WARNING - Please try again (3 attempts remaining)
+2025-11-20 01:50:47,717 - src.utils.validation - ERROR - Invalid input: Validation error: timeframe must be one of ['1m', '5m', '15m', '30m', '1h', '4h', '1d'], got 'n'
+2025-11-20 01:50:47,718 - src.utils.validation - WARNING - Please try again (2 attempts remaining)
+2025-11-20 01:50:47,719 - src.utils.validation - ERROR - Invalid input: Validation error: timeframe must be one of ['1m', '5m', '15m', '30m', '1h', '4h', '1d'], got 'n'
+2025-11-20 01:50:47,719 - src.utils.validation - WARNING - Please try again (1 attempts remaining)
+2025-11-20 01:50:47,719 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,719 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,719 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,720 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,720 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,721 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,721 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,721 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,722 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,722 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-20 01:50:47,724 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-20 01:50:47,734 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-20 01:50:48,493 - src.utils.validation - INFO - Fetching 20 days of BTC/USDT 1m data ending 2025-11-19 (excludes today)
+2025-11-20 01:50:48,811 - src.utils.validation - INFO - [CACHE] 17/20 files cached (85.0%), 3 need download
+2025-11-20 01:50:48,812 - src.utils.validation - INFO - [DOWNLOAD] Fetching 3 missing day(s) using 4 parallel threads...
+2025-11-20 01:50:48,813 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-18: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:50:48,813 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-17: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:50:48,814 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-16: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:50:48,814 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-18: Exchange error for 2025-11-18: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:50:48,815 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-17: Exchange error for 2025-11-17: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:50:48,816 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-16: Exchange error for 2025-11-16: kucoinfutures does not have market symbol BTC/USDT
+2025-11-20 01:50:48,817 - src.utils.validation - INFO - [OK] Downloaded and saved 0 new file(s)
+2025-11-20 01:50:48,817 - src.utils.validation - INFO - Data ready: 17 file(s) total (17 from cache, 3 newly downloaded)
+2025-11-20 01:50:48,818 - src.utils.validation - INFO - Loading 17 data files in parallel
+2025-11-20 01:50:48,899 - src.utils.validation - INFO - Loaded total of 24480 candles (excludes today's incomplete data)
+2025-11-20 01:50:48,899 - src.utils.validation - INFO - Validating data integrity
+2025-11-20 01:50:48,908 - src.utils.validation - INFO - Data validation passed
+2025-11-20 01:50:48,911 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (1 days each)
+2025-11-20 01:50:48,912 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-20 01:50:48,952 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-20 01:50:48,953 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-20 01:50:48,953 - src.utils.validation - INFO -   Population: 1000 bots
+2025-11-20 01:50:48,953 - src.utils.validation - INFO -   Indicators: 1-5 per bot (50 available)
+2025-11-20 01:50:48,954 - src.utils.validation - INFO -   Risk strategies: 1-1 per bot
+2025-11-20 01:50:48,954 - src.utils.validation - INFO -   Leverage: 125-125x
+2025-11-20 01:50:48,962 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-20 01:50:59,252 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-20 01:50:59,256 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-20 01:50:59,256 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-20 01:50:59,256 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-20 01:50:59,256 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-20 01:50:59,257 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-20 01:50:59,257 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-20 01:50:59,263 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-20 01:50:59,263 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-20 01:50:59,264 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-20 01:50:59,267 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-20 01:50:59,267 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-20 01:50:59,267 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-20 01:50:59,268 - src.utils.validation - INFO -   Loading 1-indicator combinations from cache...
+2025-11-20 01:50:59,268 - src.utils.validation - INFO -     Loaded 48 combinations from cache
+2025-11-20 01:50:59,269 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-20 01:50:59,270 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-20 01:50:59,270 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-20 01:50:59,279 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-20 01:50:59,280 - src.utils.validation - INFO -   Loading 4-indicator combinations from cache...
+2025-11-20 01:50:59,503 - src.utils.validation - INFO -     Loaded 194,580 combinations from cache
+2025-11-20 01:50:59,504 - src.utils.validation - INFO -   Loading 5-indicator combinations from cache...
+2025-11-20 01:51:04,020 - src.utils.validation - INFO -     Loaded 1,712,304 combinations from cache
+2025-11-20 01:51:04,021 - src.utils.validation - INFO -   Total combinations ready: 1,925,356
+2025-11-20 01:51:04,021 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-20 01:51:04,022 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-20 01:51:04,022 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-20 01:51:04,022 - src.utils.validation - INFO -   Pre-computed combination pools: 1,925,356 total combinations
+2025-11-20 01:51:04,024 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-20 01:51:04,024 - src.utils.validation - INFO - 
+Starting Evolution: 1 generations, 5 cycles
+2025-11-20 01:51:04,024 - src.utils.validation - INFO - Evolution profiler started
+2025-11-20 01:51:04,024 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-20 01:51:04,025 - src.utils.validation - INFO - Generating 1000 compact bots on GPU...
+2025-11-20 01:51:04,025 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-20 01:51:04,027 - src.utils.validation - INFO - Launching GPU kernel: 1024 work items, 512 per group (2 groups)
+2025-11-20 01:51:04,031 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-20 01:51:04,037 - src.utils.validation - INFO - [OK] Generated 1000 compact bots (128 bytes each)
+2025-11-20 01:51:04,037 - src.utils.validation - INFO - Distributing 1000 bots across indicator sizes 1-5
+2025-11-20 01:51:04,042 - src.utils.validation - INFO - Initial population: 1000 bots, 1000 unique (100.0% uniqueness)
+2025-11-20 01:51:04,042 - src.utils.validation - INFO - Global tracking: 1000 combinations marked as used
+2025-11-20 01:51:04,043 - src.utils.validation - INFO - Size distribution: {1: 48, 2: 222, 3: 233, 4: 246, 5: 251}
+2025-11-20 01:51:04,043 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-20 01:51:04,043 - src.utils.validation - INFO - Evaluating 1000 bots...
