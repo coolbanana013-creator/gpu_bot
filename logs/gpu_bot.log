@@ -17171,3 +17171,1185 @@ Saved 100 survivor bots to bots/XBTUSDTM/1m/run_20251121_002754/best_bots.json a
 2025-11-21 00:27:54,216 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 39831)
 2025-11-21 00:27:54,221 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 39831)
 2025-11-21 00:27:54,222 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 82291)
+2025-11-21 00:31:28,721 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-21 00:31:28,878 - src.utils.validation - INFO - ============================================================
+2025-11-21 00:31:28,879 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-21 00:31:28,879 - src.utils.validation - INFO - ============================================================
+2025-11-21 00:31:28,881 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-21 00:31:28,881 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-21 00:31:28,882 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-21 00:31:28,882 - src.utils.validation - INFO - Compute Units: 80
+2025-11-21 00:31:28,882 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-21 00:31:28,883 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-21 00:31:28,883 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-21 00:31:28,884 - src.utils.validation - INFO - ============================================================
+
+2025-11-21 00:31:45,233 - src.utils.validation - WARNING - 
+Input cancelled. Using default value.
+2025-11-21 00:32:12,235 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-21 00:32:12,332 - src.utils.validation - INFO - ============================================================
+2025-11-21 00:32:12,332 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-21 00:32:12,333 - src.utils.validation - INFO - ============================================================
+2025-11-21 00:32:12,333 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-21 00:32:12,333 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-21 00:32:12,333 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-21 00:32:12,334 - src.utils.validation - INFO - Compute Units: 80
+2025-11-21 00:32:12,334 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-21 00:32:12,334 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-21 00:32:12,334 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-21 00:32:12,334 - src.utils.validation - INFO - ============================================================
+
+2025-11-21 00:32:36,651 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-21 00:32:36,666 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-21 00:32:37,738 - src.utils.validation - INFO - Fetching 560 days of XBTUSDTM 1m data ending 2025-11-19 (excludes today)
+2025-11-21 00:32:38,638 - src.utils.validation - INFO - [CACHE] 240/560 files cached (42.9%), 320 need download
+2025-11-21 00:32:38,639 - src.utils.validation - INFO - [DOWNLOAD] Fetching 320 missing day(s) using 4 parallel threads...
+2025-11-21 00:32:43,156 - src.utils.validation - INFO - [1/320] Downloaded 1399 candles for 2025-03-23
+2025-11-21 00:32:44,077 - src.utils.validation - INFO - [2/320] Downloaded 1413 candles for 2025-03-22
+2025-11-21 00:32:44,078 - src.utils.validation - INFO - [3/320] Downloaded 1440 candles for 2025-03-20
+2025-11-21 00:32:44,135 - src.utils.validation - INFO - [4/320] Downloaded 1437 candles for 2025-03-21
+2025-11-21 00:33:40,480 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-21 00:33:40,571 - src.utils.validation - INFO - ============================================================
+2025-11-21 00:33:40,573 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-21 00:33:40,574 - src.utils.validation - INFO - ============================================================
+2025-11-21 00:33:40,574 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-21 00:33:40,575 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-21 00:33:40,576 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-21 00:33:40,576 - src.utils.validation - INFO - Compute Units: 80
+2025-11-21 00:33:40,577 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-21 00:33:40,578 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-21 00:33:40,578 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-21 00:33:40,579 - src.utils.validation - INFO - ============================================================
+
+2025-11-21 00:34:06,628 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-21 00:34:06,640 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-21 00:34:07,808 - src.utils.validation - INFO - Fetching 560 days of BTCUSDT 1m data ending 2025-11-19 (excludes today)
+2025-11-21 00:34:07,873 - src.utils.validation - INFO - [CACHE] 0/560 files cached (0.0%), 560 need download
+2025-11-21 00:34:07,873 - src.utils.validation - INFO - [DOWNLOAD] Fetching 560 missing day(s) using 4 parallel threads...
+2025-11-21 00:34:07,874 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,874 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,874 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,875 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,875 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,875 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,879 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-16: Exchange error for 2025-11-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,879 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,879 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,880 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,881 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,881 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-17: Exchange error for 2025-11-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,881 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,882 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,882 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,882 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,882 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-18: Exchange error for 2025-11-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,883 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,883 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,883 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,884 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,884 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-15: Exchange error for 2025-11-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,884 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,884 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,885 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,885 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,886 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-14: Exchange error for 2025-11-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,886 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,887 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,887 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,887 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,888 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-13: Exchange error for 2025-11-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,888 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,888 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,889 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,889 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,889 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-12: Exchange error for 2025-11-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,890 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,891 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,892 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,893 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,893 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-11: Exchange error for 2025-11-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,894 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,894 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,895 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,895 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,895 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-10: Exchange error for 2025-11-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,896 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,896 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,897 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,897 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,897 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-09: Exchange error for 2025-11-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,898 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,898 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,898 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,898 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,899 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-08: Exchange error for 2025-11-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,899 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,899 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,899 - src.utils.validation - ERROR - Exchange error fetching data for 2025-10-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,900 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,900 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-07: Exchange error for 2025-11-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,900 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,900 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,901 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,901 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,901 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-06: Exchange error for 2025-11-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,902 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,902 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,902 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,902 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,903 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-05: Exchange error for 2025-11-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,903 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,904 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,904 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,904 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,905 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-04: Exchange error for 2025-11-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,905 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,906 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,906 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,906 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,907 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-03: Exchange error for 2025-11-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,908 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,908 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,909 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,909 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,910 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-02: Exchange error for 2025-11-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,910 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,910 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,911 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,911 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,911 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-01: Exchange error for 2025-11-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,912 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,912 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,912 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,912 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,913 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-31: Exchange error for 2025-10-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,913 - src.utils.validation - ERROR - Exchange error fetching data for 2025-09-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,913 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,913 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,914 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,914 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-30: Exchange error for 2025-10-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,914 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,915 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,915 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,915 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,915 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-29: Exchange error for 2025-10-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,916 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,916 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,916 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,916 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,917 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-28: Exchange error for 2025-10-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,917 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,917 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,918 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,918 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,918 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-27: Exchange error for 2025-10-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,919 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,919 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,919 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,920 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,920 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-26: Exchange error for 2025-10-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,920 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,921 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,921 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,921 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,921 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-25: Exchange error for 2025-10-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,922 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,922 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,922 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,923 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,924 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-24: Exchange error for 2025-10-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,924 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,925 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,925 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,926 - src.utils.validation - ERROR - Exchange error fetching data for 2025-08-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,926 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-23: Exchange error for 2025-10-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,927 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,927 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,927 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,927 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,928 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-22: Exchange error for 2025-10-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,928 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,928 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,929 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,929 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,929 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-21: Exchange error for 2025-10-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,930 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,930 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,930 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,931 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,931 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-20: Exchange error for 2025-10-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,931 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,932 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,932 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,932 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,932 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-19: Exchange error for 2025-10-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,933 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,933 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,933 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,933 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,934 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-18: Exchange error for 2025-10-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,934 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,934 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,934 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,935 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,936 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-17: Exchange error for 2025-10-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,936 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,936 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,937 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,937 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,937 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-16: Exchange error for 2025-10-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,938 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,938 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,938 - src.utils.validation - ERROR - Exchange error fetching data for 2025-07-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,939 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,939 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-15: Exchange error for 2025-10-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,939 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,940 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,941 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,941 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,942 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-14: Exchange error for 2025-10-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,942 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,943 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,943 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,943 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,944 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-13: Exchange error for 2025-10-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,944 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,944 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,944 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,945 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,945 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-12: Exchange error for 2025-10-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,945 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,945 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,945 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,945 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,945 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-11: Exchange error for 2025-10-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,946 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,946 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,946 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,947 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,947 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-10: Exchange error for 2025-10-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,947 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,948 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,948 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,948 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,948 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-09: Exchange error for 2025-10-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,948 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,949 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,949 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,949 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,949 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-08: Exchange error for 2025-10-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,950 - src.utils.validation - ERROR - Exchange error fetching data for 2025-06-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,950 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,950 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,950 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,951 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-07: Exchange error for 2025-10-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,951 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,951 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,952 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,952 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,952 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-06: Exchange error for 2025-10-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,953 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,953 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,953 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,954 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,954 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-05: Exchange error for 2025-10-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,954 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,955 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,955 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,956 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,956 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-04: Exchange error for 2025-10-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,957 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,957 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,958 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,958 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,959 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-03: Exchange error for 2025-10-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,959 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,959 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,960 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,960 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,960 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-02: Exchange error for 2025-10-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,960 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,961 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,961 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,961 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,961 - src.utils.validation - ERROR - Failed to fetch data for 2025-10-01: Exchange error for 2025-10-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,962 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,962 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,962 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,963 - src.utils.validation - ERROR - Exchange error fetching data for 2025-05-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,963 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-30: Exchange error for 2025-09-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,963 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,963 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,964 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,964 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,964 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-29: Exchange error for 2025-09-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,965 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,965 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,965 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,965 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,965 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-28: Exchange error for 2025-09-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,966 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,966 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,966 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,967 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,967 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-27: Exchange error for 2025-09-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,967 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,967 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,968 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,969 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,969 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-26: Exchange error for 2025-09-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,969 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,970 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,970 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,970 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,971 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-25: Exchange error for 2025-09-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,971 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,971 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,972 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,972 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,972 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-24: Exchange error for 2025-09-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,973 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,973 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,974 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,974 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,974 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-23: Exchange error for 2025-09-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,975 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,975 - src.utils.validation - ERROR - Exchange error fetching data for 2025-04-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,975 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,976 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,976 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-22: Exchange error for 2025-09-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,976 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,977 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,977 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,977 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,978 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-21: Exchange error for 2025-09-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,978 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,978 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,979 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,979 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,979 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-20: Exchange error for 2025-09-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,979 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,980 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,980 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,980 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,980 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-19: Exchange error for 2025-09-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,981 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,981 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,981 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,982 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,982 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-18: Exchange error for 2025-09-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,982 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,982 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,983 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,983 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,983 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-17: Exchange error for 2025-09-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,983 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,983 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,984 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,984 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,984 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-16: Exchange error for 2025-09-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,985 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,985 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,986 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,986 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,986 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-15: Exchange error for 2025-09-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,986 - src.utils.validation - ERROR - Exchange error fetching data for 2025-03-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,987 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,987 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,988 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,988 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-14: Exchange error for 2025-09-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,988 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,989 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,989 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,990 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,990 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-13: Exchange error for 2025-09-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,991 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,991 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,992 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,992 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,992 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-12: Exchange error for 2025-09-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,993 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,993 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,993 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,994 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,994 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-11: Exchange error for 2025-09-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,994 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,994 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,994 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,995 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,995 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-10: Exchange error for 2025-09-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,995 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,996 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,996 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,996 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,996 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-09: Exchange error for 2025-09-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,997 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,997 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,997 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,997 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,998 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-08: Exchange error for 2025-09-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,998 - src.utils.validation - ERROR - Exchange error fetching data for 2025-02-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,998 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,998 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,999 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,999 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-07: Exchange error for 2025-09-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,999 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:07,999 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,000 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,000 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,000 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-06: Exchange error for 2025-09-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,000 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,001 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,001 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,002 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,003 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-05: Exchange error for 2025-09-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,004 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,004 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,005 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,005 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,005 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-04: Exchange error for 2025-09-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,006 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,006 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,007 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,007 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,007 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-03: Exchange error for 2025-09-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,008 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,009 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,009 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,010 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,011 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-02: Exchange error for 2025-09-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,011 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,012 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,012 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,012 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,012 - src.utils.validation - ERROR - Failed to fetch data for 2025-09-01: Exchange error for 2025-09-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,013 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,013 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,014 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,014 - src.utils.validation - ERROR - Exchange error fetching data for 2025-01-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,014 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-31: Exchange error for 2025-08-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,015 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,015 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,015 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,016 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,016 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-30: Exchange error for 2025-08-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,016 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,017 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,017 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,017 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,017 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-29: Exchange error for 2025-08-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,017 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,019 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,019 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,020 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,020 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-28: Exchange error for 2025-08-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,020 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,021 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,021 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,022 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,022 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-27: Exchange error for 2025-08-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,022 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,023 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,023 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,023 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,023 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-26: Exchange error for 2025-08-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,024 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,024 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,024 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,024 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,025 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-25: Exchange error for 2025-08-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,025 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,025 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,025 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,026 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,026 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-24: Exchange error for 2025-08-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,026 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,027 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,027 - src.utils.validation - ERROR - Exchange error fetching data for 2024-12-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,027 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,028 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-23: Exchange error for 2025-08-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,028 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,028 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,029 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,029 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,029 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-22: Exchange error for 2025-08-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,029 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,029 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,030 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,030 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,030 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-21: Exchange error for 2025-08-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,031 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,031 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,031 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,031 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,032 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-20: Exchange error for 2025-08-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,032 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,032 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,033 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,033 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,033 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-19: Exchange error for 2025-08-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,033 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,034 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,034 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,034 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,034 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-18: Exchange error for 2025-08-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,034 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,035 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,035 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,035 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,036 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-17: Exchange error for 2025-08-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,036 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,036 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,037 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,037 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,037 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-16: Exchange error for 2025-08-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,038 - src.utils.validation - ERROR - Exchange error fetching data for 2024-11-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,038 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,038 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,039 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,039 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-15: Exchange error for 2025-08-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,040 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,040 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,040 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,041 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,041 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-14: Exchange error for 2025-08-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,042 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,042 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,042 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,043 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,043 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-13: Exchange error for 2025-08-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,043 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,044 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,044 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,044 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,044 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-12: Exchange error for 2025-08-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,045 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,045 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,046 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,046 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,046 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-11: Exchange error for 2025-08-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,047 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,047 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,048 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,048 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,048 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-10: Exchange error for 2025-08-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,048 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,049 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,049 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,049 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,050 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-09: Exchange error for 2025-08-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,050 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,050 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,050 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,052 - src.utils.validation - ERROR - Exchange error fetching data for 2024-10-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,053 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-08: Exchange error for 2025-08-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,054 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,054 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,054 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,055 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,055 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-07: Exchange error for 2025-08-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,056 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,056 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,057 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,057 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,057 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-06: Exchange error for 2025-08-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,057 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,058 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,058 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,059 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,059 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-05: Exchange error for 2025-08-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,059 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,059 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,060 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,060 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,060 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-04: Exchange error for 2025-08-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,060 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,060 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,061 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,061 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,061 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-03: Exchange error for 2025-08-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,061 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,062 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,062 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,062 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,063 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-02: Exchange error for 2025-08-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,063 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,063 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,063 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,064 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,064 - src.utils.validation - ERROR - Failed to fetch data for 2025-08-01: Exchange error for 2025-08-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,064 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,065 - src.utils.validation - ERROR - Exchange error fetching data for 2024-09-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,065 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,065 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,065 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-31: Exchange error for 2025-07-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,065 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,066 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,066 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,066 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,066 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-30: Exchange error for 2025-07-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,066 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,067 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,067 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,067 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,067 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-29: Exchange error for 2025-07-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,067 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,068 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,069 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,069 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,070 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-28: Exchange error for 2025-07-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,070 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,070 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,071 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,071 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,072 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-27: Exchange error for 2025-07-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,072 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,073 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,073 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,073 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,074 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-26: Exchange error for 2025-07-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,074 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,074 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,075 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,075 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,075 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-25: Exchange error for 2025-07-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,075 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,076 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,076 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,076 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,076 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-24: Exchange error for 2025-07-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,077 - src.utils.validation - ERROR - Exchange error fetching data for 2024-08-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,077 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,077 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,078 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,078 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-23: Exchange error for 2025-07-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,078 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,078 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,079 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,079 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,079 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-22: Exchange error for 2025-07-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,080 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,080 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,080 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,080 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,081 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-21: Exchange error for 2025-07-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,081 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,081 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,081 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,082 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,082 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-20: Exchange error for 2025-07-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,082 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,083 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,083 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,083 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,083 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-19: Exchange error for 2025-07-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,084 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,084 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,084 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,085 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,085 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-18: Exchange error for 2025-07-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,086 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,086 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,086 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,087 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,087 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-17: Exchange error for 2025-07-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,088 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,088 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,088 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,089 - src.utils.validation - ERROR - Exchange error fetching data for 2024-07-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,089 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-16: Exchange error for 2025-07-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,089 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,089 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,090 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,091 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,091 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-15: Exchange error for 2025-07-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,091 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,091 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,091 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,092 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,092 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-14: Exchange error for 2025-07-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,092 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,093 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,093 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,093 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,093 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-13: Exchange error for 2025-07-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,094 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,094 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,094 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,094 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,095 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-12: Exchange error for 2025-07-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,095 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,095 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,095 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,096 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,096 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-11: Exchange error for 2025-07-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,096 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,096 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,097 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,097 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,097 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-10: Exchange error for 2025-07-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,097 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,098 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,098 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,098 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,098 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-09: Exchange error for 2025-07-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,099 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,099 - src.utils.validation - ERROR - Exchange error fetching data for 2024-06-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,099 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,099 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,100 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-08: Exchange error for 2025-07-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,100 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,100 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,100 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,101 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,101 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-07: Exchange error for 2025-07-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,103 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,103 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,103 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,103 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,104 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-06: Exchange error for 2025-07-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,104 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,104 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,105 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,105 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,105 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-05: Exchange error for 2025-07-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,105 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,106 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,106 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,106 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,107 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-04: Exchange error for 2025-07-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,107 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,107 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,108 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,108 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,108 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-03: Exchange error for 2025-07-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,108 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,109 - src.utils.validation - ERROR - Exchange error fetching data for 2024-05-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,110 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-02: Exchange error for 2025-07-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,110 - src.utils.validation - ERROR - Failed to fetch data for 2025-07-01: Exchange error for 2025-07-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,111 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-30: Exchange error for 2025-06-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,111 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-29: Exchange error for 2025-06-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,111 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-28: Exchange error for 2025-06-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,112 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-27: Exchange error for 2025-06-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,112 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-26: Exchange error for 2025-06-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,112 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-25: Exchange error for 2025-06-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,112 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-24: Exchange error for 2025-06-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,113 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-23: Exchange error for 2025-06-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,113 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-22: Exchange error for 2025-06-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,113 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-21: Exchange error for 2025-06-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,114 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-20: Exchange error for 2025-06-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,114 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-19: Exchange error for 2025-06-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,114 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-18: Exchange error for 2025-06-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,114 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-17: Exchange error for 2025-06-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,114 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-16: Exchange error for 2025-06-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,115 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-15: Exchange error for 2025-06-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,115 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-14: Exchange error for 2025-06-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,115 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-13: Exchange error for 2025-06-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,115 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-12: Exchange error for 2025-06-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,115 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-11: Exchange error for 2025-06-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,116 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-10: Exchange error for 2025-06-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,116 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-09: Exchange error for 2025-06-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,116 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-08: Exchange error for 2025-06-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,116 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-07: Exchange error for 2025-06-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,117 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-06: Exchange error for 2025-06-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,117 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-05: Exchange error for 2025-06-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,117 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-04: Exchange error for 2025-06-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,118 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-03: Exchange error for 2025-06-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,118 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-02: Exchange error for 2025-06-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,119 - src.utils.validation - ERROR - Failed to fetch data for 2025-06-01: Exchange error for 2025-06-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,119 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-31: Exchange error for 2025-05-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,119 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-30: Exchange error for 2025-05-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,119 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-29: Exchange error for 2025-05-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,120 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-28: Exchange error for 2025-05-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,120 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-27: Exchange error for 2025-05-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,120 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-26: Exchange error for 2025-05-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,121 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-25: Exchange error for 2025-05-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,121 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-24: Exchange error for 2025-05-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,121 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-23: Exchange error for 2025-05-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,122 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-22: Exchange error for 2025-05-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,122 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-21: Exchange error for 2025-05-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,122 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-20: Exchange error for 2025-05-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,122 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-19: Exchange error for 2025-05-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,123 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-18: Exchange error for 2025-05-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,123 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-17: Exchange error for 2025-05-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,123 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-16: Exchange error for 2025-05-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,123 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-15: Exchange error for 2025-05-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,124 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-14: Exchange error for 2025-05-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,124 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-13: Exchange error for 2025-05-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,124 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-12: Exchange error for 2025-05-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,124 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-11: Exchange error for 2025-05-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,124 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-10: Exchange error for 2025-05-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,125 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-09: Exchange error for 2025-05-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,125 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-08: Exchange error for 2025-05-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,125 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-07: Exchange error for 2025-05-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,125 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-06: Exchange error for 2025-05-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,125 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-05: Exchange error for 2025-05-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,126 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-04: Exchange error for 2025-05-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,126 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-03: Exchange error for 2025-05-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,127 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-02: Exchange error for 2025-05-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,127 - src.utils.validation - ERROR - Failed to fetch data for 2025-05-01: Exchange error for 2025-05-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,128 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-30: Exchange error for 2025-04-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,128 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-29: Exchange error for 2025-04-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,129 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-28: Exchange error for 2025-04-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,130 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-27: Exchange error for 2025-04-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,130 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-26: Exchange error for 2025-04-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,130 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-25: Exchange error for 2025-04-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,131 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-24: Exchange error for 2025-04-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,131 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-23: Exchange error for 2025-04-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,132 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-22: Exchange error for 2025-04-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,132 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-21: Exchange error for 2025-04-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,133 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-20: Exchange error for 2025-04-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,134 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-19: Exchange error for 2025-04-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,134 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-18: Exchange error for 2025-04-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,136 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-17: Exchange error for 2025-04-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,136 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-16: Exchange error for 2025-04-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,136 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-15: Exchange error for 2025-04-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,137 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-14: Exchange error for 2025-04-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,137 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-13: Exchange error for 2025-04-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,138 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-12: Exchange error for 2025-04-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,138 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-11: Exchange error for 2025-04-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,139 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-10: Exchange error for 2025-04-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,139 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-09: Exchange error for 2025-04-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,140 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-08: Exchange error for 2025-04-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,140 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-07: Exchange error for 2025-04-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,140 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-06: Exchange error for 2025-04-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,141 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-05: Exchange error for 2025-04-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,141 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-04: Exchange error for 2025-04-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,141 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-03: Exchange error for 2025-04-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,142 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-02: Exchange error for 2025-04-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,142 - src.utils.validation - ERROR - Failed to fetch data for 2025-04-01: Exchange error for 2025-04-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,143 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-31: Exchange error for 2025-03-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,143 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-30: Exchange error for 2025-03-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,143 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-29: Exchange error for 2025-03-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,144 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-28: Exchange error for 2025-03-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,144 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-27: Exchange error for 2025-03-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,145 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-26: Exchange error for 2025-03-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,145 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-25: Exchange error for 2025-03-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,145 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-24: Exchange error for 2025-03-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,146 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-23: Exchange error for 2025-03-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,146 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-22: Exchange error for 2025-03-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,146 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-21: Exchange error for 2025-03-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,146 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-20: Exchange error for 2025-03-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,148 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-19: Exchange error for 2025-03-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,148 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-18: Exchange error for 2025-03-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,148 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-17: Exchange error for 2025-03-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,148 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-16: Exchange error for 2025-03-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,148 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-15: Exchange error for 2025-03-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,149 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-14: Exchange error for 2025-03-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,149 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-13: Exchange error for 2025-03-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,150 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-12: Exchange error for 2025-03-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,150 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-11: Exchange error for 2025-03-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,150 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-10: Exchange error for 2025-03-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,150 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-09: Exchange error for 2025-03-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,151 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-08: Exchange error for 2025-03-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,151 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-07: Exchange error for 2025-03-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,151 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-06: Exchange error for 2025-03-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,151 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-05: Exchange error for 2025-03-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,152 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-04: Exchange error for 2025-03-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,152 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-03: Exchange error for 2025-03-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,153 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-02: Exchange error for 2025-03-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,153 - src.utils.validation - ERROR - Failed to fetch data for 2025-03-01: Exchange error for 2025-03-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,154 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-28: Exchange error for 2025-02-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,156 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-27: Exchange error for 2025-02-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,157 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-26: Exchange error for 2025-02-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,158 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-25: Exchange error for 2025-02-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,158 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-24: Exchange error for 2025-02-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,159 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-23: Exchange error for 2025-02-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,159 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-22: Exchange error for 2025-02-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,159 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-21: Exchange error for 2025-02-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,159 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-20: Exchange error for 2025-02-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,160 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-19: Exchange error for 2025-02-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,160 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-18: Exchange error for 2025-02-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,160 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-17: Exchange error for 2025-02-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,160 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-16: Exchange error for 2025-02-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,161 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-15: Exchange error for 2025-02-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,161 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-14: Exchange error for 2025-02-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,162 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-13: Exchange error for 2025-02-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,162 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-12: Exchange error for 2025-02-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,162 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-11: Exchange error for 2025-02-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,162 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-10: Exchange error for 2025-02-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,163 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-09: Exchange error for 2025-02-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,163 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-08: Exchange error for 2025-02-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,163 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-07: Exchange error for 2025-02-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,163 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-06: Exchange error for 2025-02-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,164 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-05: Exchange error for 2025-02-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,164 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-04: Exchange error for 2025-02-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,164 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-03: Exchange error for 2025-02-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,165 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-02: Exchange error for 2025-02-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,165 - src.utils.validation - ERROR - Failed to fetch data for 2025-02-01: Exchange error for 2025-02-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,165 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-31: Exchange error for 2025-01-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,165 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-30: Exchange error for 2025-01-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,166 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-29: Exchange error for 2025-01-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,166 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-28: Exchange error for 2025-01-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,166 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-27: Exchange error for 2025-01-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,167 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-26: Exchange error for 2025-01-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,167 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-25: Exchange error for 2025-01-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,167 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-24: Exchange error for 2025-01-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,167 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-23: Exchange error for 2025-01-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,168 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-22: Exchange error for 2025-01-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,168 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-21: Exchange error for 2025-01-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,168 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-20: Exchange error for 2025-01-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,169 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-19: Exchange error for 2025-01-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,170 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-18: Exchange error for 2025-01-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,170 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-17: Exchange error for 2025-01-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,171 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-16: Exchange error for 2025-01-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,171 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-15: Exchange error for 2025-01-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,172 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-14: Exchange error for 2025-01-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,172 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-13: Exchange error for 2025-01-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,173 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-12: Exchange error for 2025-01-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,173 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-11: Exchange error for 2025-01-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,173 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-10: Exchange error for 2025-01-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,174 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-09: Exchange error for 2025-01-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,174 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-08: Exchange error for 2025-01-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,174 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-07: Exchange error for 2025-01-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,175 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-06: Exchange error for 2025-01-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,175 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-05: Exchange error for 2025-01-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,175 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-04: Exchange error for 2025-01-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,175 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-03: Exchange error for 2025-01-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,176 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-02: Exchange error for 2025-01-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,176 - src.utils.validation - ERROR - Failed to fetch data for 2025-01-01: Exchange error for 2025-01-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,176 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-31: Exchange error for 2024-12-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,177 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-30: Exchange error for 2024-12-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,177 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-29: Exchange error for 2024-12-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,177 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-28: Exchange error for 2024-12-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,178 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-27: Exchange error for 2024-12-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,178 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-26: Exchange error for 2024-12-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,178 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-25: Exchange error for 2024-12-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,178 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-24: Exchange error for 2024-12-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,178 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-23: Exchange error for 2024-12-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,179 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-22: Exchange error for 2024-12-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,179 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-21: Exchange error for 2024-12-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,179 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-20: Exchange error for 2024-12-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,179 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-19: Exchange error for 2024-12-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,180 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-18: Exchange error for 2024-12-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,180 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-17: Exchange error for 2024-12-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,180 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-16: Exchange error for 2024-12-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,180 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-15: Exchange error for 2024-12-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,180 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-14: Exchange error for 2024-12-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,181 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-13: Exchange error for 2024-12-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,181 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-12: Exchange error for 2024-12-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,182 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-11: Exchange error for 2024-12-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,182 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-10: Exchange error for 2024-12-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,182 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-09: Exchange error for 2024-12-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,183 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-08: Exchange error for 2024-12-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,183 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-07: Exchange error for 2024-12-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,183 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-06: Exchange error for 2024-12-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,183 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-05: Exchange error for 2024-12-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,184 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-04: Exchange error for 2024-12-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,184 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-03: Exchange error for 2024-12-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,184 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-02: Exchange error for 2024-12-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,184 - src.utils.validation - ERROR - Failed to fetch data for 2024-12-01: Exchange error for 2024-12-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,185 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-30: Exchange error for 2024-11-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,185 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-29: Exchange error for 2024-11-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,186 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-28: Exchange error for 2024-11-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,186 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-27: Exchange error for 2024-11-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,187 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-26: Exchange error for 2024-11-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,187 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-25: Exchange error for 2024-11-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,187 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-24: Exchange error for 2024-11-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,188 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-23: Exchange error for 2024-11-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,188 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-22: Exchange error for 2024-11-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,188 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-21: Exchange error for 2024-11-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,189 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-20: Exchange error for 2024-11-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,189 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-19: Exchange error for 2024-11-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,189 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-18: Exchange error for 2024-11-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,190 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-17: Exchange error for 2024-11-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,190 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-16: Exchange error for 2024-11-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,190 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-15: Exchange error for 2024-11-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,190 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-14: Exchange error for 2024-11-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,190 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-13: Exchange error for 2024-11-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,191 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-12: Exchange error for 2024-11-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,191 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-11: Exchange error for 2024-11-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,191 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-10: Exchange error for 2024-11-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,191 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-09: Exchange error for 2024-11-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,192 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-08: Exchange error for 2024-11-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,192 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-07: Exchange error for 2024-11-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,192 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-06: Exchange error for 2024-11-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,192 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-05: Exchange error for 2024-11-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,192 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-04: Exchange error for 2024-11-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,193 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-03: Exchange error for 2024-11-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,193 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-02: Exchange error for 2024-11-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,193 - src.utils.validation - ERROR - Failed to fetch data for 2024-11-01: Exchange error for 2024-11-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,193 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-31: Exchange error for 2024-10-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,194 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-30: Exchange error for 2024-10-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,194 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-29: Exchange error for 2024-10-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,194 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-28: Exchange error for 2024-10-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,194 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-27: Exchange error for 2024-10-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,194 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-26: Exchange error for 2024-10-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,195 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-25: Exchange error for 2024-10-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,195 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-24: Exchange error for 2024-10-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,195 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-23: Exchange error for 2024-10-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,196 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-22: Exchange error for 2024-10-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,196 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-21: Exchange error for 2024-10-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,196 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-20: Exchange error for 2024-10-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,196 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-19: Exchange error for 2024-10-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,196 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-18: Exchange error for 2024-10-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,197 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-17: Exchange error for 2024-10-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,197 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-16: Exchange error for 2024-10-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,197 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-15: Exchange error for 2024-10-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,197 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-14: Exchange error for 2024-10-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,198 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-13: Exchange error for 2024-10-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,198 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-12: Exchange error for 2024-10-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,198 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-11: Exchange error for 2024-10-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,198 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-10: Exchange error for 2024-10-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,199 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-09: Exchange error for 2024-10-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,199 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-08: Exchange error for 2024-10-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,199 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-07: Exchange error for 2024-10-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,199 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-06: Exchange error for 2024-10-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,199 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-05: Exchange error for 2024-10-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,200 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-04: Exchange error for 2024-10-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,200 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-03: Exchange error for 2024-10-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,200 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-02: Exchange error for 2024-10-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,200 - src.utils.validation - ERROR - Failed to fetch data for 2024-10-01: Exchange error for 2024-10-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,201 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-30: Exchange error for 2024-09-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,201 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-29: Exchange error for 2024-09-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,201 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-28: Exchange error for 2024-09-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,201 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-27: Exchange error for 2024-09-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,202 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-26: Exchange error for 2024-09-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,202 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-25: Exchange error for 2024-09-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,203 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-24: Exchange error for 2024-09-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,203 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-23: Exchange error for 2024-09-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,203 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-22: Exchange error for 2024-09-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,203 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-21: Exchange error for 2024-09-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,203 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-20: Exchange error for 2024-09-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,204 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-19: Exchange error for 2024-09-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,204 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-18: Exchange error for 2024-09-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,204 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-17: Exchange error for 2024-09-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,204 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-16: Exchange error for 2024-09-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,205 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-15: Exchange error for 2024-09-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,205 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-14: Exchange error for 2024-09-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,205 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-13: Exchange error for 2024-09-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,205 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-12: Exchange error for 2024-09-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,206 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-11: Exchange error for 2024-09-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,206 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-10: Exchange error for 2024-09-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,206 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-09: Exchange error for 2024-09-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,206 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-08: Exchange error for 2024-09-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,207 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-07: Exchange error for 2024-09-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,207 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-06: Exchange error for 2024-09-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,207 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-05: Exchange error for 2024-09-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,207 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-04: Exchange error for 2024-09-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,208 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-03: Exchange error for 2024-09-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,208 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-02: Exchange error for 2024-09-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,208 - src.utils.validation - ERROR - Failed to fetch data for 2024-09-01: Exchange error for 2024-09-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,208 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-31: Exchange error for 2024-08-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,209 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-30: Exchange error for 2024-08-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,209 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-29: Exchange error for 2024-08-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,209 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-28: Exchange error for 2024-08-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,209 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-27: Exchange error for 2024-08-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,210 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-26: Exchange error for 2024-08-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,210 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-25: Exchange error for 2024-08-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,210 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-24: Exchange error for 2024-08-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,210 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-23: Exchange error for 2024-08-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,210 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-22: Exchange error for 2024-08-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,211 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-21: Exchange error for 2024-08-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,211 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-20: Exchange error for 2024-08-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,212 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-19: Exchange error for 2024-08-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,212 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-18: Exchange error for 2024-08-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,213 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-17: Exchange error for 2024-08-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,213 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-16: Exchange error for 2024-08-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,213 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-15: Exchange error for 2024-08-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,213 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-14: Exchange error for 2024-08-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,214 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-13: Exchange error for 2024-08-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,214 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-12: Exchange error for 2024-08-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,214 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-11: Exchange error for 2024-08-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,215 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-10: Exchange error for 2024-08-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,215 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-09: Exchange error for 2024-08-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,215 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-08: Exchange error for 2024-08-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,215 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-07: Exchange error for 2024-08-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,215 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-06: Exchange error for 2024-08-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,216 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-05: Exchange error for 2024-08-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,216 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-04: Exchange error for 2024-08-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,216 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-03: Exchange error for 2024-08-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,217 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-02: Exchange error for 2024-08-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,217 - src.utils.validation - ERROR - Failed to fetch data for 2024-08-01: Exchange error for 2024-08-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,217 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-31: Exchange error for 2024-07-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,217 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-30: Exchange error for 2024-07-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,217 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-29: Exchange error for 2024-07-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,218 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-28: Exchange error for 2024-07-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,218 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-27: Exchange error for 2024-07-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,218 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-26: Exchange error for 2024-07-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,218 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-25: Exchange error for 2024-07-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,219 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-24: Exchange error for 2024-07-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,219 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-23: Exchange error for 2024-07-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,220 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-22: Exchange error for 2024-07-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,220 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-21: Exchange error for 2024-07-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,221 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-20: Exchange error for 2024-07-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,221 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-19: Exchange error for 2024-07-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,221 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-18: Exchange error for 2024-07-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,222 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-17: Exchange error for 2024-07-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,222 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-16: Exchange error for 2024-07-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,223 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-15: Exchange error for 2024-07-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,223 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-14: Exchange error for 2024-07-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,223 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-13: Exchange error for 2024-07-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,224 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-12: Exchange error for 2024-07-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,224 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-11: Exchange error for 2024-07-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,224 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-10: Exchange error for 2024-07-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,224 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-09: Exchange error for 2024-07-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,224 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-08: Exchange error for 2024-07-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,225 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-07: Exchange error for 2024-07-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,225 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-06: Exchange error for 2024-07-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,225 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-05: Exchange error for 2024-07-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,225 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-04: Exchange error for 2024-07-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,226 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-03: Exchange error for 2024-07-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,226 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-02: Exchange error for 2024-07-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,226 - src.utils.validation - ERROR - Failed to fetch data for 2024-07-01: Exchange error for 2024-07-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,226 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-30: Exchange error for 2024-06-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,226 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-29: Exchange error for 2024-06-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,227 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-28: Exchange error for 2024-06-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,227 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-27: Exchange error for 2024-06-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,227 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-26: Exchange error for 2024-06-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,227 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-25: Exchange error for 2024-06-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,228 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-24: Exchange error for 2024-06-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,228 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-23: Exchange error for 2024-06-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,228 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-22: Exchange error for 2024-06-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,228 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-21: Exchange error for 2024-06-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,229 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-20: Exchange error for 2024-06-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,229 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-19: Exchange error for 2024-06-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,229 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-18: Exchange error for 2024-06-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,229 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-17: Exchange error for 2024-06-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,230 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-16: Exchange error for 2024-06-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,230 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-15: Exchange error for 2024-06-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,230 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-14: Exchange error for 2024-06-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,230 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-13: Exchange error for 2024-06-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,231 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-12: Exchange error for 2024-06-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,231 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-11: Exchange error for 2024-06-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,231 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-10: Exchange error for 2024-06-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,232 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-09: Exchange error for 2024-06-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,232 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-08: Exchange error for 2024-06-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,232 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-07: Exchange error for 2024-06-07: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,232 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-06: Exchange error for 2024-06-06: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,233 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-05: Exchange error for 2024-06-05: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,233 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-04: Exchange error for 2024-06-04: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,233 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-03: Exchange error for 2024-06-03: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,233 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-02: Exchange error for 2024-06-02: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,234 - src.utils.validation - ERROR - Failed to fetch data for 2024-06-01: Exchange error for 2024-06-01: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,234 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-31: Exchange error for 2024-05-31: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,234 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-30: Exchange error for 2024-05-30: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,234 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-29: Exchange error for 2024-05-29: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,235 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-28: Exchange error for 2024-05-28: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,235 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-27: Exchange error for 2024-05-27: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,235 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-26: Exchange error for 2024-05-26: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,235 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-25: Exchange error for 2024-05-25: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,236 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-24: Exchange error for 2024-05-24: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,237 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-23: Exchange error for 2024-05-23: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,238 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-22: Exchange error for 2024-05-22: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,239 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-21: Exchange error for 2024-05-21: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,239 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-20: Exchange error for 2024-05-20: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,239 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-19: Exchange error for 2024-05-19: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,240 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-18: Exchange error for 2024-05-18: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,240 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-17: Exchange error for 2024-05-17: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,240 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-16: Exchange error for 2024-05-16: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,240 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-15: Exchange error for 2024-05-15: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,241 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-14: Exchange error for 2024-05-14: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,241 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-13: Exchange error for 2024-05-13: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,241 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-12: Exchange error for 2024-05-12: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,241 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-11: Exchange error for 2024-05-11: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,242 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-10: Exchange error for 2024-05-10: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,242 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-09: Exchange error for 2024-05-09: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,242 - src.utils.validation - ERROR - Failed to fetch data for 2024-05-08: Exchange error for 2024-05-08: kucoinfutures does not have market symbol BTCUSDT
+2025-11-21 00:34:08,243 - src.utils.validation - INFO - [OK] Downloaded and saved 0 new file(s)
+2025-11-21 00:34:08,243 - src.utils.validation - ERROR - 
+
+Fatal error: No data available for BTCUSDT 1m

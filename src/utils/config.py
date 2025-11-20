@@ -9,7 +9,9 @@ from typing import Dict, List
 # ============================================================================
 
 # Exchange type selection
-EXCHANGE_TYPE = 'futures'  # 'spot' or 'futures'
+# Default to 'spot' for training (Mode 1, 4)
+# Mode 2 and 3 will override this to 'futures' for live/paper trading
+EXCHANGE_TYPE = 'spot'  # 'spot' or 'futures'
 
 # Trading fees (Spot)
 SPOT_MAKER_FEE_RATE = 0.001  # 0.1%

@@ -452,8 +452,8 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
     
     try:
         # Calculate total days needed
-        from src.utils.config import EXCHANGE_TYPE
-        fetcher = DataFetcher(exchange_type=EXCHANGE_TYPE)
+        # Mode 1 always uses spot data for training
+        fetcher = DataFetcher(exchange_type='spot')
         total_days = fetcher.calculate_required_days(
             params['backtest_days'],
             params['cycles']
@@ -900,10 +900,9 @@ def run_mode2(gpu_context, gpu_queue):
         from src.live_trading.live_dashboard import LiveTradingDashboard
         from src.bot_generator.compact_generator import CompactBotConfig
         from src.data_provider.fetcher import DataFetcher
-        from src.utils.config import EXCHANGE_TYPE
         
         print("\n" + "="*60)
-        print("MODE 2: PAPER TRADING (TEST ENDPOINT)")
+        print("MODE 2: PAPER TRADING (TEST ENDPOINT) - FUTURES")
         print("="*60 + "\n")
         print("✅ Using Kucoin TEST endpoint - NO REAL MONEY")
         print()
@@ -1027,8 +1026,8 @@ def run_mode2(gpu_context, gpu_queue):
             test_mode=True
         )
         
-        # Fetch historical data using DataProvider (same as Mode 1)
-        log_info("Loading historical data...")
+        # Fetch historical futures data for live paper trading
+        log_info("Loading historical futures data...")
         fetcher = DataFetcher(exchange_type='futures')
         
         # Fetch 2 days of data for indicator warmup (500+ candles for 1m)
@@ -1175,10 +1174,9 @@ def run_mode3(gpu_context, gpu_queue):
         from src.live_trading.engine import RealTimeTradingEngine
         from src.bot_generator.compact_generator import CompactBotConfig
         from src.data_provider.fetcher import DataFetcher
-        from src.utils.config import EXCHANGE_TYPE
         
         print("\n" + "="*60)
-        print("MODE 3: LIVE TRADING (REAL MONEY)")
+        print("MODE 3: LIVE TRADING (REAL MONEY) - FUTURES")
         print("="*60 + "\n")
         
         print("⚠️  WARNING: This mode trades with REAL MONEY!")
@@ -1317,8 +1315,8 @@ def run_mode3(gpu_context, gpu_queue):
             test_mode=False  # LIVE MODE
         )
         
-        # Fetch historical data using DataProvider (same as Mode 1)
-        log_info("Loading historical data...")
+        # Fetch historical futures data for live trading
+        log_info("Loading historical futures data...")
         fetcher = DataFetcher(exchange_type='futures')
         
         # Fetch 2 days of data for indicator warmup (500+ candles for 1m)
