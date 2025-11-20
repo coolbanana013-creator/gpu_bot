@@ -23,9 +23,25 @@ import time
 import threading
 import concurrent.futures
 from tqdm import tqdm
+import csv
 
 from ..bot_generator.compact_generator import CompactBotConfig, COMPACT_BOT_SIZE
 from ..utils.validation import log_info, log_error, log_debug, log_warning
+
+# Trade log structure for detailed trade recording
+TRADE_LOG_DTYPE = np.dtype([
+    ('bot_id', np.int32),
+    ('cycle', np.int32),
+    ('entry_price', np.float32),
+    ('exit_price', np.float32),
+    ('entry_bar', np.int32),
+    ('exit_bar', np.int32),
+    ('leverage', np.float32),
+    ('pnl', np.float32),
+    ('direction', np.int32)  # 1 = long, -1 = short
+    ,('chunk_id', np.int32)
+    ,('out_of_cycle', np.int32)
+])
 
 
 @dataclass
@@ -38,6 +54,7 @@ class BacktestResult:
     per_cycle_trades: List[int]
     per_cycle_wins: List[int]
     per_cycle_pnl: List[float]
+    per_cycle_signals: List[int]  # NEW: signals per cycle
     total_pnl: float
     max_drawdown: float
     sharpe_ratio: float
@@ -105,6 +122,10 @@ class CompactBacktester:
         
         # Compile both kernels
         self._compile_kernels()
+        # Optional GPU trade logging (toggle via env var ENABLE_TRADE_LOGS=1)
+        import os
+        self.trade_log_enabled = os.getenv('ENABLE_TRADE_LOGS', '0') == '1'
+        self.trade_log_max = int(os.getenv('TRADE_LOG_MAX', '20000'))
         
         # Calculate optimal chunk size based on GPU memory
         self.optimal_chunk_days = None  # Will be set during backtest_bots
@@ -204,6 +225,20 @@ class CompactBacktester:
         - Better memory efficiency: Load data once, test all cycles
         """
         num_bots = len(bots)
+        # Allow pandas DataFrame to be passed in (convenience for other modules)
+        try:
+            import pandas as _pd
+        except Exception:
+            _pd = None
+
+        from ..utils.config import OHLCV_COLUMNS
+
+        if _pd is not None and isinstance(ohlcv_data, _pd.DataFrame):
+            # Convert to contiguous numpy array (float32). Kernel expects 5 floats per bar:
+            # open, high, low, close, volume (timestamp is excluded)
+            ohlcv_no_ts = OHLCV_COLUMNS[1:]  # drop timestamp
+            ohlcv_data = ohlcv_data[ohlcv_no_ts].to_numpy(dtype=np.float32)
+
         num_bars = len(ohlcv_data)
         num_cycles = len(cycles)
 
@@ -267,7 +302,11 @@ class CompactBacktester:
                             chunk_data,
                             indicators_buffer,
                             active_cycles,
-                            num_active_cycles
+                            cycle_indices,
+                            num_active_cycles,
+                            chunk_idx,
+                            chunk_start,
+                            chunk_end
                         )
                         
                         # Cleanup
@@ -280,12 +319,13 @@ class CompactBacktester:
                             cycle_data = []
                             for bot_idx in range(num_bots):
                                 result_dict = chunk_results[bot_idx][local_cycle_idx]
-                                # Store as tuple: (bot_idx, trades, wins, pnl)
+                                # Store as tuple: (bot_idx, trades, wins, pnl, signals)
                                 cycle_data.append((
                                     bots[bot_idx].bot_id,
                                     result_dict['trades'],
                                     result_dict['wins'],
-                                    result_dict['pnl']
+                                    result_dict['pnl'],
+                                    result_dict['signals']  # NEW
                                 ))
                             all_cycle_results[global_cycle_idx].append(cycle_data)
                         
@@ -349,15 +389,33 @@ class CompactBacktester:
         flat_trades = []
         flat_wins = []
         flat_pnls = []
+        flat_signals = []  # NEW
+        
+        # DEBUG: Track what we're aggregating
+        debug_cycle_counts = {}
         
         for cycle_idx in range(num_cycles):
             for chunk_data in all_cycle_results[cycle_idx]:
-                for bot_id, trades, wins, pnl in chunk_data:
+                for bot_id, trades, wins, pnl, signals in chunk_data:  # UPDATED
                     flat_bot_ids.append(bot_id)
                     flat_cycle_ids.append(cycle_idx)
                     flat_trades.append(trades)
                     flat_wins.append(wins)
                     flat_pnls.append(pnl)
+                    flat_signals.append(signals)  # NEW
+                    
+                    # DEBUG
+                    key = f"Bot{bot_id}_Cycle{cycle_idx}"
+                    if key not in debug_cycle_counts:
+                        debug_cycle_counts[key] = {'chunks': 0, 'total_trades': 0}
+                    debug_cycle_counts[key]['chunks'] += 1
+                    debug_cycle_counts[key]['total_trades'] += trades
+        
+        # DEBUG: Print aggregation input for first bot
+        if len(debug_cycle_counts) > 0 and num_bots <= 10:
+            print(f"  [DEBUG] Aggregation input data points:")
+            for key, data in sorted(debug_cycle_counts.items())[:10]:
+                print(f"    {key}: {data['chunks']} chunk(s), {data['total_trades']} trades total")
         
         # Convert to numpy arrays
         flat_bot_ids = np.array(flat_bot_ids, dtype=np.int32)
@@ -365,6 +423,7 @@ class CompactBacktester:
         flat_trades = np.array(flat_trades, dtype=np.int32)
         flat_wins = np.array(flat_wins, dtype=np.int32)
         flat_pnls = np.array(flat_pnls, dtype=np.float32)
+        flat_signals = np.array(flat_signals, dtype=np.int32)  # NEW
         
         # Free memory from original chunk data
         del all_cycle_results
@@ -379,6 +438,7 @@ class CompactBacktester:
             flat_trades,
             flat_wins,
             flat_pnls,
+            flat_signals,
             num_cycles
         )
 
@@ -674,6 +734,68 @@ class CompactBacktester:
         
         return final_results
 
+    def _verify_trade_log_consistency(self, results: List[BacktestResult]) -> None:
+        """
+        Optional verification: read `logs/trade_logs.csv` and ensure per-cycle
+        PnL sums match `results.per_cycle_pnl`. Only run if env var
+        `ENFORCE_LOG_CHECK` is set to '1'.
+        """
+        import os
+        if os.getenv('ENFORCE_LOG_CHECK', '0') != '1':
+            return
+
+        trade_csv = Path('logs') / 'trade_logs.csv'
+        if not trade_csv.exists():
+            print('[VERIFY] No trade_logs.csv found, skipping consistency check')
+            return
+
+        # Accumulate per-bot, per-cycle sums (ignore OutOfCycle and duplicates)
+        from collections import defaultdict
+        trade_acc = defaultdict(lambda: defaultdict(float))
+        sig_map = defaultdict(lambda: defaultdict(set))
+
+        with open(trade_csv, newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for r in reader:
+                try:
+                    b = int(r['BotID'])
+                    c = int(r['Cycle'])
+                    pnl = float(str(r['PnL']).replace(',', '.'))
+                    oc = int(r.get('OutOfCycle') or 0)
+                except Exception:
+                    continue
+                sig = (int(r.get('EntryBar') or 0), int(r.get('ExitBar') or 0), r.get('Direction'))
+                if sig in sig_map[b][c]:
+                    continue
+                sig_map[b][c].add(sig)
+                if not oc:
+                    trade_acc[b][c] += pnl
+
+        # Compare
+        mismatches = []
+        for res in results:
+            bot_id = res.bot_id
+            for cycle_idx, expected in enumerate(res.per_cycle_pnl):
+                actual = trade_acc.get(bot_id, {}).get(cycle_idx, 0.0)
+                if abs(float(actual) - float(expected)) > 0.01:
+                    mismatches.append((bot_id, cycle_idx, expected, actual))
+
+        if mismatches:
+            print('[VERIFY] Found per-cycle mismatches between trade logs and kernel results:')
+            for bot, cycle, expected, actual in mismatches:
+                print(f'  Bot {bot} cycle {cycle}: kernel {expected} != logs {actual}')
+            # Optionally reconcile results with logs if requested via env var
+            if os.getenv('RECONCILE_WITH_LOGS', '0') == '1':
+                print('[VERIFY] Reconciling kernel per-cycle PnL with per-trade logs (RECONCILE_WITH_LOGS=1)')
+                # Create mapping per bot/cycle
+                trade_acc = trade_acc
+                for res in results:
+                    bot_id = res.bot_id
+                    # Replace per-cycle pnl if available
+                    for c_idx in range(len(res.per_cycle_pnl)):
+                        if bot_id in trade_acc and c_idx in trade_acc[bot_id]:
+                            res.per_cycle_pnl[c_idx] = float(trade_acc[bot_id][c_idx])
+
     def _calculate_optimal_data_chunk_size(
         self,
         ohlcv_data: np.ndarray,
@@ -862,7 +984,7 @@ class CompactBacktester:
             indicators_buffer = chunk['indicators_buffer']
             
             # Run the backtest kernel for this workload
-            chunk_results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles)
+            chunk_results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles, chunk['global_start'], chunk['global_end'])
             
             # Add chunk metadata to results
             for result in chunk_results:
@@ -910,7 +1032,7 @@ class CompactBacktester:
                 indicators_buffer = chunk['indicators_buffer']
                 
                 # Run the backtest kernel for this chunk
-                chunk_results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles)
+                chunk_results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles, chunk['global_start'], chunk['global_end'])
                 
                 # Add chunk metadata to results
                 for result in chunk_results:
@@ -942,7 +1064,7 @@ class CompactBacktester:
         
         # === STEP 2: Backtest all bots against this chunk ===
         # Direct kernel execution for all bots at once
-        results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles)
+        results = self._run_backtest_kernel_direct(bots, chunk_data, indicators_buffer, chunk_cycles, 0, num_bars)
         
         # Cleanup
         indicators_buffer.release()
@@ -955,6 +1077,8 @@ class CompactBacktester:
         ohlcv_data: np.ndarray,
         indicators_buffer: cl.Buffer,
         cycles: List[Tuple[int, int]]
+        , chunk_global_start: int = 0
+        , chunk_global_end: int = 0
     ) -> List[BacktestResult]:
         """
         Run backtest kernel directly for all bots without batching.
@@ -1009,6 +1133,25 @@ class CompactBacktester:
             cl.mem_flags.WRITE_ONLY,
             size=results_bytes
         )
+        # Optional GPU trade logging buffers
+        trade_logs_buf = None
+        trade_log_index_buf = None
+        if self.trade_log_enabled:
+            trade_logs_buf = cl.Buffer(
+                self.ctx,
+                cl.mem_flags.WRITE_ONLY,
+                size=self.trade_log_max * TRADE_LOG_DTYPE.itemsize
+            )
+
+            trade_log_index_host = np.array([0], dtype=np.int32)
+            trade_log_index_buf = cl.Buffer(
+                self.ctx,
+                cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
+                hostbuf=trade_log_index_host
+            )
+        # Close counters for diagnostics (always allocate so kernel can write)
+        close_counters_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
+        close_counters_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=close_counters_host)
         
         # Execute backtest kernel for all bots
         kernel = self._backtest_kernel
@@ -1028,7 +1171,14 @@ class CompactBacktester:
                 np.int32(num_cycles),              # Number of cycles
                 np.int32(num_bars),                # Number of bars
                 np.float32(self.initial_balance),  # Initial balance
-                results_buf                        # Results output
+                results_buf,                       # Results output
+                trade_logs_buf if trade_logs_buf is not None else cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY, 1),
+                trade_log_index_buf if trade_log_index_buf is not None else cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE, 4),
+                cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=np.arange(num_cycles, dtype=np.int32))
+                , np.int32(0)
+                , np.int32(chunk_global_start)
+                , np.int32(chunk_global_end if chunk_global_end else num_bars)
+                , close_counters_buf
             )
             
             self.queue.finish()
@@ -1047,6 +1197,34 @@ class CompactBacktester:
         results_raw = np.empty(results_bytes, dtype=np.uint8)
         cl.enqueue_copy(self.queue, results_raw, results_buf)
         self.queue.finish()
+        # Optional: grab GPU trade logs
+        if self.trade_log_enabled:
+            idx_host = np.empty(1, dtype=np.int32)
+            cl.enqueue_copy(self.queue, idx_host, trade_log_index_buf)
+            self.queue.finish()
+            count = int(idx_host[0])
+            if count > 0:
+                count = min(count, self.trade_log_max)
+                trade_logs = np.empty(self.trade_log_max, dtype=TRADE_LOG_DTYPE)
+                cl.enqueue_copy(self.queue, trade_logs, trade_logs_buf)
+                self.queue.finish()
+                trade_logs = trade_logs[:count]
+                self._write_trade_logs_csv(trade_logs)
+
+        # Read close counters for diagnostics and write CSV
+        cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf)
+        self.queue.finish()
+        cc_path = Path('logs') / 'close_counters.csv'
+        write_header = not cc_path.exists()
+        with open(cc_path, 'a', newline='') as f:
+            writer = csv.writer(f, delimiter=';')
+            if write_header:
+                writer.writerow(['BotID', 'Cycle', 'KernelCloseCount'])
+            for b_idx in range(num_bots):
+                for c_idx in range(num_cycles):
+                    kc = int(close_counters_host[b_idx * num_cycles + c_idx])
+                    if kc > 0:
+                        writer.writerow([bots[b_idx].bot_id, c_idx, kc])
         
         # Parse results
         results = self._parse_results(results_raw, num_bots)
@@ -1070,7 +1248,11 @@ class CompactBacktester:
         ohlcv_data: np.ndarray,
         indicators_buffer: cl.Buffer,
         cycles: List[Tuple[int, int]],
-        num_active_cycles: int
+        cycle_indices: List[int],
+        num_active_cycles: int,
+        chunk_id: int = 0,
+        chunk_global_start: int = 0,
+        chunk_global_end: int = 0
     ) -> List[List[Dict]]:
         """
         Run ultra-parallel kernel that processes each bot-cycle pair as a separate work item.
@@ -1114,14 +1296,41 @@ class CompactBacktester:
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=cycle_ends
         )
+
+        # Map local cycle index -> global cycle index for correct logging
+        cycle_global_idx = np.array(cycle_indices, dtype=np.int32)
+        cycle_global_idx_buf = cl.Buffer(
+            self.ctx,
+            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+            hostbuf=cycle_global_idx
+        )
         
-        # Results buffer: [bot_idx * num_cycles * 3 + cycle_idx * 3] = {trades, wins, pnl}
-        results_size = num_bots * num_cycles * 3  # 3 floats per bot-cycle pair
+        # Results buffer: [bot_idx * num_cycles * 4 + cycle_idx * 4] = {trades, wins, pnl, signals}
+        results_size = num_bots * num_cycles * 4  # 4 floats per bot-cycle pair
         results_buf = cl.Buffer(
             self.ctx,
             cl.mem_flags.WRITE_ONLY,
             size=results_size * 4  # 4 bytes per float
         )
+        # Optional GPU trade logging buffers
+        trade_logs_buf = None
+        trade_log_index_buf = None
+        if self.trade_log_enabled:
+            trade_logs_buf = cl.Buffer(
+                self.ctx,
+                cl.mem_flags.WRITE_ONLY,
+                size=self.trade_log_max * TRADE_LOG_DTYPE.itemsize
+            )
+
+            trade_log_index_host = np.array([0], dtype=np.int32)
+            trade_log_index_buf = cl.Buffer(
+                self.ctx,
+                cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
+                hostbuf=trade_log_index_host
+            )
+        # Close counters buffer for kernel-level close diagnostics
+        close_counters_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
+        close_counters_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=close_counters_host)
         
         # Execute kernel for all bot-cycle pairs in parallel
         global_size = (num_bots * num_cycles,)
@@ -1141,7 +1350,14 @@ class CompactBacktester:
                 np.int32(num_cycles),
                 np.int32(num_bars),
                 np.float32(self.initial_balance),
-                results_buf
+                results_buf,
+                trade_logs_buf if trade_logs_buf is not None else cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY, 1),
+                trade_log_index_buf if trade_log_index_buf is not None else cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE, 4)
+                ,cycle_global_idx_buf,
+                np.int32(chunk_id),
+                np.int32(chunk_global_start),
+                np.int32(chunk_global_end)
+                , close_counters_buf
             )
             
             self.queue.finish()
@@ -1149,6 +1365,40 @@ class CompactBacktester:
             # Read results
             results_flat = np.empty(results_size, dtype=np.float32)
             cl.enqueue_copy(self.queue, results_flat, results_buf)
+            # Optional: read trade logs if logging enabled
+            trade_logs = None
+            if self.trade_log_enabled:
+                # Get count
+                idx_host = np.empty(1, dtype=np.int32)
+                cl.enqueue_copy(self.queue, idx_host, trade_log_index_buf)
+                self.queue.finish()
+                count = int(idx_host[0])
+                if count > 0:
+                    count = min(count, self.trade_log_max)
+                    trade_logs = np.empty(self.trade_log_max, dtype=TRADE_LOG_DTYPE)
+                    cl.enqueue_copy(self.queue, trade_logs, trade_logs_buf)
+                    self.queue.finish()
+                    trade_logs = trade_logs[:count]
+                    # Write logs to CSV for inspection
+                    self._write_trade_logs_csv(trade_logs)
+
+            # Read close counters for diagnostics
+            cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf)
+            self.queue.finish()
+            # Write close counters to CSV for later debug (append)
+            cc_path = Path('logs') / 'close_counters.csv'
+            write_header = not cc_path.exists()
+            with open(cc_path, 'a', newline='') as f:
+                writer = csv.writer(f, delimiter=';')
+                if write_header:
+                    writer.writerow(['BotID', 'Cycle', 'KernelCloseCount'])
+                for b_idx in range(num_bots):
+                    for c_idx in range(num_cycles):
+                        kc = int(close_counters_host[b_idx * num_cycles + c_idx])
+                        if kc > 0:
+                            # Use global cycle index for CSV
+                            global_cycle = cycle_global_idx[c_idx]
+                            writer.writerow([bots[b_idx].bot_id, global_cycle, kc])
             
         except cl.RuntimeError as e:
             log_error(f"GPU kernel execution failed: {e}")
@@ -1163,11 +1413,22 @@ class CompactBacktester:
         
         for bot_idx in range(num_bots):
             for cycle_idx in range(num_cycles):
-                idx = bot_idx * num_cycles * 3 + cycle_idx * 3
+                idx = bot_idx * num_cycles * 4 + cycle_idx * 4
+                trades_val = int(results_flat[idx])
+                wins_val = int(results_flat[idx + 1])
+                pnl_val = results_flat[idx + 2]
+                signals_val = int(results_flat[idx + 3])
+                
+                # DEBUG: Log for first bot
+                if bot_idx == 0 and num_bots <= 10:
+                    close_counter = int(close_counters_host[bot_idx * num_cycles + cycle_idx])
+                    print(f"  [DEBUG] Bot {bots[bot_idx].bot_id} Cycle {cycle_idx}: kernel reports {trades_val} trades, close_counter={close_counter}")
+                
                 results[bot_idx][cycle_idx] = {
-                    'trades': int(results_flat[idx]),
-                    'wins': int(results_flat[idx + 1]),
-                    'pnl': results_flat[idx + 2]
+                    'trades': trades_val,
+                    'wins': wins_val,
+                    'pnl': pnl_val,
+                    'signals': signals_val
                 }
         
         # Cleanup
@@ -1175,6 +1436,7 @@ class CompactBacktester:
         ohlcv_buf.release()
         cycle_starts_buf.release()
         cycle_ends_buf.release()
+        cycle_global_idx_buf.release()
         results_buf.release()
         
         return results
@@ -1229,6 +1491,7 @@ class CompactBacktester:
         trades: np.ndarray,
         wins: np.ndarray,
         pnls: np.ndarray,
+        signals: np.ndarray,  # NEW
         num_cycles: int
     ) -> List[BacktestResult]:
         """
@@ -1264,6 +1527,7 @@ class CompactBacktester:
             batch_trades_arr = trades[mask]
             batch_wins_arr = wins[mask]
             batch_pnls_arr = pnls[mask]
+            batch_signals_arr = signals[mask]  # NEW
             batch_data_points = len(batch_bot_ids_arr)
             
             if batch_data_points == 0:
@@ -1277,13 +1541,14 @@ class CompactBacktester:
             trades_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=batch_trades_arr)
             wins_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=batch_wins_arr)
             pnls_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=batch_pnls_arr)
+            signals_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=batch_signals_arr)  # NEW
             
             # Create bot_id lookup array for this batch
             bot_id_lookup = np.array([b.bot_id for b in batch_bots], dtype=np.int32)
             bot_id_lookup_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=bot_id_lookup)
             
-            # Output: aggregated results per bot [trades, wins, pnl] × batch_num_bots
-            output_buf = cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY, size=batch_num_bots * 3 * 4)
+            # Output: aggregated results per bot [trades, wins, pnl, signals] × batch_num_bots
+            output_buf = cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY, size=batch_num_bots * 4 * 4)
             
             # Run aggregation kernel
             kernel = self._aggregate_flat_kernel
@@ -1299,6 +1564,7 @@ class CompactBacktester:
                 trades_buf,
                 wins_buf,
                 pnls_buf,
+                signals_buf,  # NEW
                 np.int32(batch_num_bots),
                 np.int32(batch_data_points),
                 output_buf
@@ -1307,17 +1573,18 @@ class CompactBacktester:
             self.queue.finish()
             
             # Read results
-            output = np.empty(batch_num_bots * 3, dtype=np.float32)
+            output = np.empty(batch_num_bots * 4, dtype=np.float32)
             cl.enqueue_copy(self.queue, output, output_buf)
             self.queue.finish()
             
             # Store results
             for i in range(batch_num_bots):
-                idx = i * 3
+                idx = i * 4
                 all_outputs.append([
                     int(output[idx]),      # total_trades
                     int(output[idx + 1]),  # total_wins
-                    output[idx + 2]        # total_pnl
+                    output[idx + 2],       # total_pnl
+                    int(output[idx + 3])   # total_signals  # NEW
                 ])
             
             # Cleanup batch buffers
@@ -1335,7 +1602,7 @@ class CompactBacktester:
                 gc.collect()
         
         # Now build per-cycle results (CPU aggregation, already have the data)
-        return self._build_final_results(bots, bot_ids, cycle_ids, trades, wins, pnls, num_cycles, all_outputs)
+        return self._build_final_results(bots, bot_ids, cycle_ids, trades, wins, pnls, signals, num_cycles, all_outputs)
     
     def _build_final_results(
         self,
@@ -1345,6 +1612,7 @@ class CompactBacktester:
         trades: np.ndarray,
         wins: np.ndarray,
         pnls: np.ndarray,
+        signals: np.ndarray,  # NEW
         num_cycles: int,
         all_outputs: List[List]
     ) -> List[BacktestResult]:
@@ -1353,7 +1621,7 @@ class CompactBacktester:
         num_data_points = len(bot_ids)
         
         # Build per-cycle arrays by aggregating data points per cycle
-        bot_cycle_map = {}  # {bot_id: {cycle_id: [trades, wins, pnl]}}
+        bot_cycle_map = {}  # {bot_id: {cycle_id: [trades, wins, pnl, signals]}}
         
         for i in range(num_data_points):
             b_id = bot_ids[i]
@@ -1361,10 +1629,11 @@ class CompactBacktester:
             if b_id not in bot_cycle_map:
                 bot_cycle_map[b_id] = {}
             if c_id not in bot_cycle_map[b_id]:
-                bot_cycle_map[b_id][c_id] = [0, 0, 0.0]
+                bot_cycle_map[b_id][c_id] = [0, 0, 0.0, 0]  # Added signals
             bot_cycle_map[b_id][c_id][0] += trades[i]
             bot_cycle_map[b_id][c_id][1] += wins[i]
             bot_cycle_map[b_id][c_id][2] += pnls[i]
+            bot_cycle_map[b_id][c_id][3] += signals[i]  # NEW
         
         # Convert to BacktestResult objects
         final_results = []
@@ -1374,18 +1643,21 @@ class CompactBacktester:
             total_trades = all_outputs[bot_idx][0]
             total_wins = all_outputs[bot_idx][1]
             total_pnl = all_outputs[bot_idx][2]
+            total_signals = all_outputs[bot_idx][3]  # NEW
             
             # Build per-cycle arrays
             per_cycle_trades = []
             per_cycle_wins = []
             per_cycle_pnl = []
+            per_cycle_signals = []  # NEW
             
             bot_data = bot_cycle_map.get(bot.bot_id, {})
             for cycle_idx in range(num_cycles):
-                cycle_data = bot_data.get(cycle_idx, [0, 0, 0.0])
+                cycle_data = bot_data.get(cycle_idx, [0, 0, 0.0, 0])
                 per_cycle_trades.append(cycle_data[0])
                 per_cycle_wins.append(cycle_data[1])
                 per_cycle_pnl.append(cycle_data[2])
+                per_cycle_signals.append(cycle_data[3])  # NEW
             
             # Calculate metrics
             win_rate = (total_wins / total_trades * 100.0) if total_trades > 0 else 0.0
@@ -1403,6 +1675,7 @@ class CompactBacktester:
                 per_cycle_trades=per_cycle_trades,
                 per_cycle_wins=per_cycle_wins,
                 per_cycle_pnl=per_cycle_pnl,
+                per_cycle_signals=per_cycle_signals,  # NEW
                 total_pnl=total_pnl,
                 max_drawdown=max_dd,
                 sharpe_ratio=sharpe,
@@ -1555,7 +1828,12 @@ class CompactBacktester:
             )
             
             final_results.append(result)
-        
+        # Optional: verify results with trade logs on host
+        try:
+            self._verify_trade_log_consistency(final_results)
+        except Exception as e:
+            log_error(f"Trade log consistency check failed: {e}")
+
         return final_results
     
     def _aggregate_chunk_results(
@@ -2097,6 +2375,83 @@ class CompactBacktester:
             results.append(result)
         
         return results
+    
+    def _write_trade_logs_csv(self, trade_logs: np.ndarray):
+        """Write detailed trade logs to CSV for verification."""
+        import os
+        import csv
+        
+        log_dir = "logs"
+        os.makedirs(log_dir, exist_ok=True)
+        csv_file = os.path.join(log_dir, "trade_logs.csv")
+        
+        # Append to CSV so we can collect logs across multiple chunks
+        write_header = not os.path.exists(csv_file)
+        with open(csv_file, 'a' if not write_header else 'w', newline='') as f:
+            writer = csv.writer(f, delimiter=';')
+            # Header includes optional Signature column for dedup helpers
+            if write_header:
+                writer.writerow([
+                    'BotID', 'Cycle', 'EntryPrice', 'ExitPrice', 'EntryBar', 'ExitBar',
+                    'Leverage', 'PnL', 'Direction', 'ChunkID', 'OutOfCycle', 'Signature'
+                ])
+
+            for trade in trade_logs:
+                # Compute signature: EntryBar:ExitBar:Direction:PnLCents
+                entry = int(trade['entry_bar']) if 'entry_bar' in trade.dtype.names else 0
+                exitb = int(trade['exit_bar']) if 'exit_bar' in trade.dtype.names else 0
+                direction = 'LONG' if trade['direction'] == 1 else 'SHORT'
+                pnl = float(trade['pnl']) if 'pnl' in trade.dtype.names else 0.0
+                signature = f"{entry}:{exitb}:{direction}:{int(round(pnl*100))}"
+                writer.writerow([
+                    trade['bot_id'],
+                    trade['cycle'],
+                    round(trade['entry_price'], 4),
+                    round(trade['exit_price'], 4),
+                    trade['entry_bar'],
+                    trade['exit_bar'],
+                    round(trade['leverage'], 1),
+                    round(trade['pnl'], 2),
+                    'LONG' if trade['direction'] == 1 else 'SHORT'
+                    , int(trade['chunk_id']) if 'chunk_id' in trade.dtype.names else -1,
+                    int(trade['out_of_cycle']) if 'out_of_cycle' in trade.dtype.names else 0,
+                    signature,
+                ])
+                # Add an optional signature column for deduplication helpers (EntryBar:ExitBar:Direction:rounded PnL cents)
+                with open(csv_file, 'r', encoding='utf-8') as f_re:
+                    content = f_re.read()
+                # If signature header missing, rewrite file with signature header and value
+                # protect against empty file
+                if not content.strip():
+                    # nothing to rewrite
+                    pass
+                elif 'Signature' not in content.splitlines()[0]:
+                    # Reopen for read and rewrite including signature
+                    import tempfile
+                    temp = tempfile.NamedTemporaryFile('w', delete=False, newline='', encoding='utf-8')
+                    tmp_writer = csv.writer(temp, delimiter=';')
+                    with open(csv_file, 'r', encoding='utf-8') as f2:
+                        rdr = csv.reader(f2, delimiter=';')
+                        header = next(rdr)
+                        header.append('Signature')
+                        tmp_writer.writerow(header)
+                        for row in rdr:
+                            # Compute signature from row values (EntryBar, ExitBar, Direction, PnL)
+                            try:
+                                entry = int(row[4])
+                                exitb = int(row[5])
+                                direction = row[8]
+                                pnl = float(row[7].replace(',', '.'))
+                            except Exception:
+                                entry = 0; exitb = 0; direction = 'LONG'; pnl = 0.0
+                            signature = f"{entry}:{exitb}:{direction}:{int(round(pnl*100))}"
+                            row.append(signature)
+                            tmp_writer.writerow(row)
+                    temp.close()
+                    import shutil
+                    shutil.move(temp.name, csv_file)
+        
+        log_info(f"Logged {len(trade_logs)} trades to {csv_file}")
     
     def estimate_vram(self, num_bots: int, num_bars: int, num_cycles: int) -> dict:
         """

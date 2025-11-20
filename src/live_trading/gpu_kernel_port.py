@@ -23,9 +23,9 @@ FUNDING_RATE_INTERVAL = 480  # 8 hours = 480 minutes at 1m timeframe
 BASE_FUNDING_RATE = 0.0001  # 0.01% per 8 hours
 MAINTENANCE_MARGIN_RATE = 0.005  # 0.5% for BTC
 
-# Risk strategy constants (15 strategies)
+# Risk strategy constants (14 strategies)
 RISK_FIXED_PCT = 0
-RISK_FIXED_USD = 1
+RISK_FIXED_USD = 1  # UNAVAILABLE
 RISK_KELLY_FULL = 2
 RISK_KELLY_HALF = 3
 RISK_KELLY_QUARTER = 4
@@ -43,7 +43,7 @@ RISK_OPTIMAL_F = 14
 # Risk strategy names for display
 RISK_STRATEGY_NAMES = {
     RISK_FIXED_PCT: "Fixed Percentage",
-    RISK_FIXED_USD: "Fixed USD Amount",
+    RISK_FIXED_USD: "Fixed USD Amount (Unavailable)",
     RISK_KELLY_FULL: "Kelly Criterion (Full)",
     RISK_KELLY_HALF: "Kelly Criterion (Half)",
     RISK_KELLY_QUARTER: "Kelly Criterion (Quarter)",
@@ -282,10 +282,6 @@ def calculate_position_size(
     if risk_strategy == RISK_FIXED_PCT:
         # Fixed percentage of balance (risk_param: 0.01-0.20 = 1-20%)
         position_value = balance * risk_param
-        
-    elif risk_strategy == RISK_FIXED_USD:
-        # Fixed USD amount (risk_param: 10-10000)
-        position_value = risk_param
         
     elif risk_strategy == RISK_KELLY_FULL:
         # Full Kelly criterion (risk_param: 0.01-1.0 fraction)

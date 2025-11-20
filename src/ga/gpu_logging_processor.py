@@ -207,7 +207,7 @@ class GPULoggingProcessor:
             # IDs
             'Generation', 'BotID', 'SurvivedGenerations',
             # Totals (aggregate across all cycles)
-            'TotalProfitPct', 'TotalWinRate', 'TotalTrades',
+            'TotalProfitPct', 'TotalWinRate', 'TotalTrades', 'TotalSignals',  # Added TotalSignals
             # Per-cycle averages (excluding zero-trade cycles)
             'AvgProfitPctPerCycle', 'AvgWinRatePerCycle', 'AvgTradesPerCycle',
             # Scoring metrics
@@ -219,7 +219,7 @@ class GPULoggingProcessor:
             'NumCycles', 'IndicatorsUsed', 'IndicatorParams'
         ]
         for i in range(num_cycles):
-            header.extend([f'Cycle{i}_Trades', f'Cycle{i}_ProfitPct', f'Cycle{i}_TotalPnL', f'Cycle{i}_WinRate'])
+            header.extend([f'Cycle{i}_Trades', f'Cycle{i}_ProfitPct', f'Cycle{i}_TotalPnL', f'Cycle{i}_WinRate', f'Cycle{i}_Signals'])
         csv_lines = [';'.join(header)]
 
         # Process each bot's binary data
@@ -286,6 +286,18 @@ class GPULoggingProcessor:
             total_pnl_val = result.total_pnl
             sharpe_ratio_val = result.sharpe_ratio
             max_drawdown_val = result.max_drawdown * 100  # Convert from decimal to percentage
+            
+            # ERROR DETECTION: Impossible values in real trading
+            if total_profit_pct < -100.0 * len(result.per_cycle_pnl):
+                log_error(f"Bot {bot_id}: IMPOSSIBLE profit % {total_profit_pct:.2f} < -100% per cycle - calculation error!")
+                # Extra debug info: show per-cycle PnL to help diagnose extreme losses
+                try:
+                    per_cycle_debug = ','.join([f"{p:.2f}" for p in result.per_cycle_pnl])
+                except Exception:
+                    per_cycle_debug = str(result.per_cycle_pnl)
+                log_error(f"  Bot {bot_id} per-cycle PnL: {per_cycle_debug} | TotalPnL={result.total_pnl:.2f} | InitialBalance={initial_balance:.2f}")
+            if survival_generations > 1000:
+                log_error(f"Bot {bot_id}: IMPOSSIBLE survival generations {survival_generations} > 1000")
             
             # Extract cycle data from per_cycle_data for cycle-specific checks
             cycle_pnls = []
@@ -358,6 +370,7 @@ class GPULoggingProcessor:
                 f"{total_profit_pct:.2f}".replace('.', ','),
                 f"{total_win_rate:.2f}".replace('.', ','),  # Total win rate percentage
                 str(int(total_trades_val)),
+                str(0),  # TotalSignals placeholder
                 # PER-CYCLE AVERAGES (only active cycles with trades)
                 f"{avg_profit_pct_per_cycle:.2f}".replace('.', ','),
                 f"{avg_winrate_per_cycle:.2f}".replace('.', ','),
@@ -397,7 +410,8 @@ class GPULoggingProcessor:
                     str(c_trades),
                     f"{c_profit_pct:.2f}".replace('.', ','),
                     f"{c_pnl:.2f}".replace('.', ','),  # Add TotalPnL for each cycle
-                    f"{c_winrate:.2f}".replace('.', ',')
+                    f"{c_winrate:.2f}".replace('.', ','),
+                    str(0)  # Cycle signals placeholder
                 ])
 
             csv_lines.append(';'.join(row))

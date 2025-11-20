@@ -390,7 +390,7 @@ class DataFetcher:
         self,
         backtest_days: int,
         cycles: int,
-        buffer_multiplier: float = 1.2
+        buffer_multiplier: float = 4.0
     ) -> int:
         """
         Calculate total days of data needed for non-overlapping cycles + buffer.

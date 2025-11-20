@@ -17,7 +17,7 @@
 #define MAX_INDICATORS_PER_BOT 8
 #define MAX_PARAMS_PER_INDICATOR 3
 #define NUM_TOTAL_INDICATORS 50
-#define NUM_RISK_STRATEGIES 15
+#define NUM_RISK_STRATEGIES 14
 
 // Kucoin fees
 #define MAKER_FEE 0.0002f      // 0.02%
@@ -27,9 +27,9 @@
 // DATA STRUCTURES
 // ============================================================================
 
-// Risk strategies (matching backtest kernel) - 15 total
+// Risk strategies (matching backtest kernel) - 14 total
 #define RISK_FIXED_PCT 0           // Fixed percentage of balance
-#define RISK_FIXED_USD 1           // Fixed USD amount
+#define RISK_FIXED_USD 1           // Fixed USD amount - UNAVAILABLE
 #define RISK_KELLY_FULL 2          // Full Kelly criterion
 #define RISK_KELLY_HALF 3          // Half Kelly (safer)
 #define RISK_KELLY_QUARTER 4       // Quarter Kelly (conservative)
@@ -221,7 +221,8 @@ __kernel void generate_compact_bots(
     // === RISK STRATEGIES (1 per indicator) ===
     // Each indicator gets its own risk management strategy
     for (int i = 0; i < bot.num_indicators; i++) {
-        int strategy_choice = rand_int(&rng_state, 0, NUM_RISK_STRATEGIES);
+        int strategy_choice = rand_int(&rng_state, 0, NUM_RISK_STRATEGIES - 1);
+        if (strategy_choice >= 1) strategy_choice++;  // Skip RISK_FIXED_USD (1)
         bot.indicator_risk_strategies[i] = (unsigned char)strategy_choice;
     }
     
@@ -237,10 +238,6 @@ __kernel void generate_compact_bots(
         case RISK_FIXED_PCT:
             // Fixed percentage: 1% to 20%
             bot.risk_param = rand_float(&rng_state, 0.01f, 0.20f);
-            break;
-        case RISK_FIXED_USD:
-            // Fixed USD: $10 to $10000
-            bot.risk_param = rand_float(&rng_state, 10.0f, 10000.0f);
             break;
         case RISK_KELLY_FULL:
             // Full Kelly fraction: 0.01 to 1.0

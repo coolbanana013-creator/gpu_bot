@@ -156,8 +156,10 @@ class GeneticAlgorithmEvolver:
                 self.gpu_processor = GPUGAProcessor(gpu_context, gpu_queue)
                 log_info("GPU GA acceleration enabled")
             except Exception as e:
-                log_warning(f"Failed to initialize GPU GA processor: {e}")
-                log_info("Falling back to CPU-only GA operations")
+                log_error(f"Failed to initialize GPU GA processor: {e}")
+                raise RuntimeError("GPU GA processor initialization failed - cannot continue without GPU acceleration")
+        else:
+            raise RuntimeError("GPU context not provided - GPU acceleration required")
         
         # GPU logging acceleration
         self.gpu_logger = None
@@ -166,10 +168,10 @@ class GeneticAlgorithmEvolver:
                 self.gpu_logger = GPULoggingProcessor(gpu_context, gpu_queue)
                 log_info("GPU logging acceleration enabled")
             except Exception as e:
-                log_warning(f"Failed to initialize GPU logging processor: {e}")
-                log_info("Falling back to CPU logging")
+                log_error(f"Failed to initialize GPU logging processor: {e}")
+                raise RuntimeError("GPU logging processor initialization failed - cannot continue without GPU acceleration")
         else:
-            log_info("GPU context not provided, using CPU-only GA operations")
+            raise RuntimeError("GPU context not provided - GPU acceleration required")
         
         self.current_generation = 0
         self.population: List[CompactBotConfig] = []
@@ -184,6 +186,9 @@ class GeneticAlgorithmEvolver:
         
         # Track best bots across generations
         self.all_time_best: List[Tuple[CompactBotConfig, BacktestResult]] = []
+        
+        # Track last generation survivors
+        self.last_survivors: List[Tuple[CompactBotConfig, BacktestResult]] = []
         
         # Performance profiler
         self.profiler = EvolutionProfiler()
@@ -370,7 +375,7 @@ class GeneticAlgorithmEvolver:
         self,
         population: List[CompactBotConfig],
         results: List[BacktestResult],
-        survival_rate: float = 0.5
+        generation: int
     ) -> Tuple[List[CompactBotConfig], List[BacktestResult]]:
         """
         Select bots with UNIQUE indicator combinations where:
@@ -395,7 +400,7 @@ class GeneticAlgorithmEvolver:
         eliminated_high_drawdown = 0
         eliminated_no_cycles = 0
         
-        MAX_DRAWDOWN_THRESHOLD = 0.30  # 30% maximum drawdown allowed
+        MAX_DRAWDOWN_THRESHOLD = 0.15  # 15% maximum drawdown allowed
         
         for bot, result in zip(population, results):
             # Calculate average profit percentage across all cycles
@@ -411,7 +416,16 @@ class GeneticAlgorithmEvolver:
                 eliminated_negative_profit += 1
                 continue
             
-            # Check 2: Max drawdown < 30%
+            # Check 2: All cycles have positive profit
+            all_cycles_profitable = all(
+                result.per_cycle_pnl[i] > 0.0 if i < len(result.per_cycle_pnl) else False
+                for i in range(num_cycles)
+            )
+            if not all_cycles_profitable:
+                eliminated_high_drawdown += 1  # Reuse counter for simplicity
+                continue
+            
+            # Check 3: Max drawdown < 15%
             if result.max_drawdown >= MAX_DRAWDOWN_THRESHOLD:
                 eliminated_high_drawdown += 1
                 continue
@@ -421,13 +435,13 @@ class GeneticAlgorithmEvolver:
         
         # Check if any bots passed
         if not profitable_pairs:
-            log_error(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} high drawdown (>30%), {eliminated_no_cycles} no cycles, 0 bots passed")
-            log_error("No bots met criteria: average profit % must be positive AND max drawdown < 30%")
+            log_error(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} failed criteria, {eliminated_no_cycles} no cycles, 0 bots passed")
+            log_error("No bots met criteria: average profit % must be positive AND all cycles profitable AND max drawdown < 15%")
             log_error("Generating completely new population for next generation")
             # Return empty survivors - refill_population will generate all new bots
             return [], []
         
-        log_info(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} high drawdown (>30%), {len(profitable_pairs)} bots passed")
+        log_info(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} failed criteria, {len(profitable_pairs)} bots passed")
         
         # Step 2: Sort by fitness score (best first)
         profitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
@@ -458,24 +472,21 @@ class GeneticAlgorithmEvolver:
         # Increment survival generations
         for bot in survivor_bots:
             if hasattr(bot, 'survival_generations'):
-                try:
-                    current_sg = int(bot.survival_generations)
-                    if not isinstance(current_sg, int) or current_sg < 0 or current_sg > 1000:
-                        current_sg = 0
-                except (ValueError, TypeError):
-                    current_sg = 0
-                bot.survival_generations = current_sg + 1
+                bot.survival_generations = generation
             else:
-                bot.survival_generations = 1
+                bot.survival_generations = generation
         
         # Update all-time best
         self._update_all_time_best(surviving_pairs)
+        
+        # Store last survivors
+        self.last_survivors = surviving_pairs
         
         # Log diversity and filtering stats
         total_passed_filters = len(profitable_pairs)
         unique_count = len(surviving_pairs)
         eliminated_total = len(population) - len(profitable_pairs)
-        log_info(f"SURVIVAL: {unique_count} survivors (from {total_passed_filters} bots with positive profit % AND max DD < 30%)")
+        log_info(f"SURVIVAL: {unique_count} survivors (from {total_passed_filters} bots with positive profit % AND all cycles profitable AND max DD < 15%)")
         log_info(f"ELIMINATED: {eliminated_total} bots total")
         
         return survivor_bots, survivor_results
@@ -699,7 +710,7 @@ class GeneticAlgorithmEvolver:
             survivors, survivor_results = self.select_survivors(
                 self.population,
                 self.population_results,
-                survival_rate=0.5
+                gen
             )
             self.profiler.end_phase("survivor_selection")
             
@@ -821,15 +832,14 @@ class GeneticAlgorithmEvolver:
             
             # Write header (include per-cycle columns)
             header = [
-                'Generation', 'BotID', 'ProfitPct', 'WinRate', 'TotalTrades', 'FinalBalance', 
+                'Generation', 'BotID', 
                 'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
-                'NumIndicators', 'Leverage', 'TotalPnL', 'NumCycles', 'IndicatorsUsed',
+                'NumIndicators', 'Leverage', 'NumCycles', 'IndicatorsUsed',
                 'AllCyclesHaveTrades', 'AllCyclesProfitable'
             ]
             # Add dynamic per-cycle columns
             for i in range(num_cycles):
                 header.extend([
-                    f'Cycle{i}_Trades',
                     f'Cycle{i}_ProfitPct',
                     f'Cycle{i}_WinRate'
                 ])
@@ -855,17 +865,12 @@ class GeneticAlgorithmEvolver:
                 row = [
                     gen,
                     bot.bot_id,
-                    round(profit_pct, 2),
-                    round(result.win_rate, 4),
-                    result.total_trades,
-                    round(result.final_balance, 2),
                     round(result.fitness_score, 2),
                     round(result.sharpe_ratio, 2),
                     round(result.max_drawdown, 4),
                     bot.survival_generations,
                     bot.num_indicators,
                     bot.leverage,
-                    round(result.total_pnl, 2),
                     num_cycles,
                     indicators_str,
                     'TRUE' if all_cycles_have_trades else 'FALSE',
@@ -888,7 +893,6 @@ class GeneticAlgorithmEvolver:
                     c_winrate = (c_wins / c_trades) if c_trades > 0 else 0.0
 
                     row.extend([
-                        c_trades,
                         round(c_profit_pct, 2),
                         round(c_winrate, 4)
                     ])
@@ -928,15 +932,15 @@ class GeneticAlgorithmEvolver:
         
         return top_bots
     
-    def save_top_bots(self, filepath: str = None, count: int = TOP_BOTS_COUNT, filter_all_profitable: bool = True):
+    def save_top_bots(self, filepath: str = None, count: int = TOP_BOTS_COUNT, filter_all_profitable: bool = False):
         """
-        Save top bots to file and individual bot files.
-        Only saves bots where all cycles are profitable.
+        Save survivor bots from the last generation to file.
+        Survivors already meet the criteria: positive profit, all cycles profitable, max drawdown < 15%.
         
         Args:
             filepath: Output file path (if None, uses bot directory with timestamp)
             count: Number of top bots to save
-            filter_all_profitable: If True, only save bots where all cycles are profitable
+            filter_all_profitable: If True, only save bots where all cycles are profitable (already met)
         """
         import os
         from datetime import datetime
@@ -950,9 +954,9 @@ class GeneticAlgorithmEvolver:
         if filepath is None:
             filepath = f"{bot_dir}/best_bots.json"
             
-        top_bots = self.get_top_bots(count)
+        top_bots = self.last_survivors
         
-        # Filter bots: only keep those where ALL cycles are profitable
+        # Filter bots: only keep those where ALL cycles are profitable (already met by survivors)
         if filter_all_profitable:
             filtered_bots = []
             for bot, result in top_bots:
@@ -971,6 +975,9 @@ class GeneticAlgorithmEvolver:
             
             top_bots = filtered_bots
             log_info(f"Filtered to {len(top_bots)} bots where all cycles are profitable")
+        
+        # Limit to count
+        top_bots = top_bots[:count]
         
         results_data = {
             'total_generations': self.current_generation,
@@ -1016,7 +1023,7 @@ class GeneticAlgorithmEvolver:
         with open(filepath, 'w') as f:
             json.dump(results_data, f, indent=2)
         
-        log_info(f"\nSaved top {len(top_bots)} bots to {filepath} and individual files")
+        log_info(f"\nSaved {len(top_bots)} survivor bots to {filepath} and individual files")
     
     def shutdown(self):
         """Shutdown GPU processors."""

@@ -47,9 +47,27 @@ typedef struct __attribute__((packed)) {
     float volume;
 } OHLCVBar;
 
-// Risk strategy enum - SINGLE strategy per bot (15 total strategies)
+typedef struct __attribute__((packed)) {
+    int bot_id;
+    int cycle;
+    float entry_price;
+    float exit_price;
+    int entry_bar;
+    int exit_bar;
+    float leverage;
+    float pnl;
+    int direction; // 1 = long, -1 = short
+    int chunk_id; // which data chunk logged this trade (host-provided)
+    int out_of_cycle; // 1 if entry/exit bar are outside provided cycle range
+} TradeLog;
+
+// Trade logging utilities
+#define MAX_TRADE_LOGS 200000
+#define TRACE_BOT_LIMIT 1024  // Only log trades for first N bots (reduce noise)
+
+// Risk strategy enum - SINGLE strategy per bot (14 total strategies)
 #define RISK_FIXED_PCT 0           // Fixed percentage of balance
-#define RISK_FIXED_USD 1           // Fixed USD amount
+#define RISK_FIXED_USD 1           // Fixed USD amount - UNAVAILABLE
 #define RISK_KELLY_FULL 2          // Full Kelly criterion
 #define RISK_KELLY_HALF 3          // Half Kelly (safer)
 #define RISK_KELLY_QUARTER 4       // Quarter Kelly (conservative)
@@ -215,9 +233,10 @@ float calculate_unrealized_pnl(Position *pos, float current_price, float leverag
         price_diff = pos->entry_price - current_price;
     }
     
-    // Leveraged PnL
+    // Position PnL: quantity already reflects leveraged notional
+    // price_diff * quantity = leveraged PnL
     float raw_pnl = price_diff * pos->quantity;
-    return raw_pnl * leverage;
+    return raw_pnl;
 }
 
 /**
@@ -253,9 +272,10 @@ float calculate_free_margin(
     }
     
     // Free margin = balance + unrealized PnL - used margin
-    // Can't have negative free margin (would trigger liquidation)
+    // Return raw free margin so callers can detect negative free margin
+    // and prevent opening positions when funds insufficient.
     float free = balance + unrealized_pnl - used_margin;
-    return fmax(free, 0.0f);
+    return free;
 }
 
 /**
@@ -342,13 +362,6 @@ void calculate_dynamic_tp_sl(
             *tp_multiplier = 0.18f;  // 3:1 R/R
             break;
             
-        case RISK_FIXED_USD:
-            // Fixed USD: moderate stops
-            // risk_param: 10-10000
-            *sl_multiplier = 0.06f;
-            *tp_multiplier = 0.20f;  // 3.3:1 R/R
-            break;
-            
         case RISK_EQUITY_CURVE:
             // Equity curve: adaptive based on performance
             // risk_param: 0.5-2.0 multiplier
@@ -395,7 +408,8 @@ float calculate_position_size(
     float balance,
     float price,
     unsigned char risk_strategy,
-    float risk_param
+    float risk_param,
+    float leverage
 ) {
     float position_value = 0.0f;
     
@@ -403,11 +417,6 @@ float calculate_position_size(
         case RISK_FIXED_PCT:
             // Fixed percentage of balance (risk_param: 0.01-0.20 = 1-20%)
             position_value = balance * risk_param;
-            break;
-            
-        case RISK_FIXED_USD:
-            // Fixed USD amount (risk_param: 10-10000)
-            position_value = risk_param;
             break;
             
         case RISK_KELLY_FULL:
@@ -495,10 +504,13 @@ float calculate_position_size(
     }
     
     // Ensure reasonable bounds
-    // Min: $10, Max: 20% of balance
-    position_value = fmax(10.0f, fmin(position_value, balance * 0.2f));
-    
-    // Return position value (not quantity - open_position will calculate that)
+    // Min: $1 (allow tiny accounts), Max: 20% of balance
+    // NOTE: Now we return margin (capital reserved) — NOT notional exposure.
+    position_value = fmax(1.0f, fmin(position_value, balance * 0.2f));
+
+    // DO NOT multiply by leverage here — return margin (USD) that will be
+    // converted to notional by open_position() using leverage.
+    // Return margin (not notional)
     return position_value;
 }
 
@@ -526,8 +538,10 @@ int check_account_liquidation(
             // Calculate unrealized PnL
             total_unrealized_pnl += calculate_unrealized_pnl(&positions[i], current_price, leverage);
             
-            // Calculate used margin
-            total_used_margin += positions[i].entry_price * positions[i].quantity;
+            // Calculate used margin correctly: positions[i].entry_price * quantity = notional
+            // margin = notional / leverage
+            float notional = positions[i].entry_price * positions[i].quantity;
+            total_used_margin += notional / leverage;
         }
     }
     
@@ -540,7 +554,7 @@ int check_account_liquidation(
     // Maintenance margin: 0.5% of used margin for BTC
     // This means you need to maintain 0.5% of position value as collateral
     float maintenance_rate = 0.005f;
-    float maintenance_margin = total_used_margin * maintenance_rate * leverage;
+    float maintenance_margin = total_used_margin * maintenance_rate;
     
     // Liquidation occurs when equity drops below maintenance margin
     return (equity < maintenance_margin);
@@ -590,8 +604,9 @@ float generate_signal_consensus(
             if (bar > 0) {
                 float prev_value = precomputed_indicators[ind_idx * num_bars + (bar - 1)];
                 // Bullish: MA rising, Bearish: MA falling
-                if (ind_value > prev_value * 1.00001f) signal = 1;       // 0.001% increase
-                else if (ind_value < prev_value * 0.99999f) signal = -1;  // 0.001% decrease
+                // Use 0.1% threshold to avoid accentuating noise (previously 0.001%)
+                if (ind_value > prev_value * 1.001f) signal = 1;       // 0.1% increase
+                else if (ind_value < prev_value * 0.999f) signal = -1;  // 0.1% decrease
             }
         }
         
@@ -934,7 +949,7 @@ float generate_signal_consensus(
             weight = 1.5f;  // Moderate-aggressive: 1.5x weight
         } else if (strategy == RISK_KELLY_QUARTER || strategy == RISK_ATR_MULTIPLIER || strategy == RISK_VOLATILITY_PCT || strategy == RISK_PERCENT_VOLATILITY) {
             weight = 1.2f;  // Adaptive strategies: 1.2x weight
-        } else if (strategy == RISK_FIXED_PCT || strategy == RISK_FIXED_USD || strategy == RISK_WILLIAMS_FIXED) {
+        } else if (strategy == RISK_FIXED_PCT || strategy == RISK_WILLIAMS_FIXED) {
             weight = 0.8f;  // Conservative strategies: 0.8x weight
         }
         // Others (FIXED_RISK_REWARD, EQUITY_CURVE, FIXED_RATIO) remain at 1.0x
@@ -971,7 +986,7 @@ float generate_signal_consensus(
  * REALISTIC APPROACH:
  * - Calculate position_value from desired exposure (strategy-specific)
  * - Margin required = position_value / leverage (what we put up as collateral)
- * - Quantity based on MARGIN, not full position value
+ * - Quantity = position_value / price (full leveraged position size)
  * - Fees based on full position value (leverage amplifies)
  * - PnL will be leveraged automatically through quantity calculation
  */
@@ -1005,11 +1020,14 @@ void open_position(
     
     // TRUE MARGIN TRADING CALCULATION
     // Margin = what we reserve from balance (collateral)
-    float margin_required = desired_position_value / leverage;
+    // If desired_position_value is margin (returned by calculate_position_size),
+    // margin_required is that amount. The notional exposure is margin * leverage.
+    float margin_required = desired_position_value;
+    float notional_value = margin_required * leverage;
     
     // DYNAMIC SLIPPAGE based on market conditions (optimized - no historical lookups)
     float slippage_rate = calculate_dynamic_slippage(
-        desired_position_value,
+        notional_value,
         current_volume,
         leverage,
         price,
@@ -1019,8 +1037,8 @@ void open_position(
     
     // Fees and slippage are based on FULL position value (leverage amplifies costs)
     // desired_position_value is already the notional (margin * leverage equivalent)
-    float entry_fee = desired_position_value * TAKER_FEE;
-    float slippage_cost = desired_position_value * slippage_rate;
+    float entry_fee = notional_value * TAKER_FEE;
+    float slippage_cost = notional_value * slippage_rate;
     
     // Total cost = margin we reserve + fees we pay upfront
     // Note: Fees are paid on notional, deducted from balance in USD
@@ -1035,6 +1053,9 @@ void open_position(
     // IMPROVED: Check free margin with projected balance (including unrealized PnL from other positions)
     float free_margin = calculate_free_margin(balance_after_trade, positions, MAX_POSITIONS, price, leverage);
     if (free_margin < 0.0f) return;  // Not enough free margin after this trade
+
+    // Also ensure margin required for this trade does not exceed remaining free margin
+    if (margin_required > free_margin) return;
     
     // Safe to deduct cost from balance
     *balance -= total_cost;
@@ -1042,7 +1063,7 @@ void open_position(
     // Calculate quantity based on FULL NOTIONAL VALUE to get leveraged exposure
     // quantity = desired_position_value / price
     // This represents the actual BTC amount traded (leveraged)
-    float quantity = desired_position_value / price;
+    float quantity = notional_value / price;
     
     // Set position
     positions[slot].is_active = 1;
@@ -1205,6 +1226,19 @@ void manage_positions(
     float *sum_losses, // NEW: accumulate total losing PnL
     float *max_drawdown,
     float initial_balance
+    , int bot_id
+    , int bot_idx
+    , __global int *close_counters
+    , const int num_cycles
+    , __global TradeLog *trade_logs
+    , __global int *trade_log_index
+    , int cycle_idx
+    , __global int *cycle_global_idx
+    , int cycle_start
+    , int cycle_end
+    , const int chunk_id
+    , const int chunk_global_start
+    , const int chunk_global_end
 ) {
     // FIRST: Check account-level liquidation (affects all positions)
     int account_liquidated = check_account_liquidation(
@@ -1231,22 +1265,61 @@ void manage_positions(
                 );
                 *balance += return_amount;
                 
-                float margin_was = positions[i].entry_price * positions[i].quantity;
+                float margin_was = (positions[i].entry_price * positions[i].quantity) / leverage;
                 float actual_pnl = return_amount - margin_was;
+
+                // Canonical ownership: only the chunk containing the exit should account the close
+                int entry_global = positions[i].entry_bar + chunk_global_start;
+                int exit_global = current_bar_idx + chunk_global_start;
+                int owns_exit = (exit_global >= chunk_global_start && exit_global < chunk_global_end);
+                if (owns_exit) {
+                    *cycle_pnl += actual_pnl;
+                    (*total_trades)++;
+                    if (actual_pnl > 0.0f) {
+                        (*winning_trades)++;
+                        *sum_wins += actual_pnl;
+                    } else {
+                        (*losing_trades)++;
+                        *sum_losses += fabs(actual_pnl);
+                    }
+                    if (close_counters != NULL) {
+                        atomic_add(&close_counters[bot_idx * num_cycles + cycle_idx], 1);
+                    }
+                }
                 
-                *total_pnl += actual_pnl;
-                *cycle_pnl += actual_pnl;
-                (*total_trades)++;
-                
-                if (actual_pnl > 0.0f) {
-                    (*winning_trades)++;
-                    *sum_wins += actual_pnl;
-                } else {
-                    (*losing_trades)++;
-                    *sum_losses += fabs(actual_pnl);
+                // NOTE: wins/losses and sums are handled above in the canonical ownership block
+                // Log this trade if enabled and within trace sample
+                if (trade_logs != NULL && bot_id < TRACE_BOT_LIMIT) {
+                    int idx = atomic_add(trade_log_index, 1);
+                    if (idx < MAX_TRADE_LOGS) {
+                        trade_logs[idx].bot_id = bot_id;
+                        trade_logs[idx].cycle = cycle_global_idx[cycle_idx];
+                        trade_logs[idx].entry_price = positions[i].entry_price;
+                        trade_logs[idx].exit_price = bar->close;
+                        trade_logs[idx].entry_bar = positions[i].entry_bar;
+                        trade_logs[idx].exit_bar = current_bar_idx;
+                        trade_logs[idx].leverage = leverage;
+                        trade_logs[idx].chunk_id = chunk_id;
+                        // Only log a trade if the exit occurred inside this chunk's global range
+                        int entry_global = positions[i].entry_bar + chunk_global_start;
+                        int exit_global = current_bar_idx + chunk_global_start;
+                        if (exit_global < chunk_global_start || exit_global >= chunk_global_end) {
+                            // Skip logging - the canonical log will come from the chunk that includes the exit
+                        } else {
+                            trade_logs[idx].chunk_id = chunk_id;
+                            trade_logs[idx].out_of_cycle = (entry_global < cycle_start || exit_global > cycle_end) ? 1 : 0;
+                            trade_logs[idx].pnl = actual_pnl;
+                            trade_logs[idx].direction = positions[i].direction;
+                        }
+                        // Mark out_of_cycle if entry or exit lie outside this cycle's range
+                        // Moved into conditional logging to avoid duplicates across chunks
+                    }
                 }
             }
         }
+        
+        // Liquidation: account is wiped out
+        *balance = 0.0f;
         
         // Cap balance at zero (maximum 100% loss)
         if (*balance < 0.0f) *balance = 0.0f;
@@ -1275,14 +1348,170 @@ void manage_positions(
             if (positions[i].direction == 1) {
                 // Long position pays funding
                 *balance -= funding_cost;
-                *total_pnl -= funding_cost;
-                *cycle_pnl -= funding_cost;
             } else {
                 // Short position receives funding
                 *balance += funding_cost;
-                *total_pnl += funding_cost;
-                *cycle_pnl += funding_cost;
             }
+        }
+    }
+    
+    // FOURTH: Per-position liquidation checks
+    // If a position's unrealized loss exceeds its reserved margin, liquidate it.
+    // Use the precomputed 'liquidation_price' threshold to detect when the price
+    // would wipe margin for that position (more realistic than global clamp).
+    for (int i = 0; i < MAX_POSITIONS; i++) {
+        if (!positions[i].is_active) continue;
+
+        Position *pos = &positions[i];
+        // If the price has crossed the liquidation price, the position is force-closed
+        int liquidate = 0;
+        if (pos->direction == 1) {
+            // Long: liquidation when price <= liquidation_price
+            if (bar->low <= pos->liquidation_price) liquidate = 1;
+        } else {
+            // Short: liquidation when price >= liquidation_price
+            if (bar->high >= pos->liquidation_price) liquidate = 1;
+        }
+
+        if (liquidate) {
+            // Force close this position with LIQUIDATION reason (2)
+            float return_amount = close_position(
+                pos,
+                pos->liquidation_price,  // use liquidation price as exit
+                leverage,
+                num_positions,
+                2,  // liquidation
+                bar->volume,
+                bar->high,
+                bar->low
+            );
+
+            *balance += return_amount;
+
+            // Margin at time of liquidation
+            float margin_was = (pos->entry_price * pos->quantity) / leverage;
+            float actual_pnl = return_amount - margin_was;  // usually -margin_was
+
+            int entry_global_liq = pos->entry_bar + chunk_global_start;
+            int exit_global_liq = current_bar_idx + chunk_global_start;
+            int owns_exit_liq = (exit_global_liq >= chunk_global_start && exit_global_liq < chunk_global_end);
+            if (owns_exit_liq) {
+                *cycle_pnl += actual_pnl;
+                (*total_trades)++;
+                if (actual_pnl > 0.0f) {
+                    (*winning_trades)++;
+                    *sum_wins += actual_pnl;
+                } else {
+                    (*losing_trades)++;
+                    *sum_losses += fabs(actual_pnl);
+                }
+                if (close_counters != NULL) {
+                    atomic_add(&close_counters[bot_idx * num_cycles + cycle_idx], 1);
+                }
+            }
+
+            // Log liquidation events for debugging
+            if (trade_logs != NULL && bot_id < TRACE_BOT_LIMIT) {
+                int li = atomic_add(trade_log_index, 1);
+                if (li < MAX_TRADE_LOGS) {
+                    trade_logs[li].bot_id = bot_id;
+                    trade_logs[li].cycle = cycle_global_idx[cycle_idx];
+                    trade_logs[li].entry_price = pos->entry_price;
+                    trade_logs[li].exit_price = pos->liquidation_price;
+                    trade_logs[li].entry_bar = pos->entry_bar;
+                    trade_logs[li].exit_bar = current_bar_idx;
+                    trade_logs[li].leverage = leverage;
+                    trade_logs[li].pnl = actual_pnl;
+                    trade_logs[li].direction = pos->direction;
+                    // Canonical logging: only log this liquidation if exit occurred in this chunk
+                    int entry_global = pos->entry_bar + chunk_global_start;
+                    int exit_global = current_bar_idx + chunk_global_start;
+                    if (exit_global >= chunk_global_start && exit_global < chunk_global_end) {
+                        trade_logs[li].chunk_id = chunk_id;
+                            trade_logs[li].out_of_cycle = (entry_global < (cycle_start + chunk_global_start) || exit_global > (cycle_end + chunk_global_start)) ? 1 : 0;
+                    }
+                }
+            }
+
+            // Ensure positions slot cleared
+            pos->is_active = 0;
+            (*num_positions)--;
+        }
+    }
+
+    // Additional per-position liquidation check using unrealized pnl (safety net):
+    // If unrealized loss is equal or greater than margin reserved, liquidate now.
+    for (int i = 0; i < MAX_POSITIONS; i++) {
+        if (!positions[i].is_active) continue;
+        Position *pos = &positions[i];
+        float price_now = bar->close;
+        float price_diff2 = 0.0f;
+        if (pos->direction == 1) price_diff2 = price_now - pos->entry_price;
+        else price_diff2 = pos->entry_price - price_now;
+
+        float unrealized = price_diff2 * pos->quantity; // leveraged PnL
+        float notional2 = pos->entry_price * pos->quantity;
+        float margin_was2 = notional2 / leverage;
+
+        if (-unrealized >= margin_was2) {
+            // Force liquidation using close_position
+            float return_amount2 = close_position(
+                pos,
+                price_now,
+                leverage,
+                num_positions,
+                2,
+                bar->volume,
+                bar->high,
+                bar->low
+            );
+
+            *balance += return_amount2;
+            float actual_pnl2 = return_amount2 - margin_was2;
+            // Canonical ownership: only the chunk that contains the exit performs per-cycle accounting
+            int entry_global3 = pos->entry_bar + chunk_global_start;
+            int exit_global3 = current_bar_idx + chunk_global_start;
+            int owns_exit3 = (exit_global3 >= chunk_global_start && exit_global3 < chunk_global_end);
+            if (owns_exit3) {
+                *cycle_pnl += actual_pnl2;
+                (*total_trades)++;
+                if (actual_pnl2 > 0.0f) {
+                    (*winning_trades)++;
+                    *sum_wins += actual_pnl2;
+                } else {
+                    (*losing_trades)++;
+                    *sum_losses += fabs(actual_pnl2);
+                }
+                if (close_counters != NULL) {
+                    atomic_add(&close_counters[bot_idx * num_cycles + cycle_idx], 1);
+                }
+            }
+
+            // Log safety-net liquidation
+            if (trade_logs != NULL && bot_id < TRACE_BOT_LIMIT) {
+                int li2 = atomic_add(trade_log_index, 1);
+                if (li2 < MAX_TRADE_LOGS) {
+                    trade_logs[li2].bot_id = bot_id;
+                    trade_logs[li2].cycle = cycle_global_idx[cycle_idx];
+                    trade_logs[li2].entry_price = pos->entry_price;
+                    trade_logs[li2].exit_price = price_now;
+                    trade_logs[li2].entry_bar = pos->entry_bar;
+                    trade_logs[li2].exit_bar = current_bar_idx;
+                    trade_logs[li2].leverage = leverage;
+                    trade_logs[li2].pnl = actual_pnl2;
+                    trade_logs[li2].direction = pos->direction;
+                    // Canonical logging: only log this event if the exit happened in this chunk's global range
+                    int entry_global2 = pos->entry_bar + chunk_global_start;
+                    int exit_global2 = current_bar_idx + chunk_global_start;
+                    if (exit_global2 >= chunk_global_start && exit_global2 < chunk_global_end) {
+                        trade_logs[li2].chunk_id = chunk_id;
+                        trade_logs[li2].out_of_cycle = (entry_global2 < (cycle_start + chunk_global_start) || exit_global2 > (cycle_end + chunk_global_start)) ? 1 : 0;
+                    }
+                }
+            }
+
+            pos->is_active = 0;
+            (*num_positions)--;
         }
     }
     
@@ -1340,18 +1569,28 @@ void manage_positions(
             float margin_was = notional_was / leverage;
             float actual_pnl = return_amount - margin_was;
             
-            // Update PnL trackers
-            *total_pnl += actual_pnl;
-            *cycle_pnl += actual_pnl;
-            (*total_trades)++;
+            // Canonical ownership: only the chunk that contains the exit accounts for per-cycle/trade counters
+            int entry_global3 = pos->entry_bar + chunk_global_start;
+            int exit_global3 = current_bar_idx + chunk_global_start;
+            int owns_exit3 = (exit_global3 >= chunk_global_start && exit_global3 < chunk_global_end);
+            if (owns_exit3) {
+                *total_pnl += actual_pnl;
+                *cycle_pnl += actual_pnl;
+                (*total_trades)++;
+            }
             
             // FIXED: Properly accumulate wins and losses
-            if (actual_pnl > 0.0f) {
-                (*winning_trades)++;
-                *sum_wins += actual_pnl;  // Accumulate winning PnL
-            } else {
-                (*losing_trades)++;
-                *sum_losses += fabs(actual_pnl);  // Accumulate losing PnL (absolute value)
+            if (owns_exit3) {
+                if (actual_pnl > 0.0f) {
+                    (*winning_trades)++;
+                    *sum_wins += actual_pnl;  // Accumulate winning PnL
+                } else {
+                    (*losing_trades)++;
+                    *sum_losses += fabs(actual_pnl);  // Accumulate losing PnL (absolute value)
+                }
+                if (close_counters != NULL) {
+                    atomic_add(&close_counters[bot_idx * num_cycles + cycle_idx], 1);
+                }
             }
             
             // Ensure balance never goes negative (cap at -100% loss)
@@ -1361,6 +1600,29 @@ void manage_positions(
             float current_drawdown = (initial_balance - *balance) / initial_balance;
             if (current_drawdown > *max_drawdown) {
                 *max_drawdown = current_drawdown;
+            }
+
+            // Log trade for clarity (only trace a few bots to reduce noise)
+            if (trade_logs != NULL && bot_id < TRACE_BOT_LIMIT) {
+                int log_idx = atomic_add(trade_log_index, 1);
+                if (log_idx < MAX_TRADE_LOGS) {
+                    trade_logs[log_idx].bot_id = bot_id;
+                    trade_logs[log_idx].cycle = cycle_global_idx[cycle_idx];
+                    trade_logs[log_idx].entry_price = pos->entry_price;
+                    trade_logs[log_idx].exit_price = exit_price;
+                    trade_logs[log_idx].entry_bar = pos->entry_bar;
+                    trade_logs[log_idx].exit_bar = current_bar_idx;
+                    trade_logs[log_idx].leverage = leverage;
+                    trade_logs[log_idx].pnl = actual_pnl;
+                    trade_logs[log_idx].direction = pos->direction;
+                        // Canonical logging: only log this exit if it falls inside this chunk
+                        int entry_global3 = pos->entry_bar + chunk_global_start;
+                        int exit_global3 = current_bar_idx + chunk_global_start;
+                        if (exit_global3 >= chunk_global_start && exit_global3 < chunk_global_end) {
+                            trade_logs[log_idx].chunk_id = chunk_id;
+                            trade_logs[log_idx].out_of_cycle = (entry_global3 < (cycle_start + chunk_global_start) || exit_global3 > (cycle_end + chunk_global_start)) ? 1 : 0;
+                        }
+                }
             }
         }
     }
@@ -1379,7 +1641,14 @@ __kernel void backtest_with_signals(
     const int num_cycles,
     const int num_bars,
     const float initial_balance,
-    __global BacktestResult *results
+    __global BacktestResult *results,
+    __global TradeLog *trade_logs,
+    __global int *trade_log_index,
+    __global int *cycle_global_idx
+    , const int chunk_id
+    , const int chunk_global_start
+    , const int chunk_global_end
+    , __global int *close_counters
 ) {
     int bot_idx = get_global_id(0);
     CompactBotConfig bot = bots[bot_idx];
@@ -1502,13 +1771,6 @@ __kernel void backtest_with_signals(
         case RISK_FIXED_PCT:
             if (bot.risk_param < 0.01f || bot.risk_param > 0.20f) {
                 results[bot_idx].bot_id = -9988;
-                results[bot_idx].fitness_score = -999999.0f;
-                return;
-            }
-            break;
-        case RISK_FIXED_USD:
-            if (bot.risk_param < 10.0f || bot.risk_param > 10000.0f) {
-                results[bot_idx].bot_id = -9987;
                 results[bot_idx].fitness_score = -999999.0f;
                 return;
             }
@@ -1773,6 +2035,19 @@ __kernel void backtest_with_signals(
                 &sum_losses, // NEW: Pass sum_losses accumulator
                 &max_drawdown,
                 initial_balance
+                , bot.bot_id
+                , bot_idx
+                , close_counters
+                , num_cycles
+                , trade_logs
+                , trade_log_index
+                , cycle
+                , cycle_global_idx
+                , start_bar
+                , end_bar
+                , chunk_id
+                , 0 /* chunk_global_start - main kernel uses full dataset */
+                , num_bars /* chunk_global_end - main kernel uses whole dataset */
             );
             
             // FIXED: Track consecutive wins/losses using last trade PnL
@@ -1803,7 +2078,7 @@ __kernel void backtest_with_signals(
             }
             
             // Open new positions if signal and balance allows
-            if (signal != 0.0f && balance > initial_balance * MIN_BALANCE_PCT) {
+            if (signal != 0.0f && balance > 0.0f) {
                 if (num_positions < MAX_POSITIONS) {
                     // Check free margin before attempting to open position
                     float free_margin = calculate_free_margin(
@@ -1827,7 +2102,8 @@ __kernel void backtest_with_signals(
                         balance,
                         ohlcv[bar].close,
                         bot.indicator_risk_strategies[0],
-                        bot.risk_param
+                        bot.risk_param,
+                        (float)bot.leverage
                     );
                     
                     int direction = (signal > 0.0f) ? 1 : -1;
@@ -1852,7 +2128,7 @@ __kernel void backtest_with_signals(
             }
             
             // Stop trading if balance too low
-            if (balance < initial_balance * MIN_BALANCE_PCT) {
+            if (balance <= 0.0f) {
                 break;
             }
         }
@@ -1878,28 +2154,52 @@ __kernel void backtest_with_signals(
                 float margin_was = notional_was / (float)bot.leverage;
                 float actual_pnl = return_amount - margin_was;
                 
-                total_pnl += actual_pnl;
-                cycle_pnl += actual_pnl;  // Add to cycle PnL
-                
-                // Overflow protection: clamp counters at max values
-                if (total_trades < 65535) {
-                    total_trades++;
-                }
-                
-                // FIXED: Accumulate wins and losses properly
-                if (actual_pnl > 0.0f) {
-                    if (winning_trades < 65535) {
-                        winning_trades++;
+                // Canonical ownership: only the chunk that contains the exit should account this close
+                int entry_global_end = positions[i].entry_bar + chunk_global_start;
+                int exit_global_end = end_bar + chunk_global_start;
+                int owns_exit_end = (exit_global_end >= chunk_global_start && exit_global_end < chunk_global_end);
+                if (owns_exit_end) {
+                    total_pnl += actual_pnl;
+                    cycle_pnl += actual_pnl;  // Add to cycle PnL
+                    if (total_trades < 65535) {
+                        total_trades++;
                     }
-                    sum_wins += actual_pnl;
-                } else {
-                    if (losing_trades < 65535) {
-                        losing_trades++;
+                    if (actual_pnl > 0.0f) {
+                        if (winning_trades < 65535) {
+                            winning_trades++;
+                        }
+                        sum_wins += actual_pnl;
+                    } else {
+                        if (losing_trades < 65535) {
+                            losing_trades++;
+                        }
+                        sum_losses += fabs(actual_pnl);
                     }
-                    sum_losses += fabs(actual_pnl);
-                }
-            }
-        }
+                    if (close_counters != NULL) {
+                        atomic_add(&close_counters[bot_idx * num_cycles + cycle], 1);
+                    }
+                    // Optionally log the forced end-of-cycle close to the trade logs
+                    if (trade_logs != NULL && bot.bot_id < TRACE_BOT_LIMIT) {
+                        int li = atomic_add(trade_log_index, 1);
+                        if (li < MAX_TRADE_LOGS) {
+                            trade_logs[li].bot_id = bot.bot_id;
+                            trade_logs[li].cycle = cycle_global_idx[cycle];
+                            trade_logs[li].entry_price = positions[i].entry_price;
+                            trade_logs[li].exit_price = ohlcv[end_bar].close;
+                            trade_logs[li].entry_bar = positions[i].entry_bar;
+                            trade_logs[li].exit_bar = end_bar;
+                            trade_logs[li].leverage = (float)bot.leverage;
+                            trade_logs[li].pnl = actual_pnl;
+                            trade_logs[li].direction = positions[i].direction;
+                            trade_logs[li].chunk_id = chunk_id;
+                            trade_logs[li].out_of_cycle = (entry_global_end < (start_bar + chunk_global_start) || exit_global_end > (end_bar + chunk_global_start)) ? 1 : 0;
+                        }
+                    }
+                }  // End owns_exit_end
+                
+                // Note: counting and sums handled above in the owns_exit_end block
+            }  // End if (positions[i].is_active)
+        }  // End for loop over positions
         
         // Ensure balance is capped at zero (never negative = max 100% loss)
         if (balance < 0.0f) balance = 0.0f;
@@ -1908,6 +2208,11 @@ __kernel void backtest_with_signals(
         if (cycle < MAX_CYCLES) {
             int cycle_trades_count = total_trades - cycle_start_trades;
             int cycle_wins_count = winning_trades - cycle_start_wins;
+            
+            // NOTE: Previously we clamped cycle_pnl to -initial_balance. With
+            // per-position liquidation we no longer artificially clamp the
+            // cycle losses here; liquidation will close positions when losses
+            // exceed margin and prevent runaway negative values.
             
             cycle_trades_arr[cycle] = cycle_trades_count;
             cycle_wins_arr[cycle] = cycle_wins_count;
@@ -1923,10 +2228,18 @@ __kernel void backtest_with_signals(
     result.losing_trades = losing_trades;
     
     // Store the TOTAL PnL (cumulative across all cycles)
+    // NOTE: cycle_pnl_arr is clamped to -initial_balance per-cycle. To avoid
+    // impossible aggregate losses (e.g., > -100% per cycle), compute the
+    // clamped_total_pnl by summing the clamped per-cycle values. This ensures
+    // logging sanity checks later in Python will never trigger for purely
+    // arithmetic reasons when the kernel limits per-cycle losses.
     // Only handle critical errors (NaN/Inf)
     if (isnan(total_pnl) || isinf(total_pnl)) {
         total_pnl = 0.0f;  // Reset on data corruption
     }
+    // Use the kernel-computed total_pnl; per-position liquidation prevents
+    // individual trades from exceeding their margin and avoids the need for
+    // cycle-level clamping. This preserves realistic accounting.
     result.total_pnl = total_pnl;
     
     // Calculate final balance based on total PnL
@@ -2080,7 +2393,14 @@ __kernel void backtest_parallel_bot_cycle(
     const int num_cycles,
     const int num_bars,
     const float initial_balance,
-    __global float *cycle_results  // Output: [bot_idx * num_cycles + cycle_idx] = {trades, wins, pnl}
+    __global float *cycle_results,  // Output: [bot_idx * num_cycles * 4 + cycle_idx * 4] = {trades, wins, pnl, signals}
+    __global TradeLog *trade_logs,
+    __global int *trade_log_index,
+    __global int *cycle_global_idx,
+    const int chunk_id,
+    const int chunk_global_start,
+    const int chunk_global_end
+    , __global int *close_counters
 ) {
     // Decode bot and cycle indices from work item ID
     int global_id = get_global_id(0);
@@ -2096,13 +2416,16 @@ __kernel void backtest_parallel_bot_cycle(
     int start_bar = cycle_starts[cycle_idx];
     int end_bar = cycle_ends[cycle_idx];
     
+    // Calculate result index
+    int result_idx = bot_idx * num_cycles * 4 + cycle_idx * 4;
+    
     // Quick validation
     if (bot.leverage < 1 || bot.leverage > 125 || bot.num_indicators == 0 || bot.num_indicators > 8) {
         // Write failure markers
-        int result_idx = bot_idx * num_cycles * 3 + cycle_idx * 3;
         cycle_results[result_idx] = 0.0f;     // trades
         cycle_results[result_idx + 1] = 0.0f; // wins
         cycle_results[result_idx + 2] = -999999.0f; // pnl (failure marker)
+        cycle_results[result_idx + 3] = 0.0f; // signals
         return;
     }
     
@@ -2116,12 +2439,70 @@ __kernel void backtest_parallel_bot_cycle(
     
     int trades = 0;
     int wins = 0;
+    int losses = 0;  // Track losing trades separately
     float pnl = 0.0f;
+    int signals = 0;  // Track total signals generated
     
     unsigned int seed = bot.bot_id * 31337 + cycle_idx * 997 + 42;
     
+    // Indicators are precomputed with sufficient buffer, no warmup needed in kernel
+    int warmup_bars = 0;
+
+    // Calculate warmup for parallel kernel (indicators need warmup same as single-kernel)
+    for (int i = 0; i < bot.num_indicators; i++) {
+        unsigned char idx = bot.indicator_indices[i];
+        float period = bot.indicator_params[i][0];
+        float period2 = bot.indicator_params[i][1];
+        float period3 = bot.indicator_params[i][2];
+        int indicator_warmup = 0;
+        if (idx >= 0 && idx <= 5) {
+            indicator_warmup = (int)period;
+        } else if (idx >= 6 && idx <= 11) {
+            indicator_warmup = (int)(period * 3.0f);
+        }
+        else if (idx >= 12 && idx <= 14) {
+            indicator_warmup = (int)(period * 2.0f);
+        } else if (idx == 15 || idx == 16) {
+            indicator_warmup = (int)(period * 2.0f);
+        } else if (idx >= 17 && idx <= 19) {
+            indicator_warmup = (int)period + 10;
+        } else if (idx >= 20 && idx <= 22) {
+            indicator_warmup = (int)(period * 2.0f);
+        } else if (idx == 23 || idx == 24) {
+            indicator_warmup = (int)(period * 3.0f);
+        } else if (idx == 25) {
+            indicator_warmup = (int)(period * 2.5f);
+        } else if (idx == 26) {
+            indicator_warmup = (int)(period2 + period3 + 10);
+        } else if (idx == 27) {
+            indicator_warmup = (int)(period * 2.0f);
+        } else if (idx >= 28 && idx <= 35) {
+            indicator_warmup = (int)(period * 1.5f);
+        } else if (idx >= 36 && idx <= 40) {
+            indicator_warmup = (int)period + 20;
+        } else if (idx >= 41 && idx <= 45) {
+            indicator_warmup = (int)period + 10;
+        } else if (idx >= 46 && idx <= 49) {
+            indicator_warmup = 20;
+        }
+        if (indicator_warmup > warmup_bars) {
+            warmup_bars = indicator_warmup;
+        }
+    }
+
+    // Start trading only after indicators are fully initialized
+    int actual_start_bar = start_bar + warmup_bars;
+    if (actual_start_bar > end_bar) {
+        // Cycle too short for this bot's indicators - write zero results and exit kernel
+        cycle_results[result_idx] = 0.0f;
+        cycle_results[result_idx + 1] = 0.0f;
+        cycle_results[result_idx + 2] = 0.0f;
+        cycle_results[result_idx + 3] = 0.0f;
+        return;
+    }
+    
     // Backtest this specific cycle
-    for (int bar = start_bar; bar <= end_bar && bar < num_bars; bar++) {
+    for (int bar = actual_start_bar; bar <= end_bar && bar < num_bars; bar++) {
         // Generate signal
         float signal = generate_signal_consensus(
             precomputed_indicators,
@@ -2130,6 +2511,11 @@ __kernel void backtest_parallel_bot_cycle(
             num_bars,
             bot.bot_id
         );
+        
+        // Track signals generated
+        if (signal != 0.0f) {
+            signals++;
+        }
         
         // Manage existing positions (close at TP/SL, update tracking)
         int prev_trades = trades;
@@ -2146,13 +2532,26 @@ __kernel void backtest_parallel_bot_cycle(
             &balance,
             &trades,
             &wins,
-            &trades,  // Pass trades as losing_trades placeholder
+            &losses,  // Use separate losses counter
             &pnl,
             &pnl,  // cycle_pnl
             &dummy_sum_wins,
             &dummy_sum_losses,
             &dummy_max_drawdown,
             initial_balance
+            , bot.bot_id
+            , bot_idx
+            , close_counters
+            , num_cycles
+            , trade_logs
+            , trade_log_index
+            , cycle_idx
+            , cycle_global_idx
+            , start_bar
+            , end_bar
+            , chunk_id
+            , chunk_global_start
+            , chunk_global_end
         );
         
         // Open new positions if signal present and balance allows
@@ -2163,7 +2562,8 @@ __kernel void backtest_parallel_bot_cycle(
                     balance,
                     ohlcv[bar].close,
                     bot.indicator_risk_strategies[0],
-                    bot.risk_param
+                    bot.risk_param,
+                    (float)bot.leverage
                 );
                 
                 int direction = (signal > 0.0f) ? 1 : -1;
@@ -2210,34 +2610,67 @@ __kernel void backtest_parallel_bot_cycle(
             // quantity = margin / entry_price (base quantity)
             // leveraged_pnl = (price_diff * quantity) * leverage
             float leverage = (float)bot.leverage;
-            float base_pnl = price_diff * positions[i].quantity;
-            float leveraged_pnl = base_pnl * leverage;
             
             // Calculate fees on ENTRY and EXIT
             // Entry fee was already paid (deducted from initial margin)
             // Exit fee = exit_price * quantity * TAKER_FEE
             float exit_fee = exit_price * positions[i].quantity * TAKER_FEE;
             
-            // Total PnL = leveraged profit - exit fee
-            float position_pnl = leveraged_pnl - exit_fee;
+            // base_pnl already accounts for leverage because quantity = notional / price
+            float base_pnl = price_diff * positions[i].quantity;
+            // Total PnL = profit (already leveraged) - exit fee
+            float position_pnl = base_pnl - exit_fee;
             
             // Calculate margin used for this position
-            // margin = entry_price * quantity (the amount we initially reserved)
-            float margin_used = positions[i].entry_price * positions[i].quantity;
+            // NOTE: quantity represents the NOTIONAL / entry_price (not margin quantity)
+            // So notional_value = entry_price * quantity, and margin_reserved = notional_value / leverage
+            float notional_value = positions[i].entry_price * positions[i].quantity;
+            float margin_used = notional_value / leverage;
             
-            // Return margin + PnL to balance
-            balance += margin_used + position_pnl;
-            pnl += position_pnl;
-            trades++;
-            if (position_pnl > 0) wins++;
+            // Return margin_reserved + PnL to balance (true margin trading semantics)
+            // canonical ownership: only count the close if the exit falls inside this chunk
+            int entry_global_c = positions[i].entry_bar + chunk_global_start;
+            int exit_global_c = end_bar + chunk_global_start;
+            int owns_exit_c = (exit_global_c >= chunk_global_start && exit_global_c < chunk_global_end);
+            if (owns_exit_c) {
+                balance += margin_used + position_pnl;
+                pnl += position_pnl;
+                trades++;
+                if (position_pnl > 0) wins++;
+                // Log the closed trade
+                if (trade_logs != NULL && bot_idx < TRACE_BOT_LIMIT) {
+                    int log_i = atomic_add(trade_log_index, 1);
+                    if (log_i < MAX_TRADE_LOGS) {
+                    trade_logs[log_i].bot_id = bot.bot_id;
+                    trade_logs[log_i].cycle = cycle_global_idx[cycle_idx];
+                    trade_logs[log_i].entry_price = positions[i].entry_price;
+                    trade_logs[log_i].exit_price = exit_price;
+                    trade_logs[log_i].entry_bar = positions[i].entry_bar;
+                    trade_logs[log_i].exit_bar = end_bar;
+                    trade_logs[log_i].leverage = leverage;
+                    trade_logs[log_i].pnl = position_pnl;
+                        trade_logs[log_i].direction = positions[i].direction;
+                        trade_logs[log_i].chunk_id = chunk_id;
+                        trade_logs[log_i].out_of_cycle = (entry_global_c < (start_bar + chunk_global_start) || exit_global_c > (end_bar + chunk_global_start)) ? 1 : 0;
+                    }
+                }
+
+                if (close_counters != NULL) {
+                    atomic_add(&close_counters[bot_idx * num_cycles + cycle_idx], 1);
+                }
+            }
             
             positions[i].is_active = 0;
         }
     }
     
+    // Note: Do not clamp pnl here; per-position liquidation is handled by
+    // manage_positions to ensure realistic forced closure when margin is
+    // exceeded. Removing clamp allows accurate account accounting.
+
     // Write results for this bot-cycle pair
-    int result_idx = bot_idx * num_cycles * 3 + cycle_idx * 3;
     cycle_results[result_idx] = (float)trades;
     cycle_results[result_idx + 1] = (float)wins;
     cycle_results[result_idx + 2] = pnl;
+    cycle_results[result_idx + 3] = (float)signals;
 }
