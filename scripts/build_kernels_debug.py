@@ -43,12 +43,3 @@ try:
 except Exception:
     traceback.print_exc()
     print('Aggregate build failed')
-            dev = ctx.devices[0]
-            prog = _cl.Program(ctx, back)
-            try:
-                prog.build()
-            except Exception:
-                print('--- BUILD LOG ---')
-                for d in ctx.devices:
-                    print(f'--- Build log for device: {d.name} ---')
-                    print(prog.get_build_info(d, _cl.program_build_info.LOG))

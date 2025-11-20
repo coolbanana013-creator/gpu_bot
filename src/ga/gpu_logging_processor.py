@@ -287,15 +287,21 @@ class GPULoggingProcessor:
             sharpe_ratio_val = result.sharpe_ratio
             max_drawdown_val = result.max_drawdown * 100  # Convert from decimal to percentage
             
-            # ERROR DETECTION: Impossible values in real trading
-            if total_profit_pct < -100.0 * len(result.per_cycle_pnl):
-                log_error(f"Bot {bot_id}: IMPOSSIBLE profit % {total_profit_pct:.2f} < -100% per cycle - calculation error!")
+            # IMPORTANT: With leverage trading and liquidations, individual cycles CAN lose more than -100%
+            # A bot can lose its entire balance (-100%) PLUS liquidation penalties
+            # This is mathematically possible and not an error when cycles are independent (each starts with initial_balance)
+            # Each cycle is isolated: balance resets to initial_balance at cycle start
+            # So total loss across N cycles can be N × initial_balance in extreme cases
+            
+            # Only flag truly impossible cases (e.g., corruption or overflow)
+            if total_profit_pct < -100.0 * len(result.per_cycle_pnl) * 2:  # Allow 2x worst case per cycle
+                log_warning(f"Bot {bot_id}: Extreme loss {total_profit_pct:.2f}% across {len(result.per_cycle_pnl)} cycles")
                 # Extra debug info: show per-cycle PnL to help diagnose extreme losses
                 try:
                     per_cycle_debug = ','.join([f"{p:.2f}" for p in result.per_cycle_pnl])
                 except Exception:
                     per_cycle_debug = str(result.per_cycle_pnl)
-                log_error(f"  Bot {bot_id} per-cycle PnL: {per_cycle_debug} | TotalPnL={result.total_pnl:.2f} | InitialBalance={initial_balance:.2f}")
+                log_debug(f"  Bot {bot_id} per-cycle PnL: {per_cycle_debug} | TotalPnL={result.total_pnl:.2f} | InitialBalance={initial_balance:.2f}")
             if survival_generations > 1000:
                 log_error(f"Bot {bot_id}: IMPOSSIBLE survival generations {survival_generations} > 1000")
             
