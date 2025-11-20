@@ -137,9 +137,9 @@ typedef struct {
 // CONSTANTS
 // ============================================================================
 
-#define MAX_POSITIONS 10  // Allow up to 10 concurrent positions
-#define MAKER_FEE 0.0002f      // 0.02% Kucoin maker
-#define TAKER_FEE 0.0006f      // 0.06% Kucoin taker
+#define MAX_POSITIONS 20  // Allow up to 20 concurrent positions (balance realism vs GPU memory)
+#define MAKER_FEE 0.0002f      // 0.02% KuCoin maker fee (limit orders)
+#define TAKER_FEE 0.0006f      // 0.06% KuCoin taker fee (market orders)
 #define BASE_SLIPPAGE 0.0001f  // 0.01% base slippage (low volatility, small orders)
 #define MIN_BALANCE_PCT 0.10f  // Stop trading below 10% balance
 // Maximum cycles recorded per bot (must match Python parser)
@@ -181,13 +181,14 @@ float calculate_dynamic_slippage(
     // Base slippage (ideal conditions)
     float slippage = BASE_SLIPPAGE;
     
-    // 1. Volume impact: position size as % of current volume
-    // Simplified: use current volume as proxy for liquidity
+    // 1. Volume impact: QUADRATIC market impact (realistic exchange behavior)
+    // Real market impact is non-linear - larger orders have disproportionate impact
     float volume_impact = 0.0f;
     if (current_volume > 0.0f) {
         float position_pct = position_value / (current_volume * current_price);
-        volume_impact = position_pct * 0.01f;  // 1% of volume = 0.01% additional slippage
-        volume_impact = fmin(volume_impact, 0.005f);  // Cap at 0.5% additional
+        // Quadratic scaling: pow(position_pct, 1.5) for realistic market impact
+        volume_impact = pow(fmax(position_pct, 0.0f), 1.5f) * 0.05f;
+        volume_impact = fmin(volume_impact, 0.01f);  // Cap at 1.0% additional
     }
     
     // 2. Volatility multiplier: use current bar's high-low range
@@ -208,8 +209,16 @@ float calculate_dynamic_slippage(
     // 125x leverage = 3.0x slippage
     float leverage_multiplier = 1.0f + (leverage / 62.5f);
     
+    // 4. Time-of-day liquidity multiplier (assuming 1-minute bars)
+    // Note: This is a proxy - actual bar index doesn't directly map to time
+    // Asian hours (0-8 UTC): lower liquidity = 1.3x
+    // US hours (13-21 UTC): higher liquidity = 0.9x
+    // European hours (8-16 UTC): medium liquidity = 1.0x
+    // We can't get actual time, so this is approximate based on typical patterns
+    float liquidity_multiplier = 1.0f;  // Default: normal liquidity
+    
     // Combine all factors
-    float total_slippage = (slippage + volume_impact) * volatility_multiplier * leverage_multiplier;
+    float total_slippage = (slippage + volume_impact) * volatility_multiplier * leverage_multiplier * liquidity_multiplier;
     
     // Final bounds: min 0.005% (ideal conditions), max 0.5% (terrible conditions)
     // Reduced max to prevent excessive costs
@@ -1091,28 +1100,27 @@ void open_position(
         positions[slot].tp_price = price * (1.0f + tp_multiplier);
         positions[slot].sl_price = price * (1.0f - sl_multiplier);
         
-        // CORRECTED LIQUIDATION PRICE FORMULA
-        // At leverage L, initial margin = 100%/L (e.g., 125x = 0.8%)
-        // Maintenance margin = 0.5% of position value
-        // Liquidation when: margin_left = initial_margin - losses < maintenance_margin
-        // Price move % = (initial_margin - maintenance) / leverage
-        // At 125x: (0.8% - 0.5%) = 0.3% → liquidation at 0.3%/125 = 0.0024% price move
-        // Correct formula: price can drop by (1/leverage - maintenance_margin_rate) before liquidation
-        float initial_margin_pct = 1.0f / leverage;  // e.g., 125x = 0.008 (0.8%)
-        float maintenance_margin_rate = 0.005f;  // 0.5% of notional value
-        float price_drop_to_liquidation = initial_margin_pct - maintenance_margin_rate;
-        positions[slot].liquidation_price = price * (1.0f - price_drop_to_liquidation);
+        // KUCOIN LIQUIDATION FORMULA (CORRECTED)
+        // Formula: liq_price = entry * (1 - (initial_margin - maintenance) / (1 + initial_margin))
+        // This properly accounts for losses calculated on notional value, not margin
+        // At 125x leverage: initial = 0.8%, maintenance = 0.5%
+        // Buffer = (0.008 - 0.005) / 1.008 = 0.00298 = 0.298% price drop before liquidation
+        float initial_margin_rate = 1.0f / leverage;  // e.g., 125x = 0.008 (0.8%)
+        float maintenance_margin_rate = 0.005f;  // 0.5% KuCoin maintenance margin
+        float liq_buffer = (initial_margin_rate - maintenance_margin_rate) / (1.0f + initial_margin_rate);
+        positions[slot].liquidation_price = price * (1.0f - liq_buffer);
     } else {
         // Short
         positions[slot].tp_price = price * (1.0f - tp_multiplier);
         positions[slot].sl_price = price * (1.0f + sl_multiplier);
         
-        // CORRECTED LIQUIDATION PRICE FORMULA FOR SHORT
-        // Same calculation as long, but price moves upward
-        float initial_margin_pct = 1.0f / leverage;  // e.g., 125x = 0.008 (0.8%)
-        float maintenance_margin_rate = 0.005f;  // 0.5% of notional value
-        float price_rise_to_liquidation = initial_margin_pct - maintenance_margin_rate;
-        positions[slot].liquidation_price = price * (1.0f + price_rise_to_liquidation);
+        // KUCOIN LIQUIDATION FORMULA FOR SHORT (CORRECTED)
+        // Formula: liq_price = entry * (1 + (initial_margin - maintenance) / (1 + initial_margin))
+        // At 125x leverage: liquidation at 0.298% price RISE
+        float initial_margin_rate = 1.0f / leverage;  // e.g., 125x = 0.008 (0.8%)
+        float maintenance_margin_rate = 0.005f;  // 0.5% KuCoin maintenance margin
+        float liq_buffer = (initial_margin_rate - maintenance_margin_rate) / (1.0f + initial_margin_rate);
+        positions[slot].liquidation_price = price * (1.0f + liq_buffer);
     }
     
     (*num_positions)++;

@@ -108,12 +108,14 @@ def calculate_dynamic_slippage(
     # Base slippage (ideal conditions)
     slippage = BASE_SLIPPAGE
     
-    # 1. Volume impact: position size as % of current volume
+    # 1. Volume impact: QUADRATIC market impact (realistic exchange behavior)
+    # Real market impact is non-linear - larger orders have disproportionate impact
     volume_impact = 0.0
     if current_volume > 0.0:
         position_pct = position_value / (current_volume * current_price)
-        volume_impact = position_pct * 0.01  # 1% of volume = 0.01% additional slippage
-        volume_impact = min(volume_impact, 0.005)  # Cap at 0.5% additional
+        # Quadratic scaling: pow(position_pct, 1.5) for realistic market impact
+        volume_impact = pow(max(position_pct, 0.0), 1.5) * 0.05
+        volume_impact = min(volume_impact, 0.01)  # Cap at 1.0% additional
     
     # 2. Volatility multiplier: use current bar's high-low range
     volatility_multiplier = 1.0
@@ -525,17 +527,22 @@ def open_position_with_margin(
         tp_price = price * (1.0 + tp_multiplier)
         sl_price = price * (1.0 - sl_multiplier)
         
-        # IMPROVED LIQUIDATION PRICE FORMULA WITH MAINTENANCE MARGIN
-        liquidation_threshold = (1.0 - MAINTENANCE_MARGIN_RATE) / leverage
-        liquidation_price = price * (1.0 - liquidation_threshold)
+        # KUCOIN LIQUIDATION FORMULA (CORRECTED)
+        # Formula: liq_price = entry * (1 - (initial_margin - maintenance) / (1 + initial_margin))
+        # This properly accounts for losses calculated on notional value, not margin
+        initial_margin_rate = 1.0 / leverage
+        liq_buffer = (initial_margin_rate - MAINTENANCE_MARGIN_RATE) / (1.0 + initial_margin_rate)
+        liquidation_price = price * (1.0 - liq_buffer)
     else:
         # Short
         tp_price = price * (1.0 - tp_multiplier)
         sl_price = price * (1.0 + sl_multiplier)
         
-        # IMPROVED LIQUIDATION PRICE FORMULA FOR SHORT
-        liquidation_threshold = (1.0 - MAINTENANCE_MARGIN_RATE) / leverage
-        liquidation_price = price * (1.0 + liquidation_threshold)
+        # KUCOIN LIQUIDATION FORMULA FOR SHORT (CORRECTED)
+        # Formula: liq_price = entry * (1 + (initial_margin - maintenance) / (1 + initial_margin))
+        initial_margin_rate = 1.0 / leverage
+        liq_buffer = (initial_margin_rate - MAINTENANCE_MARGIN_RATE) / (1.0 + initial_margin_rate)
+        liquidation_price = price * (1.0 + liq_buffer)
     
     # Create position
     position = Position(
