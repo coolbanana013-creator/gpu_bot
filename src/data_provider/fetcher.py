@@ -71,6 +71,49 @@ class DataFetcher:
             log_error(f"Failed to initialize Kucoin API: {e}")
             raise RuntimeError(f"Cannot initialize Kucoin API: {e}")
     
+    def _normalize_symbol(self, pair: str) -> str:
+        """
+        Normalize trading pair format based on exchange type.
+        
+        Args:
+            pair: Trading pair in any format (BTC/USDT, BTCUSDT, BTC_USDT)
+            
+        Returns:
+            Normalized symbol for the exchange
+            - Spot: BTC/USDT (with slash)
+            - Futures: BTCUSDT (no slash, or BTC/USDT:USDT for perpetual)
+        """
+        # Remove underscores and slashes for parsing
+        clean_pair = pair.replace('_', '').replace('/', '').replace(':', '').upper()
+        
+        # Extract base and quote (assuming standard pairs like BTCUSDT, ETHUSDT)
+        # Common quote currencies
+        for quote in ['USDT', 'BUSD', 'USD', 'BTC', 'ETH']:
+            if clean_pair.endswith(quote):
+                base = clean_pair[:-len(quote)]
+                if base:  # Ensure we have a base currency
+                    if self.exchange_type == 'spot':
+                        # Spot format: BTC/USDT
+                        return f"{base}/{quote}"
+                    else:
+                        # Futures format: Check if the market uses perpetual swap notation
+                        # Try both formats and see which one exists
+                        standard_format = f"{base}{quote}"
+                        perp_format = f"{base}/{quote}:{quote}"
+                        
+                        # Check which format is available in the exchange
+                        if perp_format in self.exchange.markets:
+                            return perp_format
+                        elif standard_format in self.exchange.markets:
+                            return standard_format
+                        else:
+                            # Default to standard format
+                            return standard_format
+        
+        # If no match found, return as-is (validation will catch errors later)
+        log_warning(f"Could not normalize pair '{pair}', using as-is")
+        return pair
+    
     def _get_file_path(self, pair: str, timeframe: str, date: datetime) -> Path:
         """
         Generate file path for a given pair, timeframe, and date.
@@ -263,13 +306,17 @@ class DataFetcher:
         timeframe = validate_timeframe(timeframe)
         total_days = validate_int(total_days, "total_days", min_val=1, max_val=1000)
         
+        # Normalize symbol format for the exchange type
+        normalized_pair = self._normalize_symbol(pair)
+        log_info(f"Symbol '{pair}' normalized to '{normalized_pair}' for {self.exchange_type} exchange")
+        
         # Default to YESTERDAY (exclude today's incomplete data)
         # This ensures we always use complete historical data for backtesting
         if end_date is None:
             yesterday = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=1)
             end_date = yesterday
         
-        log_info(f"Fetching {total_days} days of {pair} {timeframe} data ending {end_date.strftime('%Y-%m-%d')} (excludes today)")
+        log_info(f"Fetching {total_days} days of {normalized_pair} {timeframe} data ending {end_date.strftime('%Y-%m-%d')} (excludes today)")
         
         file_paths = []
         dates_to_fetch = []
@@ -298,8 +345,8 @@ class DataFetcher:
         if dates_to_fetch:
             log_info(f"[DOWNLOAD] Fetching {missing_count} missing day(s) using {self.max_workers} parallel threads...")
             
-            # Use parallel fetching for better performance
-            fetched_data = self._fetch_missing_data_parallel(dates_to_fetch, pair, timeframe)
+            # Use parallel fetching for better performance (use normalized pair for API calls)
+            fetched_data = self._fetch_missing_data_parallel(dates_to_fetch, normalized_pair, timeframe)
             
             # Save all fetched data
             saved_count = 0
@@ -318,7 +365,7 @@ class DataFetcher:
         file_paths.sort()
         
         if not file_paths:
-            raise RuntimeError(f"No data available for {pair} {timeframe}")
+            raise RuntimeError(f"No data available for {normalized_pair} {timeframe}")
         
         log_info(f"Data ready: {len(file_paths)} file(s) total ({cached_count} from cache, {missing_count} newly downloaded)")
         return file_paths
