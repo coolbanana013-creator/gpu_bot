@@ -1,0 +1,38 @@
+{
+  "rank": 85,
+  "bot_id": 525,
+  "fitness_score": 0.0,
+  "total_pnl": 100.81599426269531,
+  "win_rate": 100.0,
+  "total_trades": 20,
+  "sharpe_ratio": 11738.464699789458,
+  "max_drawdown": 0.0,
+  "survival_generations": 0,
+  "config": {
+    "num_indicators": 2,
+    "indicator_indices": [
+      23,
+      37
+    ],
+    "indicator_params": [
+      [
+        2.654493808746338,
+        22.139341354370117,
+        0.0
+      ],
+      [
+        3.269685745239258,
+        4.3688507080078125,
+        1.0663723945617676
+      ]
+    ],
+    "indicator_risk_strategies": [
+      8,
+      6
+    ],
+    "risk_param": 0.060472872108221054,
+    "tp_multiplier": 0.0,
+    "sl_multiplier": 0.0,
+    "leverage": 3
+  }
+}

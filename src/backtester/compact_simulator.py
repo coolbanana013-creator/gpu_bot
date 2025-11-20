@@ -15,6 +15,7 @@ Memory Analysis:
 Scalability: Can handle 1M+ bots with same 1 MB indicator buffer!
 """
 import numpy as np
+import os
 import pyopencl as cl
 from typing import List, Tuple, Dict
 from dataclasses import dataclass
@@ -24,6 +25,8 @@ import threading
 import concurrent.futures
 from tqdm import tqdm
 import csv
+import queue
+import atexit
 
 from ..bot_generator.compact_generator import CompactBotConfig, COMPACT_BOT_SIZE
 from ..utils.validation import log_info, log_error, log_debug, log_warning
@@ -42,6 +45,175 @@ TRADE_LOG_DTYPE = np.dtype([
     ,('chunk_id', np.int32)
     ,('out_of_cycle', np.int32)
 ])
+
+
+class TradeLogStreamWriter:
+    """Production streaming writer for trade logs using queue-based worker thread."""
+    
+    def __init__(self, csv_path: Path, batch_size: int = 100, max_queue_size: int = 1000):
+        self.csv_path = csv_path
+        self.batch_size = batch_size
+        self.write_queue = queue.Queue(maxsize=max_queue_size)
+        self.worker_thread = None
+        self.shutdown_event = threading.Event()
+        self.total_written = 0
+        self.total_enqueued = 0
+        self._lock = threading.Lock()
+        self._started = False
+        
+        # Register cleanup on exit
+        atexit.register(self.shutdown)
+    
+    def start(self):
+        """Start the background writer thread."""
+        if self._started:
+            return
+        
+        self._started = True
+        self.worker_thread = threading.Thread(target=self._writer_loop, daemon=False)
+        self.worker_thread.start()
+        log_debug(f"TradeLogStreamWriter started: {self.csv_path}")
+    
+    def _writer_loop(self):
+        """Worker thread that processes write queue with buffering."""
+        buffer = []
+        csv_file = None
+        csv_writer = None
+        
+        try:
+            # Open CSV file once
+            csv_file = open(self.csv_path, 'a', newline='')
+            csv_writer = csv.writer(csv_file)
+            
+            while not self.shutdown_event.is_set() or not self.write_queue.empty():
+                try:
+                    # Get batch from queue with timeout
+                    logs = self.write_queue.get(timeout=0.5)
+                    buffer.extend(logs)
+                    
+                    # Flush when batch size reached or queue empty
+                    if len(buffer) >= self.batch_size or self.write_queue.empty():
+                        self._flush_buffer(csv_writer, buffer)
+                        buffer.clear()
+                        csv_file.flush()
+                    
+                    self.write_queue.task_done()
+                    
+                except queue.Empty:
+                    # Flush any remaining buffer on timeout
+                    if buffer:
+                        self._flush_buffer(csv_writer, buffer)
+                        buffer.clear()
+                        csv_file.flush()
+                    continue
+                    
+        except Exception as e:
+            log_error(f"TradeLogStreamWriter worker error: {e}")
+        finally:
+            # Final flush
+            if buffer and csv_writer:
+                try:
+                    self._flush_buffer(csv_writer, buffer)
+                except Exception as e:
+                    log_error(f"TradeLogStreamWriter final flush error: {e}")
+            
+            if csv_file:
+                csv_file.close()
+            
+            log_debug(f"TradeLogStreamWriter worker stopped. Total written: {self.total_written}")
+    
+    def _flush_buffer(self, csv_writer, buffer):
+        """Write buffered logs to CSV."""
+        if not buffer:
+            return
+        
+        rows = []
+        for log_entry in buffer:
+            # Handle both numpy structured array and tuple formats
+            if isinstance(log_entry, tuple):
+                # Tuple format from .tolist()
+                bot_id, cycle, entry_price, exit_price, entry_bar, exit_bar, leverage, pnl, direction, chunk_id, out_of_cycle = log_entry
+            else:
+                # Numpy structured array format
+                bot_id = int(log_entry['bot_id'])
+                cycle = int(log_entry['cycle'])
+                entry_price = float(log_entry['entry_price'])
+                exit_price = float(log_entry['exit_price'])
+                entry_bar = int(log_entry['entry_bar'])
+                exit_bar = int(log_entry['exit_bar'])
+                leverage = float(log_entry['leverage'])
+                pnl = float(log_entry['pnl'])
+                direction = int(log_entry['direction'])
+                chunk_id = int(log_entry['chunk_id'])
+                out_of_cycle = int(log_entry['out_of_cycle'])
+            
+            # Compute signature for deduplication
+            direction_str = 'LONG' if direction == 1 else 'SHORT'
+            pnl_cents = int(round(pnl * 100))
+            signature = f"{entry_bar}:{exit_bar}:{direction_str}:{pnl_cents}"
+            
+            rows.append([
+                bot_id,
+                cycle,
+                round(entry_price, 4),
+                round(exit_price, 4),
+                entry_bar,
+                exit_bar,
+                round(leverage, 1),
+                round(pnl, 2),
+                direction_str,
+                chunk_id,
+                out_of_cycle,
+                signature
+            ])
+        
+        csv_writer.writerows(rows)
+        
+        with self._lock:
+            self.total_written += len(buffer)
+    
+    def enqueue(self, logs: np.ndarray):
+        """Enqueue trade logs for async writing."""
+        if not self._started:
+            self.start()
+        
+        try:
+            # Convert to list for queue
+            log_list = logs.tolist()
+            self.write_queue.put(log_list, block=True, timeout=5.0)
+            
+            with self._lock:
+                self.total_enqueued += len(log_list)
+                
+        except queue.Full:
+            log_warning(f"TradeLogStreamWriter queue full, dropping {len(logs)} logs")
+    
+    def shutdown(self, timeout: float = 30.0):
+        """Gracefully shutdown writer and wait for queue to drain."""
+        if not self._started:
+            return
+        
+        log_info(f"TradeLogStreamWriter shutting down (queued: {self.write_queue.qsize()}, written: {self.total_written})")
+        
+        # Signal shutdown and wait for queue to drain
+        self.shutdown_event.set()
+        
+        if self.worker_thread and self.worker_thread.is_alive():
+            self.worker_thread.join(timeout=timeout)
+            
+            if self.worker_thread.is_alive():
+                log_warning(f"TradeLogStreamWriter worker did not finish within {timeout}s")
+            else:
+                log_info(f"TradeLogStreamWriter shutdown complete. Total written: {self.total_written}")
+    
+    def get_stats(self) -> Dict[str, int]:
+        """Get writer statistics."""
+        with self._lock:
+            return {
+                'enqueued': self.total_enqueued,
+                'written': self.total_written,
+                'queue_size': self.write_queue.qsize()
+            }
 
 
 @dataclass
@@ -125,7 +297,14 @@ class CompactBacktester:
         # Optional GPU trade logging (toggle via env var ENABLE_TRADE_LOGS=1)
         import os
         self.trade_log_enabled = os.getenv('ENABLE_TRADE_LOGS', '0') == '1'
+        # Debugging: allow disabling trade logs via env var DEBUG_DISABLE_TRADE_LOGS
+        if os.getenv('DEBUG_DISABLE_TRADE_LOGS', '0') == '1':
+            log_info('[DEBUG] DEBUG_DISABLE_TRADE_LOGS set - disabling trade logging for debugging')
+            self.trade_log_enabled = False
         self.trade_log_max = int(os.getenv('TRADE_LOG_MAX', '20000'))
+        
+        # Streaming trade log writer
+        self.trade_log_writer = None
         
         # Calculate optimal chunk size based on GPU memory
         self.optimal_chunk_days = None  # Will be set during backtest_bots
@@ -142,6 +321,11 @@ class CompactBacktester:
     
     def cleanup(self):
         """Release all OpenCL buffers (thread-safe)."""
+        # Shutdown trade log writer first
+        if hasattr(self, 'trade_log_writer') and self.trade_log_writer:
+            self.trade_log_writer.shutdown()
+            self.trade_log_writer = None
+        
         if hasattr(self, '_active_buffers'):
             with self._buffer_lock:
                 for buf in self._active_buffers:
@@ -252,8 +436,33 @@ class CompactBacktester:
         print(f"[BACKTEST] Dataset: {num_bars:,} bars ({num_bars/1440:.1f} days)")
         print(f"[BACKTEST] Chunk size: {self._optimal_data_chunk_bars/1440:.1f} days ({self._optimal_data_chunk_bars:,} bars)")
         print(f"[BACKTEST] Strategy: Dynamically adjust chunk size if OUT_OF_RESOURCES")
+        
+        # Initialize streaming trade log writer if enabled
+        if self.trade_log_enabled:
+            trade_log_path = Path('logs') / 'trade_logs.csv'
+            trade_log_path.parent.mkdir(exist_ok=True)
+            
+            # Clear existing file and write header
+            with open(trade_log_path, 'w', newline='') as f:
+                writer = csv.writer(f, delimiter=';')
+                writer.writerow([
+                    'BotID', 'Cycle', 'EntryPrice', 'ExitPrice', 'EntryBar', 'ExitBar',
+                    'Leverage', 'PnL', 'Direction', 'ChunkID', 'OutOfCycle', 'Signature'
+                ])
+            
+            # Initialize streaming writer
+            batch_size = int(os.getenv('TRADE_LOG_BATCH_SIZE', '100'))
+            max_queue = int(os.getenv('TRADE_LOG_MAX_QUEUE', '1000'))
+            self.trade_log_writer = TradeLogStreamWriter(
+                trade_log_path, 
+                batch_size=batch_size, 
+                max_queue_size=max_queue
+            )
+            self.trade_log_writer.start()
+            log_info(f"Trade log streaming writer initialized (batch={batch_size}, queue={max_queue})")
 
         # Try processing with current chunk size, halve on failure
+
         while True:
             try:
                 # Create data chunks covering the full dataset
@@ -441,6 +650,14 @@ class CompactBacktester:
             flat_signals,
             num_cycles
         )
+        
+        # Ensure all trade logs are written before returning
+        if self.trade_log_writer:
+            stats = self.trade_log_writer.get_stats()
+            log_info(f"Shutting down trade log writer (enqueued: {stats['enqueued']}, written: {stats['written']}, pending: {stats['queue_size']})")
+            self.trade_log_writer.shutdown(timeout=60.0)
+            final_stats = self.trade_log_writer.get_stats()
+            log_info(f"Trade log writer shutdown complete (total written: {final_stats['written']})")
 
         print("[OK] Ultra-parallel backtesting completed successfully!")
         return final_results
@@ -908,15 +1125,20 @@ class CompactBacktester:
 
         # === PHASE 1: PRELOAD ALL CHUNKS INTO MEMORY ===
         log_info("Preloading all data chunks into memory for parallel processing...")
+        log_info(f"[DEBUG] About to preload {len(data_chunks)} chunks")
         preloaded_chunks = []
 
         for chunk in data_chunks:
             chunk_id = chunk['id']
             chunk_data = chunk['data']
             chunk_cycles = chunk['cycles']
+            
+            log_info(f"[DEBUG] Preloading chunk {chunk_id}: {len(chunk_data)} bars, {len(chunk_cycles)} cycles")
 
             # Precompute indicators for this chunk (done once upfront)
+            log_info(f"[DEBUG] Starting indicator precomputation for chunk {chunk_id}...")
             indicators_buffer = self._precompute_indicators(chunk_data)
+            log_info(f"[DEBUG] ✓ Indicators precomputed for chunk {chunk_id}")
 
             preloaded_chunks.append({
                 'id': chunk_id,
@@ -1023,9 +1245,13 @@ class CompactBacktester:
         """
         batch_results = []
         
+        log_info(f"[DEBUG] About to process {len(batch_chunks)} chunks")
+        
         # Process chunks sequentially with progress tracking
         with tqdm(total=len(batch_chunks), desc="Processing chunks", unit="chunk") as pbar:
+            log_info(f"[DEBUG] Entered tqdm context, starting loop over {len(batch_chunks)} chunks")
             for chunk in batch_chunks:
+                log_info(f"[DEBUG] Loop iteration started for chunk {chunk.get('id', '?')}")
                 chunk_id = chunk['id']
                 chunk_data = chunk['data']
                 chunk_cycles = chunk['cycles']
@@ -1085,12 +1311,16 @@ class CompactBacktester:
         
         Optimized for data chunking approach where we process all bots against one chunk.
         """
+        log_info(f"[DEBUG] === _run_backtest_kernel_direct ENTERED ===")
         num_bots = len(bots)
         num_bars = len(ohlcv_data)
         num_cycles = len(cycles)
+        log_info(f"[DEBUG] Params: {num_bots} bots, {num_bars} bars, {num_cycles} cycles")
         
         # Serialize bot configs
+        log_info(f"[DEBUG] Serializing bots...")
         bot_configs_raw = self._serialize_bots(bots)
+        log_info(f"[DEBUG] ✓ Bots serialized ({bot_configs_raw.nbytes} bytes)")
         
         bots_buf = cl.Buffer(
             self.ctx,
@@ -1150,15 +1380,34 @@ class CompactBacktester:
                 hostbuf=trade_log_index_host
             )
         # Close counters for diagnostics (always allocate so kernel can write)
+        # CRITICAL: Check if bot 0 writes 99999 to [0] - proves kernel entered
         close_counters_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
         close_counters_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=close_counters_host)
+        
+        log_info(f"[DEBUG] close_counters[0] BEFORE kernel: {close_counters_host[0]}")
         
         # Execute backtest kernel for all bots
         kernel = self._backtest_kernel
         global_size = (num_bots,)
         local_size = None  # Let OpenCL choose optimal work group size
         
+        # DEBUG: Print kernel invocation parameters
+        log_info(f"[DEBUG] Launching backtest kernel:")
+        log_info(f"  - num_bots: {num_bots}")
+        log_info(f"  - num_bars: {num_bars}")
+        log_info(f"  - num_cycles: {num_cycles}")
+        log_info(f"  - global_size: {global_size}")
+        log_info(f"  - local_size: {local_size}")
+        log_info(f"  - initial_balance: {self.initial_balance}")
+        log_info(f"  - chunk_global_start: {chunk_global_start}")
+        log_info(f"  - chunk_global_end: {chunk_global_end if chunk_global_end else num_bars}")
+        log_info(f"[DEBUG] Kernel enqueued, waiting for execution...")
+        
+        import time
+        start_time = time.time()
+        
         try:
+            # Enqueue the kernel
             kernel(
                 self.queue,
                 global_size,
@@ -1181,7 +1430,51 @@ class CompactBacktester:
                 , close_counters_buf
             )
             
-            self.queue.finish()
+            log_info(f"[DEBUG] Kernel enqueued successfully, waiting up to 60s...")
+            
+            # Simple timeout approach - wait with timeout
+            import threading
+            
+            timeout_seconds = 60
+            finish_success = [False]
+            finish_error = [None]
+            
+            def finish_kernel():
+                try:
+                    self.queue.finish()
+                    finish_success[0] = True
+                except Exception as e:
+                    finish_error[0] = e
+            
+            finish_thread = threading.Thread(target=finish_kernel)
+            finish_thread.daemon = True
+            finish_thread.start()
+            
+            # Wait with progress updates and check for kernel entry
+            for i in range(timeout_seconds):
+                time.sleep(1)
+                if finish_success[0]:
+                    log_info(f"[DEBUG] ✓ Kernel completed after {time.time() - start_time:.1f}s")
+                    break
+                if finish_error[0]:
+                    log_error(f"[DEBUG] ✗ Kernel error: {finish_error[0]}")
+                    raise finish_error[0]
+                
+                # Check if kernel started by reading close_counters
+                if i == 2 or i == 5:
+                    check_counters = np.zeros(num_bots * num_cycles, dtype=np.int32)
+                    cl.enqueue_copy(self.queue, check_counters, close_counters_buf, is_blocking=True)
+                    log_info(f"[DEBUG] At {i}s: close_counters[0] = {check_counters[0]} (should be 99999 if kernel entered)")
+                
+                if i % 5 == 0:
+                    log_info(f"[DEBUG] Still waiting... {i}s elapsed (Check GPU usage in Task Manager)")
+            else:
+                # Timeout reached
+                log_error(f"[DEBUG] ✗ TIMEOUT after {timeout_seconds}s - kernel hung!")
+                log_error(f"[DEBUG] The kernel was enqueued but never completed")
+                log_error(f"[DEBUG] GPU usage should be 60-100% but is likely 1-10%")
+                log_error(f"[DEBUG] This indicates kernel infinite loop or invalid memory access")
+                raise RuntimeError(f"Kernel execution timeout after {timeout_seconds}s")
             
         except cl.RuntimeError as e:
             log_error(f"Backtest kernel execution failed for {num_bots} bots: {e}")
@@ -1266,12 +1559,14 @@ class CompactBacktester:
         
         # Serialize bot configs
         bot_configs_raw = self._serialize_bots(bots)
+        log_info(f"[DEBUG] Serializing {num_bots} bots -> {bot_configs_raw.nbytes} bytes (raw len={len(bot_configs_raw)})")
         
         bots_buf = cl.Buffer(
             self.ctx,
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=bot_configs_raw
         )
+        log_info(f"[DEBUG] bots_buf created: {bot_configs_raw.nbytes} bytes")
         
         # OHLCV buffer
         ohlcv_flat = ohlcv_data.astype(np.float32)
@@ -1280,6 +1575,7 @@ class CompactBacktester:
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=ohlcv_flat
         )
+        log_info(f"[DEBUG] ohlcv_buf created: {ohlcv_flat.nbytes} bytes ({len(ohlcv_flat)} floats)")
         
         # Cycles buffers
         cycle_starts = np.array([c[0] for c in cycles], dtype=np.int32)
@@ -1290,12 +1586,14 @@ class CompactBacktester:
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=cycle_starts
         )
+        log_info(f"[DEBUG] cycle_starts_buf created: {len(cycle_starts)} entries")
         
         cycle_ends_buf = cl.Buffer(
             self.ctx,
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=cycle_ends
         )
+        log_info(f"[DEBUG] cycle_ends_buf created: {len(cycle_ends)} entries")
 
         # Map local cycle index -> global cycle index for correct logging
         cycle_global_idx = np.array(cycle_indices, dtype=np.int32)
@@ -1312,6 +1610,7 @@ class CompactBacktester:
             cl.mem_flags.WRITE_ONLY,
             size=results_size * 4  # 4 bytes per float
         )
+        log_info(f"[DEBUG] results_buf created: {results_size * 4} bytes")
         # Optional GPU trade logging buffers
         trade_logs_buf = None
         trade_log_index_buf = None
@@ -1328,15 +1627,22 @@ class CompactBacktester:
                 cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
                 hostbuf=trade_log_index_host
             )
+            log_info(f"[DEBUG] trade_log_index_buf created: initial idx={int(trade_log_index_host[0])}")
+        else:
+            # Debug fallback: disable trade logging path if enabled (to isolate hangs)
+            log_info("[DEBUG] trade_log_enabled is False - skipping trade logs handling")
+            log_info(f"[DEBUG] trade_log_index_buf created")
         # Close counters buffer for kernel-level close diagnostics
         close_counters_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
         close_counters_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=close_counters_host)
+        log_info(f"[DEBUG] close_counters_buf created: {close_counters_host.nbytes} bytes (len={len(close_counters_host)})")
         
         # Execute kernel for all bot-cycle pairs in parallel
         global_size = (num_bots * num_cycles,)
         
         try:
             kernel = self._backtest_parallel_kernel
+            log_info(f"[DEBUG] Invoking parallel backtest kernel: global_size={global_size}, num_bots={num_bots}, num_cycles={num_cycles}, num_bars={num_bars}")
             kernel(
                 self.queue,
                 global_size,
@@ -1360,31 +1666,145 @@ class CompactBacktester:
                 , close_counters_buf
             )
             
-            self.queue.finish()
+            # Use a timeout-enabled finish to avoid hanging the process
+            import threading, time as _time
+            finish_success = [False]
+            finish_error = [None]
+            def finish_queue():
+                try:
+                    self.queue.finish()
+                    finish_success[0] = True
+                except Exception as _e:
+                    finish_error[0] = _e
+            finish_thread = threading.Thread(target=finish_queue)
+            finish_thread.daemon = True
+            finish_thread.start()
+            # Poll for up to timeout_seconds
+            timeout_seconds = 30
+            poll_interval = 0.5
+            start_t = _time.time()
+            while _time.time() - start_t < timeout_seconds:
+                if finish_success[0]:
+                    log_info(f"[DEBUG] Kernel finished within {(_time.time()-start_t):.2f}s")
+                    break
+                if finish_error[0]:
+                    log_error(f"[DEBUG] Kernel finish error: {finish_error[0]}")
+                    raise finish_error[0]
+                _time.sleep(poll_interval)
+            else:
+                # Timeout reached - try to fetch current GPU usage and record
+                log_error(f"[DEBUG] Kernel finish timed out after {timeout_seconds}s. Kernel might be hung.")
+                # Read close counters buffer as a diagnostic attempt (non-blocking may also fail)
+                try:
+                    cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf)
+                    log_info(f"[DEBUG] close_counters_sample: {close_counters_host[:min(10, len(close_counters_host))]}")
+                except Exception as _e:
+                    log_error(f"[DEBUG] Failed to read close_counters during timeout handling: {_e}")
+                # Attempt to cancel or raise error
+                raise RuntimeError(f"Kernel timeout after {timeout_seconds}s - likely hang")
             
+            log_info("[DEBUG] Kernel finished, reading results...")
             # Read results
+            log_info(f"[DEBUG] Preparing to read results: results_size={results_size}")
             results_flat = np.empty(results_size, dtype=np.float32)
+            log_info("[DEBUG] Enqueuing copy to read results buffer...")
             cl.enqueue_copy(self.queue, results_flat, results_buf)
+            log_info("[DEBUG] Results copy enqueued (results_flat size %d)" % results_flat.size)
             # Optional: read trade logs if logging enabled
             trade_logs = None
             if self.trade_log_enabled:
                 # Get count
                 idx_host = np.empty(1, dtype=np.int32)
-                cl.enqueue_copy(self.queue, idx_host, trade_log_index_buf)
-                self.queue.finish()
+                log_info("[DEBUG] Enqueuing copy to read trade_log_index_buf")
+                # Try a blocking copy to force immediate result transfer; this may avoid hanging queue.finish
+                try:
+                    cl.enqueue_copy(self.queue, idx_host, trade_log_index_buf, is_blocking=True)
+                except TypeError:
+                    # Fallback (some pyopencl versions accept named param differently)
+                    cl.enqueue_copy(self.queue, idx_host, trade_log_index_buf, True)
+                # Use timeout finish here in case GPU copy blocks
+                log_info("[DEBUG] Waiting for trade log index copy to finish (with timeout)")
+                import time as _time, threading as _threading
+                finish_success = [False]
+                finish_error = [None]
+                def _fin():
+                    try:
+                        self.queue.finish()
+                        finish_success[0] = True
+                    except Exception as _e:
+                        finish_error[0] = _e
+                _t = _threading.Thread(target=_fin)
+                _t.daemon = True
+                _t.start()
+                _start = _time.time()
+                _timeout = 30
+                while _time.time() - _start < _timeout:
+                    if finish_success[0]:
+                        break
+                    if finish_error[0]:
+                        log_error(f"[DEBUG] Trade log index copy finish error: {finish_error[0]}")
+                        raise finish_error[0]
+                    _time.sleep(0.1)
+                else:
+                    log_error(f"[DEBUG] Trade log index copy finish timed out after {_timeout}s")
+                    # Attempt to read close_counters buffer for diagnostics
+                    try:
+                        tmp = np.empty_like(close_counters_host)
+                        cl.enqueue_copy(self.queue, tmp, close_counters_buf)
+                        log_info(f"[DEBUG] close_counters_sample (on timeout): {tmp[:min(10, len(tmp))]}")
+                    except Exception as _e:
+                        log_error(f"[DEBUG] Failed reading close counters during trade_log_index timeout: {_e}")
+                    raise RuntimeError("Trade log index copy finish timeout")
                 count = int(idx_host[0])
                 if count > 0:
                     count = min(count, self.trade_log_max)
                     trade_logs = np.empty(self.trade_log_max, dtype=TRADE_LOG_DTYPE)
+                    log_info(f"[DEBUG] Reading {count} trade logs for streaming write")
                     cl.enqueue_copy(self.queue, trade_logs, trade_logs_buf)
                     self.queue.finish()
                     trade_logs = trade_logs[:count]
-                    # Write logs to CSV for inspection
-                    self._write_trade_logs_csv(trade_logs)
+                    
+                    # Use streaming writer for async, buffered writes
+                    if self.trade_log_writer:
+                        self.trade_log_writer.enqueue(trade_logs)
+                        stats = self.trade_log_writer.get_stats()
+                        log_debug(f"Trade logs enqueued: {count} (total: {stats['enqueued']}, written: {stats['written']}, queued: {stats['queue_size']})")
+                    else:
+                        log_warning("Trade log writer not initialized, logs will be dropped")
 
             # Read close counters for diagnostics
-            cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf)
-            self.queue.finish()
+            log_info("[DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)")
+            # Attempt blocking copy for diagnostics (should be fast)
+            try:
+                cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf, is_blocking=True)
+            except TypeError:
+                cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf, True)
+            # Timeout-safe finish to avoid hanging
+            log_info("[DEBUG] Waiting for close counters copy to finish (with timeout)")
+            import time as _time, threading as _threading
+            finish_success2 = [False]
+            finish_error2 = [None]
+            def _fin2():
+                try:
+                    self.queue.finish()
+                    finish_success2[0] = True
+                except Exception as _e:
+                    finish_error2[0] = _e
+            _t2 = _threading.Thread(target=_fin2)
+            _t2.daemon = True
+            _t2.start()
+            _start2 = _time.time()
+            _timeout2 = 30
+            while _time.time() - _start2 < _timeout2:
+                if finish_success2[0]:
+                    break
+                if finish_error2[0]:
+                    log_error(f"[DEBUG] Close counters copy finish error: {finish_error2[0]}")
+                    raise finish_error2[0]
+                _time.sleep(0.1)
+            else:
+                log_error(f"[DEBUG] Close counters copy finish timed out after {_timeout2}s")
+                raise RuntimeError("Close counters copy finish timed out")
             # Write close counters to CSV for later debug (append)
             cc_path = Path('logs') / 'close_counters.csv'
             write_header = not cc_path.exists()

@@ -186,8 +186,10 @@ float calculate_dynamic_slippage(
     float volume_impact = 0.0f;
     if (current_volume > 0.0f) {
         float position_pct = position_value / (current_volume * current_price);
-        // Quadratic scaling: pow(position_pct, 1.5) for realistic market impact
-        volume_impact = pow(fmax(position_pct, 0.0f), 1.5f) * 0.05f;
+        // Quadratic scaling: sqrt(position_pct^3) = position_pct^1.5 (optimized for GPU)
+        // Avoids pow() which is slow on Intel integrated GPUs
+        float pct_clamped = fmax(position_pct, 0.0f);
+        volume_impact = sqrt(pct_clamped * pct_clamped * pct_clamped) * 0.05f;
         volume_impact = fmin(volume_impact, 0.01f);  // Cap at 1.0% additional
     }
     
@@ -1651,13 +1653,26 @@ __kernel void backtest_with_signals(
     , __global int *close_counters
 ) {
     int bot_idx = get_global_id(0);
+    
+    // CRITICAL: Write to close_counters immediately to prove kernel started
+    if (bot_idx == 0) {
+        close_counters[0] = 99999;  // Magic number - proves bot 0 entered kernel
+    }
+    
     CompactBotConfig bot = bots[bot_idx];
     
     // Validate bot configuration
     if (bot.leverage < 1 || bot.leverage > 125) {
+        if (bot_idx == 0) printf("[KERNEL] Bot %d: Invalid leverage %d\n", bot_idx, bot.leverage);
         results[bot_idx].bot_id = -9999;
         results[bot_idx].fitness_score = -999999.0f;
         return;
+    }
+    
+    // DEBUG: Print bot config for first bot
+    if (bot_idx == 0) {
+        printf("[KERNEL] Bot %d: leverage=%d, num_indicators=%d, initial_balance=%.2f\n",
+               bot_idx, bot.leverage, bot.num_indicators, initial_balance);
     }
     
     if (bot.num_indicators == 0 || bot.num_indicators > 8) {
@@ -1906,6 +1921,12 @@ __kernel void backtest_with_signals(
         int start_bar = cycle_starts[cycle];
         int end_bar = cycle_ends[cycle];
         
+        // DEBUG: Print cycle entry for first bot
+        if (bot_idx == 0 && cycle == 0) {
+            printf("[KERNEL] Bot %d Cycle %d: start_bar=%d, end_bar=%d, num_bars=%d\n",
+                   bot_idx, cycle, start_bar, end_bar, num_bars);
+        }
+        
         // Reset for new cycle - CRITICAL: Start fresh each cycle
         balance = initial_balance;
         
@@ -2004,8 +2025,19 @@ __kernel void backtest_with_signals(
             continue;  // Skip to next cycle
         }
         
+        // DEBUG: Print bar loop entry for bot 0 cycle 0
+        if (bot_idx == 0 && cycle == 0) {
+            printf("[KERNEL] Bot %d Cycle %d: Entering bar loop, actual_start_bar=%d, end_bar=%d, total_bars=%d\n", 
+                   bot_idx, cycle, actual_start_bar, end_bar, (end_bar - actual_start_bar + 1));
+        }
+        
         // Iterate through bars in cycle (after warmup period)
         for (int bar = actual_start_bar; bar <= end_bar; bar++) {
+            // DEBUG: Print first few bars for bot 0 cycle 0
+            if (bot_idx == 0 && cycle == 0 && bar < actual_start_bar + 3) {
+                printf("[KERNEL] Bot %d Cycle %d Bar %d: Processing...\n", bot_idx, cycle, bar);
+            }
+            
             // Generate signal from precomputed indicators
             float signal = generate_signal_consensus(
                 precomputed_indicators,

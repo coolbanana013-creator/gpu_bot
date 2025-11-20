@@ -113,8 +113,9 @@ def calculate_dynamic_slippage(
     volume_impact = 0.0
     if current_volume > 0.0:
         position_pct = position_value / (current_volume * current_price)
-        # Quadratic scaling: pow(position_pct, 1.5) for realistic market impact
-        volume_impact = pow(max(position_pct, 0.0), 1.5) * 0.05
+        # Quadratic scaling: sqrt(position_pct^3) = position_pct^1.5 (matches GPU kernel)
+        pct_clamped = max(position_pct, 0.0)
+        volume_impact = (pct_clamped ** 3) ** 0.5 * 0.05
         volume_impact = min(volume_impact, 0.01)  # Cap at 1.0% additional
     
     # 2. Volatility multiplier: use current bar's high-low range
