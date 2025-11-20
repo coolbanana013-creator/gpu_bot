@@ -348,7 +348,7 @@ class CompactBacktester:
                     old_chunk_size = self._optimal_data_chunk_bars
                     self._optimal_data_chunk_bars = max(1440, self._optimal_data_chunk_bars // 2)  # Minimum 1 day
                     
-                    print(f"\n[BACKTEST] OUT_OF_RESOURCES - Halving chunk size: {old_chunk_size/1440:.1f} -> {self._optimal_data_chunk_bars/1440:.1f} days")
+                    print(f"\n[BACKTEST] OUT_OF_RESOURCES - Halving chunk size: {old_chunk_size/1440:.1f} → {self._optimal_data_chunk_bars/1440:.1f} days")
                     print(f"[BACKTEST] Retrying with {self._optimal_data_chunk_bars:,} bars ({self._optimal_data_chunk_bars/1440:.1f} days)...")
                     
                     if self._optimal_data_chunk_bars < 1440:

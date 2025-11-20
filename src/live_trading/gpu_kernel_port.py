@@ -529,9 +529,9 @@ def open_position_with_margin(
         
         # KUCOIN LIQUIDATION FORMULA (CORRECTED)
         # Formula: liq_price = entry * (1 - (initial_margin - maintenance) / (1 + initial_margin))
-        # This properly accounts for losses calculated on notional value, not margin
         initial_margin_rate = 1.0 / leverage
-        liq_buffer = (initial_margin_rate - MAINTENANCE_MARGIN_RATE) / (1.0 + initial_margin_rate)
+        maintenance_margin_rate = MAINTENANCE_MARGIN_RATE
+        liq_buffer = (initial_margin_rate - maintenance_margin_rate) / (1.0 + initial_margin_rate)
         liquidation_price = price * (1.0 - liq_buffer)
     else:
         # Short
@@ -541,7 +541,8 @@ def open_position_with_margin(
         # KUCOIN LIQUIDATION FORMULA FOR SHORT (CORRECTED)
         # Formula: liq_price = entry * (1 + (initial_margin - maintenance) / (1 + initial_margin))
         initial_margin_rate = 1.0 / leverage
-        liq_buffer = (initial_margin_rate - MAINTENANCE_MARGIN_RATE) / (1.0 + initial_margin_rate)
+        maintenance_margin_rate = MAINTENANCE_MARGIN_RATE
+        liq_buffer = (initial_margin_rate - maintenance_margin_rate) / (1.0 + initial_margin_rate)
         liquidation_price = price * (1.0 + liq_buffer)
     
     # Create position
