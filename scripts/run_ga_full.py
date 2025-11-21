@@ -17,6 +17,7 @@ parser.add_argument('--pair', type=str, default='BTC_USDT')
 parser.add_argument('--data-dir', type=str, default='data')
 parser.add_argument('--trade-logs', action='store_true', help='Enable per-trade logging')
 parser.add_argument('--trade-log-max', type=int, default=200000)
+parser.add_argument('--prefer-winrate', action='store_true', help='Prefer survivors with higher win rate (favor WR in selection)')
 args = parser.parse_args()
 
 if args.trade_logs:
@@ -45,5 +46,11 @@ backtester = CompactBacktester(gpu_context=ctx, gpu_queue=queue, initial_balance
 evolver = GeneticAlgorithmEvolver(bot_generator=bot_gen, backtester=backtester, pair=args.pair, timeframe=args.timeframe, gpu_context=ctx, gpu_queue=queue)
 
 print('Starting evolution...')
-evolver.run_evolution(num_generations=args.generations, ohlcv_data=df, cycles=cycles, initial_balance=10.0)
+evolver.run_evolution(
+            num_generations=args.generations,
+            ohlcv_data=df,
+            cycles=cycles,
+            initial_balance=10.0,
+            prefer_win_rate=args.prefer_winrate
+        )
 print('Evolution complete; logs in logs/')

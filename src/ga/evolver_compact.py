@@ -375,7 +375,8 @@ class GeneticAlgorithmEvolver:
         self,
         population: List[CompactBotConfig],
         results: List[BacktestResult],
-        generation: int
+        generation: int,
+        prefer_win_rate: bool = False
     ) -> Tuple[List[CompactBotConfig], List[BacktestResult]]:
         """
         Select bots with UNIQUE indicator combinations where:
@@ -408,8 +409,8 @@ class GeneticAlgorithmEvolver:
             if num_cycles == 0:
                 eliminated_no_cycles += 1
                 continue
-                
-            avg_profit_pct = (result.total_pnl / self.initial_balance) * 100
+            # Use average per-cycle profit percent rather than cumulative across cycles.
+            avg_profit_pct = ((sum(result.per_cycle_pnl) / num_cycles) / self.initial_balance) * 100
             
             # Check 1: Average profit > -10% (allow small losses for trend-followers)
             if avg_profit_pct < -10.0:
@@ -434,7 +435,19 @@ class GeneticAlgorithmEvolver:
                 continue
             
             # Bot passed both criteria
-            profitable_pairs.append((bot, result))
+            # Compute a score that optionally emphasizes win rate (for selecting top bots)
+            if prefer_win_rate:
+                # Use win_rate heavily to favor high-win bots (configurable weight)
+                win_rate_weight = result.win_rate * 5.0
+                drawdown_penalty = result.max_drawdown * 100.0
+                score = avg_profit_pct + win_rate_weight - drawdown_penalty
+            else:
+                # Default scoring primarily by profit and penalize drawdown moderately
+                score = avg_profit_pct - (result.max_drawdown * 100.0 * 0.5)
+
+            # Store combo so we can enforce unique combinations later
+            combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+            profitable_pairs.append((combo, bot, result, score))
         
         # Check if any bots passed
         if not profitable_pairs:
@@ -446,15 +459,19 @@ class GeneticAlgorithmEvolver:
         
         log_info(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} failed criteria, {len(profitable_pairs)} bots passed")
         
-        # Step 2: Sort by fitness score (best first)
-        profitable_pairs.sort(key=lambda x: x[1].fitness_score, reverse=True)
+        # Step 2: Sort by either the provided scoring function or fitness score
+        if prefer_win_rate:
+            # Sort by our calculated score (higher better), then by fitness
+            profitable_pairs.sort(key=lambda x: (x[3], x[2].fitness_score), reverse=True)
+        else:
+            # Default: sort by fitness score
+            profitable_pairs.sort(key=lambda x: x[2].fitness_score, reverse=True)
         
         # Step 3: ENFORCE DIVERSITY - Keep only BEST bot per unique indicator combination
         unique_survivors = {}  # {combo: (bot, result)}
         seen_combos = set()
         
-        for bot, result in profitable_pairs:
-            combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+        for combo, bot, result, score in profitable_pairs:
             
             # Keep FIRST occurrence (already sorted by fitness, so this is the best)
             if combo not in seen_combos:
@@ -669,7 +686,8 @@ class GeneticAlgorithmEvolver:
         num_generations: int,
         ohlcv_data: np.ndarray,
         cycles: List[Tuple[int, int]],
-        initial_balance: float = 100.0
+        initial_balance: float = 100.0,
+        prefer_win_rate: bool = False
     ) -> None:
         """
         Run complete evolution process.
@@ -713,7 +731,8 @@ class GeneticAlgorithmEvolver:
             survivors, survivor_results = self.select_survivors(
                 self.population,
                 self.population_results,
-                gen
+                gen,
+                prefer_win_rate=prefer_win_rate
             )
             self.profiler.end_phase("survivor_selection")
             
@@ -784,8 +803,17 @@ class GeneticAlgorithmEvolver:
         
         # Results are already filtered to survivors only
         # Calculate averages across all survivors
-        avg_pnl = np.mean([r.total_pnl for r in results])
-        avg_pnl_pct = (avg_pnl / initial_balance) * 100
+        # Compute per-cycle average PnL (average of per-cycle PnLs) to avoid
+        # exaggerating profits across multiple independent cycles.
+        # If cycles are isolated (balance resets each cycle), total_pnl
+        # is the sum of per-cycle PnLs and dividing by initial_balance
+        # yields a cumulative percent across cycles. We prefer average
+        # per-cycle percentage for summary clarity.
+        avg_pnl_per_cycle = np.mean([
+            (sum(r.per_cycle_pnl) / len(r.per_cycle_pnl)) if len(r.per_cycle_pnl) > 0 else 0.0
+            for r in results
+        ])
+        avg_pnl_pct = (avg_pnl_per_cycle / initial_balance) * 100
         avg_winrate = np.mean([r.win_rate for r in results])  # Already stored as percentage (0-100)
         avg_trades = np.mean([r.total_trades for r in results])
         avg_sharpe = np.mean([r.sharpe_ratio for r in results])

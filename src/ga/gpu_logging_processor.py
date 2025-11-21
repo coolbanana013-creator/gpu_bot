@@ -207,9 +207,9 @@ class GPULoggingProcessor:
             # IDs
             'Generation', 'BotID', 'SurvivedGenerations',
             # Totals (aggregate across all cycles)
-            'TotalProfitPct', 'TotalWinRate', 'TotalTrades', 'TotalSignals',  # Added TotalSignals
+            'AvgProfitPctPerCycle', 'TotalWinRate', 'TotalTrades', 'TotalSignals',  # Average per-cycle profit pct
             # Per-cycle averages (excluding zero-trade cycles)
-            'AvgProfitPctPerCycle', 'AvgWinRatePerCycle', 'AvgTradesPerCycle',
+            'AvgProfitPctPerActiveCycle', 'AvgWinRatePerCycle', 'AvgTradesPerCycle',
             # Scoring metrics
             'FitnessScore', 'SharpeRatio', 'MaxDrawdown',
             # Final stats
@@ -279,8 +279,14 @@ class GPULoggingProcessor:
                 bot_data_offset += 4
                 per_cycle_data.extend([trades, pnl, wins_count])
 
-            # Use values directly from result object (already calculated correctly)
-            total_profit_pct = (result.total_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
+            # Use values directly from result object: report average profit per cycle
+            # rather than cumulative across independent cycles to avoid exaggeration.
+            num_cycles_val = len(result.per_cycle_pnl) if hasattr(result, 'per_cycle_pnl') and result.per_cycle_pnl else num_cycles
+            if num_cycles_val == 0:
+                total_profit_pct = 0.0
+            else:
+                avg_pnl_per_cycle = sum(result.per_cycle_pnl) / num_cycles_val
+                total_profit_pct = (avg_pnl_per_cycle / initial_balance) * 100 if initial_balance != 0 else 0.0
             total_win_rate = result.win_rate  # Already percentage 0-100 from GPU
             total_trades_val = result.total_trades
             total_pnl_val = result.total_pnl
