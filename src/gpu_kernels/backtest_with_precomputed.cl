@@ -651,10 +651,11 @@ int check_signal_quality(
         return 0;  // Filter out - insufficient data
     }
     
-    // ADX Filter: Require strong trend (ADX > 25)
-    // Based on research: ADX 0-20 = weak/ranging, 25+ = trending
-    if (adx < 25.0f) {
-        return 0;  // Filter out - weak trend, choppy market
+    // ADX Filter: Require minimum trend strength (ADX > 15)
+    // Lowered from 25 to 15 to allow more opportunities
+    // Research shows: ADX 0-15 = very weak, 15-25 = developing trend, 25+ = strong
+    if (adx < 15.0f) {
+        return 0;  // Filter out - very weak/ranging market only
     }
     
     // ATR Filter: Avoid extreme volatility
