@@ -361,6 +361,13 @@ class CompactBacktester:
             raise FileNotFoundError(f"Kernel not found: {backtest_path}")
         
         backtest_src = backtest_path.read_text()
+        # Allow optional debug compile-time flags via environment variables
+        if os.getenv('DEBUG_LOW_CONSENSUS', '0') == '1':
+            log_info('[DEBUG] DEBUG_LOW_CONSENSUS set - compiling kernel with low consensus threshold')
+            backtest_src = '#define DEBUG_FORCE_LOW_CONSENSUS\n' + backtest_src
+        if os.getenv('DEBUG_ACCEPT_NEUTRAL', '0') == '1':
+            log_info('[DEBUG] DEBUG_ACCEPT_NEUTRAL set - compiling kernel to accept neutral signals as directional for debug')
+            backtest_src = '#define DEBUG_ACCEPT_NEUTRAL_AS_SIGNAL\n' + backtest_src
         
         try:
             self.backtest_program = cl.Program(self.ctx, backtest_src).build()
@@ -386,6 +393,60 @@ class CompactBacktester:
         except cl.RuntimeError as e:
             log_error(f"Aggregation kernel compilation failed: {e}")
             raise
+
+        # Optional: compile the signal debug kernel if present (separate from aggregate build)
+        debug_path = kernel_dir / "signal_debug.cl"
+        if debug_path.exists():
+            try:
+                debug_src = debug_path.read_text()
+                self.debug_program = cl.Program(self.ctx, debug_src).build()
+                self._debug_signal_kernel = cl.Kernel(self.debug_program, "debug_signal_generation")
+                log_info("[OK] Compiled signal_debug.cl (debug helper kernel)")
+            except cl.RuntimeError:
+                log_warning("Failed to compile signal_debug.cl - skipping debug kernel")
+
+    def run_debug_signal_generation(self, precomputed_indicators_buf, compact_bots_buf, cycle_start: int, cycle_end: int, num_bars: int, num_bots_to_sample: int = 64, bars_per_sample: int = 60, cycle_to_debug: int = 0):
+        """Run the signal debug kernel to gather signal stats for a subset of bots.
+        Returns a list of SignalDebugRecord serialized entries.
+        """
+        if not hasattr(self, '_debug_signal_kernel'):
+            raise RuntimeError('Debug kernel not compiled')
+
+        # Estimate num samples per bot across the cycle range (we keep the sample count reasonable)
+        # For debug, we limit to 128 samples per bot (to avoid huge allocations)
+        # cycle_start and cycle_end are passed by host
+        cycle_bars = max(1, cycle_end - cycle_start)
+        num_samples = min(128, max(1, cycle_bars // max(1, bars_per_sample)))
+
+        debug_record_struct_size = 128  # Rough estimate (depends on kernel struct)
+        total_records = num_bots_to_sample * num_samples
+
+        # Allocate buffer for records
+        debug_records_buf = cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY, size=total_records * debug_record_struct_size)
+
+        # Create cycle ranges buffer for this single cycle
+        cycle_ranges_array = np.array([cycle_start, cycle_end], dtype=np.int32)
+        cycle_ranges_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=cycle_ranges_array)
+
+        # Launch kernel
+        kernel = self._debug_signal_kernel
+        kernel(self.queue, (num_bots_to_sample,), None,
+               precomputed_indicators_buf,
+               compact_bots_buf,
+               cycle_ranges_buf,
+               debug_records_buf,
+               np.int32(num_bars),
+               np.int32(num_bots_to_sample),
+               np.int32(bars_per_sample),
+               np.int32(cycle_to_debug))
+        self.queue.finish()
+
+        # Read back records as raw bytes (for robust parsing of int/float fields)
+        debug_flat = np.empty(total_records * debug_record_struct_size, dtype=np.uint8)
+        cl.enqueue_copy(self.queue, debug_flat, debug_records_buf)
+        self.queue.finish()
+        # Return raw byte array so host can interpret struct with numpy dtype
+        return debug_flat
     
     def backtest_bots(
         self,

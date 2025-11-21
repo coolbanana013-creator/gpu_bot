@@ -40,15 +40,15 @@ __kernel void debug_signal_generation(
     // Load compact bot
     __global uchar *bot_ptr = compact_bots_data + (bot_id * 128);
     
-    // Parse compact bot (first 32 bytes)
-    int num_indicators = bot_ptr[0];
-    int num_risk_strategies = bot_ptr[1];
+    // Parse compact bot (first 32 bytes) - struct offsets: bot_id (4), num_indicators (1), indicators[8] (offset 5)
+    int num_indicators = (int)bot_ptr[4];
+    int num_risk_strategies = 0; // Deprecated field not needed for debug
     uchar indicators[8];
     float indicator_params[8][3];
     
     // Load indicators
     for (int i = 0; i < num_indicators && i < 8; i++) {
-        indicators[i] = bot_ptr[2 + i];
+        indicators[i] = bot_ptr[5 + i];
     }
     
     // Load indicator params (skip for now, focus on signal counts)

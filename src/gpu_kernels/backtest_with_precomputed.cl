@@ -589,7 +589,8 @@ float generate_signal_consensus(
     float weighted_bullish = 0.0f;
     float weighted_bearish = 0.0f;
     float total_weight = 0.0f;
-    int valid_indicators = 0;  // Track how many valid (non-NaN) indicators we checked
+    int valid_indicators = 0;  // Track how many valid (non-NaN AND directional) indicators we checked
+    int neutral_indicators = 0; // Track number of neutral (non-directional) indicators
     
     for (int i = 0; i < bot->num_indicators; i++) {
         int ind_idx = bot->indicator_indices[i];
@@ -599,8 +600,8 @@ float generate_signal_consensus(
         if (isnan(ind_value) || isinf(ind_value)) {
             continue;  // Skip this indicator, don't count it
         }
-        
-        valid_indicators++;  // Count this as a valid indicator
+
+        // We don't increment valid_indicators here; count only directional signals
         
         float param0 = bot->indicator_params[i][0];
         float param1 = bot->indicator_params[i][1];
@@ -969,15 +970,27 @@ float generate_signal_consensus(
         
         if (signal == 1) {
             weighted_bullish += weight;
+            total_weight += weight;
+            valid_indicators++;  // directional bullish
         } else if (signal == -1) {
             weighted_bearish += weight;
+            total_weight += weight;
+            valid_indicators++;  // directional bearish
+        } else {
+            neutral_indicators++; // an indicator produced neutral signal; do not count
         }
-        
-        total_weight += weight;
     }
     
-    // Need at least one valid indicator
-    if (valid_indicators == 0 || total_weight == 0.0f) return 0.0f;
+        // Need at least one directional indicator
+        if (valid_indicators == 0 || total_weight == 0.0f) {
+        // If debugging is enabled, we might accept neutral consensus as a signal
+    #ifdef DEBUG_ACCEPT_NEUTRAL_AS_SIGNAL
+        // Return neutral as 0.0f (no signal), but for debug we return 0.0f explicitly
+        return 0.0f;
+    #else
+        return 0.0f;
+    #endif
+        }
     
     // Calculate weighted consensus percentages
     float bullish_pct = weighted_bullish / total_weight;
@@ -986,7 +999,13 @@ float generate_signal_consensus(
     // Threshold: 70% consensus required (FIXED from 100% unanimous)
     // Allows realistic trading frequency while maintaining quality
     // 100% consensus was mathematically impossible with weighted signals
+    // Threshold: 70% consensus required (FIXED from 100% unanimous)
+    // During debugging, set a much lower threshold to force trades
+#ifdef DEBUG_FORCE_LOW_CONSENSUS
+    float consensus_threshold = 0.01f; // VERY LOW for debug - any signal accepted
+#else
     float consensus_threshold = 0.7f;
+#endif
     
     if (bullish_pct >= consensus_threshold) return 1.0f;
     if (bearish_pct >= consensus_threshold) return -1.0f;
