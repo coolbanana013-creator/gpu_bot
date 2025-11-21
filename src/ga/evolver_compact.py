@@ -607,6 +607,11 @@ class GeneticAlgorithmEvolver:
         
         # Remove duplicates and select 2-5 indicators
         unique_indicators = list(dict.fromkeys(all_indicators))  # Preserve order, remove dupes
+        
+        # Ensure we have at least 2 indicators
+        if len(unique_indicators) < 2:
+            return None  # Can't breed if not enough unique indicators
+        
         num_indicators = random.randint(2, min(5, len(unique_indicators)))
         child_indicators = unique_indicators[:num_indicators]
         
