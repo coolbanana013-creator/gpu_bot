@@ -305,27 +305,37 @@ void calculate_dynamic_tp_sl(
     float bar_range = (current_high - current_low) / current_price;
     float atr_proxy = fmax(bar_range, 0.001f);  // Minimum 0.1% to avoid division by zero
     
+    // VOLATILITY-AWARE PROFIT TARGETS
+    // In strong trends (filtered by ADX), use wider profit targets
+    // This function is called after signal quality check, so we're in a trend
+    // Assumption: If we reach here, ADX > 25 (strong trend confirmed)
+    // Use 1.5x wider profit targets in trending markets
+    float trend_multiplier = 1.5f;
+    
     switch(risk_strategy) {
         case RISK_ATR_MULTIPLIER:
             // ATR-based TP/SL: TP = ATR * risk_param * 3, SL = ATR * risk_param
             // risk_param: 1.0-5.0 multiplier
+            // In strong trends, use wider targets for better R/R
             *sl_multiplier = atr_proxy * risk_param;
-            *tp_multiplier = atr_proxy * risk_param * 3.0f;  // 3:1 R/R
+            *tp_multiplier = atr_proxy * risk_param * 3.0f * trend_multiplier;  // 4.5:1 R/R in trends
             break;
             
         case RISK_FIXED_RISK_REWARD:
             // Fixed R/R ratio: risk_param determines SL, TP is 3x
             // risk_param: 0.01-0.10 (1-10% risk)
+            // In strong trends, wider profit targets
             *sl_multiplier = risk_param;
-            *tp_multiplier = risk_param * 3.0f;  // 3:1 R/R
+            *tp_multiplier = risk_param * 3.0f * trend_multiplier;  // 4.5:1 R/R in trends
             break;
             
         case RISK_VOLATILITY_PCT:
         case RISK_PERCENT_VOLATILITY:
             // Volatility-adaptive: tighter in high vol, wider in low vol
             // risk_param: 0.01-0.20 base multiplier
+            // In strong trends, use wider profit targets
             *sl_multiplier = atr_proxy * 2.0f;  // 2x ATR for SL
-            *tp_multiplier = atr_proxy * 6.0f;  // 6x ATR for TP (3:1 R/R)
+            *tp_multiplier = atr_proxy * 6.0f * trend_multiplier;  // 9x ATR for TP (4.5:1 R/R)
             break;
             
         case RISK_OPTIMAL_F:
@@ -618,10 +628,51 @@ int detect_htf_trend(
 }
 
 /**
+ * Check signal quality using ADX and ATR filters
+ * Returns: 1 if signal quality is good, 0 if should be filtered out
+ * 
+ * Quality filters based on research:
+ * - ADX > 25: Strong trend required (avoids choppy markets)
+ * - ATR not extremely high: Avoids excessive volatility
+ */
+int check_signal_quality(
+    __global float *precomputed_indicators,
+    int bar,
+    int num_bars
+) {
+    // Get ADX_14 (indicator index 27)
+    float adx = precomputed_indicators[27 * num_bars + bar];
+    
+    // Get ATR_14 (indicator index 20)
+    float atr = precomputed_indicators[20 * num_bars + bar];
+    
+    // Skip if NaN
+    if (isnan(adx) || isnan(atr)) {
+        return 0;  // Filter out - insufficient data
+    }
+    
+    // ADX Filter: Require strong trend (ADX > 25)
+    // Based on research: ADX 0-20 = weak/ranging, 25+ = trending
+    if (adx < 25.0f) {
+        return 0;  // Filter out - weak trend, choppy market
+    }
+    
+    // ATR Filter: Avoid extreme volatility
+    // Get ATR_20 for comparison (indicator index 21)
+    float atr_20 = precomputed_indicators[21 * num_bars + bar];
+    if (!isnan(atr_20) && atr > atr_20 * 2.0f) {
+        return 0;  // Filter out - volatility spike, unpredictable
+    }
+    
+    return 1;  // Signal quality OK
+}
+
+/**
  * Generate signal from indicators using per-indicator risk strategies
  * Each indicator follows its own strategy for TP/SL and position sizing
  * 
  * MTF FILTERING: If HTF trend is detected, only allow signals aligned with HTF
+ * QUALITY FILTERING: ADX/ATR filters ensure high-quality signals only
  */
 float generate_signal_consensus(
     __global float *precomputed_indicators,
@@ -635,6 +686,11 @@ float generate_signal_consensus(
     int enable_mtf
 ) {
     if (bot->num_indicators == 0) return 0.0f;
+    
+    // SIGNAL QUALITY CHECK: Filter out low-quality setups
+    if (!check_signal_quality(precomputed_indicators, bar, num_bars)) {
+        return 0.0f;  // No trade in weak trends or high volatility
+    }
     
     float weighted_bullish = 0.0f;
     float weighted_bearish = 0.0f;
