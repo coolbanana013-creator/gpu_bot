@@ -190,6 +190,10 @@ class GeneticAlgorithmEvolver:
         # Track last generation survivors
         self.last_survivors: List[Tuple[CompactBotConfig, BacktestResult]] = []
         
+        # Track high-performing indicator combinations for intelligent breeding
+        self.high_winrate_indicators = {}  # Maps indicator combo -> best win rate achieved
+        self.top_performers_history = []  # List of (bot_config, result) tuples for breeding
+        
         # Performance profiler
         self.profiler = EvolutionProfiler()
         
@@ -434,11 +438,16 @@ class GeneticAlgorithmEvolver:
                 eliminated_high_drawdown += 1
                 continue
             
-            # Bot passed both criteria
+            # Check 4: Minimum win rate threshold when optimizing for win rate
+            if prefer_win_rate and result.win_rate < 40.0:  # 40% minimum win rate
+                eliminated_high_drawdown += 1
+                continue
+            
+            # Bot passed all criteria
             # Compute a score that optionally emphasizes win rate (for selecting top bots)
             if prefer_win_rate:
-                # Use win_rate heavily to favor high-win bots (configurable weight)
-                win_rate_weight = result.win_rate * 5.0
+                # Use win_rate extremely heavily to favor high-win bots (aggressive weight for 80%+ target)
+                win_rate_weight = result.win_rate * 50.0
                 drawdown_penalty = result.max_drawdown * 100.0
                 score = avg_profit_pct + win_rate_weight - drawdown_penalty
             else:
@@ -502,6 +511,23 @@ class GeneticAlgorithmEvolver:
         # Store last survivors
         self.last_survivors = surviving_pairs
         
+        # Track top performers for breeding (top 10% by win rate)
+        if prefer_win_rate and surviving_pairs:
+            top_count = max(10, len(surviving_pairs) // 10)  # At least 10 or 10% of survivors
+            top_by_winrate = sorted(surviving_pairs, key=lambda x: x[1].win_rate, reverse=True)[:top_count]
+            self.top_performers_history.extend(top_by_winrate)
+            # Keep only best 100 performers to avoid memory bloat
+            if len(self.top_performers_history) > 100:
+                self.top_performers_history = sorted(self.top_performers_history, 
+                                                      key=lambda x: x[1].win_rate, 
+                                                      reverse=True)[:100]
+            
+            # Track indicator combinations that produce high win rates
+            for bot, result in top_by_winrate:
+                combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+                if combo not in self.high_winrate_indicators or result.win_rate > self.high_winrate_indicators[combo]:
+                    self.high_winrate_indicators[combo] = result.win_rate
+        
         # Log diversity and filtering stats
         total_passed_filters = len(profitable_pairs)
         unique_count = len(surviving_pairs)
@@ -519,6 +545,80 @@ class GeneticAlgorithmEvolver:
         # Sort and keep top 100
         self.all_time_best.sort(key=lambda x: x[1].fitness_score, reverse=True)
         self.all_time_best = self.all_time_best[:100]
+    
+    def mutate_bot_parameters(self, bot: CompactBotConfig, bot_id: int) -> CompactBotConfig:
+        """Create a mutation of a bot by adjusting its parameters while keeping indicators."""
+        mutated = copy.deepcopy(bot)
+        mutated.bot_id = bot_id
+        
+        # Randomly mutate some parameters
+        mutation_type = random.random()
+        
+        if mutation_type < 0.3:
+            # Adjust leverage (±20%)
+            leverage_change = random.uniform(0.8, 1.2)
+            mutated.leverage = max(1, min(25, int(mutated.leverage * leverage_change)))
+        
+        elif mutation_type < 0.6:
+            # Swap one indicator with a similar one
+            if mutated.num_indicators > 0:
+                idx_to_change = random.randint(0, mutated.num_indicators - 1)
+                # Find nearby indicator index (±5)
+                old_indicator = mutated.indicator_indices[idx_to_change]
+                new_indicator = max(0, min(49, old_indicator + random.randint(-5, 5)))
+                mutated.indicator_indices[idx_to_change] = new_indicator
+        
+        else:
+            # Adjust stop loss or take profit (modify risk_data)
+            if len(mutated.risk_data) >= 3:
+                # Adjust stop loss percentage (index 1 in risk_data)
+                mutated.risk_data[1] = max(0.5, min(15.0, mutated.risk_data[1] * random.uniform(0.8, 1.2)))
+        
+        return mutated
+    
+    def breed_top_performers(self, bot_id: int, existing_combos: Set[frozenset]) -> Optional[CompactBotConfig]:
+        """Create offspring from top performing bots."""
+        if len(self.top_performers_history) < 2:
+            return None
+        
+        # Select two random top performers
+        parent1_bot, parent1_result = random.choice(self.top_performers_history)
+        parent2_bot, parent2_result = random.choice(self.top_performers_history)
+        
+        # Create offspring by combining indicators from both parents
+        child = copy.deepcopy(parent1_bot)
+        child.bot_id = bot_id
+        
+        # Crossover: take some indicators from each parent
+        p1_indicators = list(parent1_bot.indicator_indices[:parent1_bot.num_indicators])
+        p2_indicators = list(parent2_bot.indicator_indices[:parent2_bot.num_indicators])
+        
+        # Randomly select indicators from both parents
+        all_indicators = p1_indicators + p2_indicators
+        random.shuffle(all_indicators)
+        
+        # Remove duplicates and select 2-5 indicators
+        unique_indicators = list(dict.fromkeys(all_indicators))  # Preserve order, remove dupes
+        num_indicators = random.randint(2, min(5, len(unique_indicators)))
+        child_indicators = unique_indicators[:num_indicators]
+        
+        # Check if this combination is unique
+        combo = frozenset(child_indicators)
+        if combo in existing_combos or combo in self.used_combinations:
+            return None  # Not unique, skip
+        
+        # Set child's indicators
+        child.num_indicators = len(child_indicators)
+        child.indicator_indices = child_indicators + [0] * (8 - len(child_indicators))
+        
+        # Average leverage from parents
+        child.leverage = (parent1_bot.leverage + parent2_bot.leverage) // 2
+        
+        # Add small mutation chance (20%)
+        if random.random() < 0.2:
+            child = self.mutate_bot_parameters(child, bot_id)
+        
+        return child
     
     def generate_unique_bot(self, bot_id: int, excluded_combinations: set = None) -> CompactBotConfig:
         """
@@ -641,12 +741,18 @@ class GeneticAlgorithmEvolver:
         log_info(f"Survivors: {total_survivors} total, {unique_survivor_combos} unique combinations ({diversity_pct:.1f}% diversity)")
         log_info(f"Global tracking: {len(self.used_combinations)} combinations used across all generations")
         
-        # Fill remaining slots with NEW UNIQUE BOTS (no offspring/mutation)
+        # Fill remaining slots with BREEDING + NEW BOTS
         next_bot_id = max(bot.bot_id for bot in survivors) + 1
         num_new_bots = target_size - len(survivors)
         
         if num_new_bots > 0:
-            log_info(f"Generating {num_new_bots} new globally unique bots (no crossover/mutation/reuse)")
+            # Use breeding if we have top performers
+            bred_count = 0
+            mutated_count = 0
+            if len(self.top_performers_history) >= 5:
+                log_info(f"Generating {num_new_bots} new bots (60% breeding, 40% random)")
+            else:
+                log_info(f"Generating {num_new_bots} new globally unique bots (insufficient top performers for breeding)")
             
             # Log pool availability
             pool_sizes = {size: len(pool) for size, pool in self.unused_combinations.items()}
@@ -654,14 +760,38 @@ class GeneticAlgorithmEvolver:
             log_info(f"Available combinations: {total_unused:,} unused, {len(self.used_combinations):,} used globally")
             
             for i in range(num_new_bots):
-                # Generate globally unique bot (never reuses any combination from history)
-                new_bot = self.generate_unique_bot(next_bot_id + i, batch_combinations)
+                new_bot = None
+                
+                # 60% chance to breed from top performers (if available)
+                if len(self.top_performers_history) >= 5 and random.random() < 0.6:
+                    new_bot = self.breed_top_performers(next_bot_id + i, batch_combinations)
+                    if new_bot:
+                        bred_count += 1
+                
+                # 20% chance to mutate a top performer
+                if new_bot is None and len(self.top_performers_history) >= 2 and random.random() < 0.25:
+                    parent_bot, _ = random.choice(self.top_performers_history)
+                    new_bot = self.mutate_bot_parameters(parent_bot, next_bot_id + i)
+                    combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
+                    # Check uniqueness
+                    if combo not in batch_combinations and combo not in self.used_combinations:
+                        mutated_count += 1
+                    else:
+                        new_bot = None  # Not unique, generate random instead
+                
+                # Fallback: Generate globally unique random bot
+                if new_bot is None:
+                    new_bot = self.generate_unique_bot(next_bot_id + i, batch_combinations)
+                
                 combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
                 
                 # Track in batch for within-generation uniqueness check
                 batch_combinations.add(combo)
                 
                 new_population.append(new_bot)
+            
+            if bred_count > 0 or mutated_count > 0:
+                log_info(f"Population breeding: {bred_count} bred, {mutated_count} mutated, {num_new_bots - bred_count - mutated_count} random")
             
             # Verify final diversity (should always be 100%)
             all_combos = [frozenset(bot.indicator_indices[:bot.num_indicators]) for bot in new_population]
