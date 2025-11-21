@@ -262,9 +262,11 @@ class CompactBacktester:
         gpu_queue: cl.CommandQueue,
         initial_balance: float = 10000.0,
         target_chunk_seconds: float = 1.0,
-        data_chunk_days: int = 100
+        data_chunk_days: int = 100,
+        enable_mtf: bool = True,
+        htf_multiplier: int = 60  # 1h HTF from 1m base (60x multiplier)
     ):
-        """Initialize two-kernel backtester with thread-safety."""
+        """Initialize two-kernel backtester with thread-safety and MTF support."""
         if gpu_context is None or gpu_queue is None:
             raise RuntimeError("GPU context and queue required")
         
@@ -273,6 +275,8 @@ class CompactBacktester:
         self.initial_balance = initial_balance
         self.target_chunk_seconds = target_chunk_seconds  # Target processing time per chunk
         self.user_data_chunk_days = data_chunk_days  # User-specified chunk size
+        self.enable_mtf = enable_mtf  # Enable multi-timeframe filtering
+        self.htf_multiplier = htf_multiplier  # HTF bar multiplier (e.g., 60 for 1h from 1m)
         
         # Get GPU device info for memory calculations
         self.device = self.ctx.devices[0]
@@ -314,6 +318,8 @@ class CompactBacktester:
         log_info(f"  - Kernel 2: Backtest with signal generation")
         log_info(f"  - GPU Memory: {self.global_mem_size / (1024**3):.2f} GB")
         log_info(f"  - Compute Units: {self.compute_units}")
+        if self.enable_mtf:
+            log_info(f"  - MTF Enabled: HTF multiplier = {self.htf_multiplier}x (higher timeframe filtering)")
     
     def __del__(self):
         """Cleanup OpenCL resources."""
@@ -566,6 +572,14 @@ class CompactBacktester:
                         # Precompute indicators for this chunk ONCE
                         indicators_buffer = self._precompute_indicators(chunk_data)
                         
+                        # Compute HTF indicators if MTF enabled
+                        htf_indicators_buffer = None
+                        num_htf_bars = 0
+                        if self.enable_mtf:
+                            htf_indicators_buffer = self._compute_htf_indicators(indicators_buffer, len(chunk_data))
+                            if htf_indicators_buffer is not None:
+                                num_htf_bars = len(chunk_data) // self.htf_multiplier
+                        
                         # Process all cycles at once (chunk size was optimized for this)
                         chunk_results = self._run_parallel_bot_cycle_kernel(
                             bots,
@@ -576,11 +590,15 @@ class CompactBacktester:
                             num_active_cycles,
                             chunk_idx,
                             chunk_start,
-                            chunk_end
+                            chunk_end,
+                            htf_indicators_buffer,
+                            num_htf_bars
                         )
                         
                         # Cleanup
                         indicators_buffer.release()
+                        if htf_indicators_buffer is not None:
+                            htf_indicators_buffer.release()
                         
                         # Distribute results to appropriate cycles
                         for local_cycle_idx, global_cycle_idx in enumerate(cycle_indices):
@@ -1606,7 +1624,9 @@ class CompactBacktester:
         num_active_cycles: int,
         chunk_id: int = 0,
         chunk_global_start: int = 0,
-        chunk_global_end: int = 0
+        chunk_global_end: int = 0,
+        htf_indicators_buffer: cl.Buffer = None,
+        num_htf_bars: int = 0
     ) -> List[List[Dict]]:
         """
         Run ultra-parallel kernel that processes each bot-cycle pair as a separate work item.
@@ -1725,6 +1745,10 @@ class CompactBacktester:
                 np.int32(chunk_global_start),
                 np.int32(chunk_global_end)
                 , close_counters_buf
+                , htf_indicators_buffer if htf_indicators_buffer is not None else cl.Buffer(self.ctx, cl.mem_flags.READ_ONLY, 4)
+                , np.int32(num_htf_bars)
+                , np.int32(self.htf_multiplier)
+                , np.int32(1 if self.enable_mtf else 0)
             )
             
             # Use a timeout-enabled finish to avoid hanging the process
@@ -2635,6 +2659,59 @@ class CompactBacktester:
         ohlcv_buf.release()
         
         return indicators_buf
+    
+    def _compute_htf_indicators(self, base_indicators_buf: cl.Buffer, num_bars: int) -> cl.Buffer:
+        """
+        Compute HTF indicators by subsampling base timeframe indicators.
+        
+        For example, if HTF multiplier is 60 (1h from 1m):
+        - HTF bar 0 = base bar 59 (first complete hour)
+        - HTF bar 1 = base bar 119 (second complete hour)
+        - etc.
+        
+        Args:
+            base_indicators_buf: Base timeframe precomputed indicators
+            num_bars: Number of base timeframe bars
+        
+        Returns:
+            HTF indicators buffer (same layout, but fewer bars)
+        """
+        if not self.enable_mtf:
+            return None
+        
+        # Calculate number of complete HTF bars
+        num_htf_bars = num_bars // self.htf_multiplier
+        
+        if num_htf_bars == 0:
+            log_warning(f"Not enough bars for HTF calculation: {num_bars} bars, need {self.htf_multiplier}")
+            return None
+        
+        # Read base timeframe indicators from GPU
+        indicators_flat = np.empty(self.NUM_INDICATORS * num_bars, dtype=np.float32)
+        cl.enqueue_copy(self.queue, indicators_flat, base_indicators_buf)
+        self.queue.finish()
+        
+        # Reshape to (indicators, bars)
+        indicators_array = indicators_flat.reshape((self.NUM_INDICATORS, num_bars))
+        
+        # Subsample at HTF intervals (take every Nth bar where N = htf_multiplier)
+        # HTF bar i corresponds to base bar (i+1)*htf_multiplier - 1
+        htf_indices = [(i + 1) * self.htf_multiplier - 1 for i in range(num_htf_bars)]
+        htf_indicators = indicators_array[:, htf_indices]
+        
+        # Create GPU buffer for HTF indicators
+        htf_indicator_bytes = self.NUM_INDICATORS * num_htf_bars * 4
+        htf_flat = htf_indicators.flatten().astype(np.float32)
+        
+        htf_indicators_buf = cl.Buffer(
+            self.ctx,
+            cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
+            hostbuf=htf_flat
+        )
+        
+        log_info(f"[MTF] Computed {num_htf_bars} HTF bars from {num_bars} base bars (1:{self.htf_multiplier})")
+        
+        return htf_indicators_buf
     
     def _run_backtest_kernel(
         self,

@@ -574,15 +574,65 @@ int check_account_liquidation(
 }
 
 /**
+ * Detect HTF trend using subsampled HTF indicators.
+ * Returns: 1 (bullish), -1 (bearish), 0 (neutral/no trend)
+ * 
+ * Strategy: Check if HTF moving averages are trending
+ * - Use SMA(20) from HTF (indicator 2)
+ * - Compare current vs previous HTF bar
+ * - >0.2% change = directional trend
+ */
+int detect_htf_trend(
+    __global float *htf_indicators,
+    int htf_bar,
+    int num_htf_bars,
+    int htf_multiplier
+) {
+    // Not enough HTF bars for trend detection
+    if (htf_bar < 1 || num_htf_bars == 0) {
+        return 0;  // Neutral - allow all signals
+    }
+    
+    // Use SMA(20) indicator (index 2) for HTF trend
+    // This is a simple, robust trend indicator
+    int htf_ind_idx = 2;
+    
+    float htf_current = htf_indicators[htf_ind_idx * num_htf_bars + htf_bar];
+    float htf_previous = htf_indicators[htf_ind_idx * num_htf_bars + (htf_bar - 1)];
+    
+    // Skip if invalid
+    if (isnan(htf_current) || isinf(htf_current) || 
+        isnan(htf_previous) || isinf(htf_previous)) {
+        return 0;  // Neutral
+    }
+    
+    // Detect trend with 0.01% threshold (very sensitive to HTF direction)
+    // Even small movements on HTF represent significant base TF trends
+    if (htf_current > htf_previous * 1.0001f) {
+        return 1;  // Bullish HTF trend
+    } else if (htf_current < htf_previous * 0.9999f) {
+        return -1;  // Bearish HTF trend
+    }
+    
+    return 0;  // Neutral - no clear HTF trend
+}
+
+/**
  * Generate signal from indicators using per-indicator risk strategies
  * Each indicator follows its own strategy for TP/SL and position sizing
+ * 
+ * MTF FILTERING: If HTF trend is detected, only allow signals aligned with HTF
  */
 float generate_signal_consensus(
     __global float *precomputed_indicators,
     CompactBotConfig *bot,
     int bar,
     int num_bars,
-    int bot_id
+    int bot_id,
+    __global float *htf_indicators,
+    int num_htf_bars,
+    int htf_multiplier,
+    int enable_mtf
 ) {
     if (bot->num_indicators == 0) return 0.0f;
     
@@ -1007,10 +1057,34 @@ float generate_signal_consensus(
     float consensus_threshold = 0.7f;
 #endif
     
-    if (bullish_pct >= consensus_threshold) return 1.0f;
-    if (bearish_pct >= consensus_threshold) return -1.0f;
+    // Determine base timeframe signal
+    float base_signal = 0.0f;
+    if (bullish_pct >= consensus_threshold) base_signal = 1.0f;
+    else if (bearish_pct >= consensus_threshold) base_signal = -1.0f;
     
-    return 0.0f;  // Mixed signals (< 70% agreement)
+    // Apply MTF filtering if enabled
+    if (enable_mtf && num_htf_bars > 0 && htf_indicators != 0) {
+        // Map current base bar to HTF bar
+        int htf_bar = bar / htf_multiplier;
+        
+        // Detect HTF trend
+        int htf_trend = detect_htf_trend(htf_indicators, htf_bar, num_htf_bars, htf_multiplier);
+        
+        // Filter logic: Block signals that go against HTF trend
+        if (htf_trend != 0) {  // HTF has a directional trend
+            if (base_signal == 1.0f && htf_trend == -1) {
+                // Bullish base signal but bearish HTF - BLOCK
+                return 0.0f;
+            }
+            if (base_signal == -1.0f && htf_trend == 1) {
+                // Bearish base signal but bullish HTF - BLOCK
+                return 0.0f;
+            }
+        }
+        // If HTF neutral or signals align, allow the base signal through
+    }
+    
+    return base_signal;  // Return filtered signal
 }
 
 /**
@@ -1851,6 +1925,10 @@ __kernel void backtest_with_signals(
     , const int chunk_global_start
     , const int chunk_global_end
     , __global int *close_counters
+    , __global float *htf_indicators  // HTF indicators (NULL if MTF disabled)
+    , const int num_htf_bars
+    , const int htf_multiplier
+    , const int enable_mtf
 ) {
     int bot_idx = get_global_id(0);
     
@@ -2257,7 +2335,11 @@ __kernel void backtest_with_signals(
                 &bot,
                 bar,
                 num_bars,
-                bot.bot_id
+                bot.bot_id,
+                htf_indicators,
+                num_htf_bars,
+                htf_multiplier,
+                enable_mtf
             );
             
             // Manage existing positions
@@ -2668,6 +2750,10 @@ __kernel void backtest_parallel_bot_cycle(
     const int chunk_global_start,
     const int chunk_global_end
     , __global int *close_counters
+    , __global float *htf_indicators  // HTF indicators (NULL if MTF disabled)
+    , const int num_htf_bars
+    , const int htf_multiplier
+    , const int enable_mtf
 ) {
     // Decode bot and cycle indices from work item ID
     int global_id = get_global_id(0);
@@ -2776,7 +2862,11 @@ __kernel void backtest_parallel_bot_cycle(
             &bot,
             bar,
             num_bars,
-            bot.bot_id
+            bot.bot_id,
+            htf_indicators,
+            num_htf_bars,
+            htf_multiplier,
+            enable_mtf
         );
         
         // Track signals generated
