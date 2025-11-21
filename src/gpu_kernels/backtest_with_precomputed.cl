@@ -637,6 +637,7 @@ int detect_htf_trend(
  */
 int check_signal_quality(
     __global float *precomputed_indicators,
+    __global OHLCVBar *ohlcv,
     int bar,
     int num_bars
 ) {
@@ -651,11 +652,11 @@ int check_signal_quality(
         return 0;  // Filter out - insufficient data
     }
     
-    // ADX Filter: Require minimum trend strength (ADX > 15)
-    // Lowered from 25 to 15 to allow more opportunities
-    // Research shows: ADX 0-15 = very weak, 15-25 = developing trend, 25+ = strong
-    if (adx < 15.0f) {
-        return 0;  // Filter out - very weak/ranging market only
+    // ADX Filter: Require moderate trend strength (ADX > 20)
+    // Raised from 15 to 20 for better win rate (stronger trend confirmation)
+    // Research shows: ADX 0-15 = very weak, 15-25 = developing trend, 20+ = reliable trend, 25+ = strong
+    if (adx < 20.0f) {
+        return 0;  // Filter out - weak/ranging market
     }
     
     // ATR Filter: Avoid extreme volatility
@@ -665,7 +666,67 @@ int check_signal_quality(
         return 0;  // Filter out - volatility spike, unpredictable
     }
     
-    return 1;  // Signal quality OK
+    // Volume Filter: Require above-average volume (institutional participation)
+    // Calculate 20-period volume MA
+    float volume_sum = 0.0f;
+    int volume_count = 0;
+    for (int i = bar - 19; i <= bar; i++) {
+        if (i >= 0 && i < num_bars) {
+            volume_sum += ohlcv[i].volume;
+            volume_count++;
+        }
+    }
+    if (volume_count > 0) {
+        float volume_ma = volume_sum / volume_count;
+        float current_volume = ohlcv[bar].volume;
+        
+        // Require current volume > 1.5x average for confirmation
+        if (current_volume < volume_ma * 1.5f) {
+            return 0;  // Filter out - weak volume, no institutional interest
+        }
+    }
+    
+    // Support/Resistance Filter: Avoid trades near recent swing points
+    // Check last 50 bars for swing highs/lows
+    float current_price = ohlcv[bar].close;
+    for (int i = bar - 50; i < bar; i++) {
+        if (i < 0 || i >= num_bars) continue;
+        
+        // Check if this was a swing high (higher than neighbors)
+        if (i > 0 && i < num_bars - 1) {
+            if (ohlcv[i].high > ohlcv[i-1].high && ohlcv[i].high > ohlcv[i+1].high) {
+                float swing_high = ohlcv[i].high;
+                // Block if within 0.5% of swing high
+                if (fabs(current_price - swing_high) / swing_high < 0.005f) {
+                    return 0;  // Filter out - too close to resistance
+                }
+            }
+            
+            // Check if this was a swing low (lower than neighbors)
+            if (ohlcv[i].low < ohlcv[i-1].low && ohlcv[i].low < ohlcv[i+1].low) {
+                float swing_low = ohlcv[i].low;
+                // Block if within 0.5% of swing low
+                if (fabs(current_price - swing_low) / swing_low < 0.005f) {
+                    return 0;  // Filter out - too close to support
+                }
+            }
+        }
+    }
+    
+    // Mean Reversion Filter: Only allow trades at extreme RSI levels
+    // Get RSI_14 (indicator index 16)
+    float rsi = precomputed_indicators[16 * num_bars + bar];
+    if (!isnan(rsi)) {
+        // For mean reversion at extremes: Only trade when RSI is in extreme zones
+        // RSI < 15 = extreme oversold (high probability bounce)
+        // RSI > 85 = extreme overbought (high probability reversal)
+        // Block trades in the middle range (15-85) to only capture exhaustion moves
+        if (rsi >= 15.0f && rsi <= 85.0f) {
+            return 0;  // Filter out - not at extreme levels for mean reversion
+        }
+    }
+    
+    return 1;  // Signal quality OK - all filters passed
 }
 
 /**
@@ -684,12 +745,13 @@ float generate_signal_consensus(
     __global float *htf_indicators,
     int num_htf_bars,
     int htf_multiplier,
-    int enable_mtf
+    int enable_mtf,
+    __global OHLCVBar *ohlcv
 ) {
     if (bot->num_indicators == 0) return 0.0f;
     
     // SIGNAL QUALITY CHECK: Filter out low-quality setups
-    if (!check_signal_quality(precomputed_indicators, bar, num_bars)) {
+    if (!check_signal_quality(precomputed_indicators, ohlcv, bar, num_bars)) {
         return 0.0f;  // No trade in weak trends or high volatility
     }
     
@@ -1103,15 +1165,14 @@ float generate_signal_consensus(
     float bullish_pct = weighted_bullish / total_weight;
     float bearish_pct = weighted_bearish / total_weight;
     
-    // Threshold: 70% consensus required (FIXED from 100% unanimous)
-    // Allows realistic trading frequency while maintaining quality
-    // 100% consensus was mathematically impossible with weighted signals
-    // Threshold: 70% consensus required (FIXED from 100% unanimous)
+    // Threshold: 80% consensus required for extreme win rate
+    // Raised from 70% to 80% to increase signal quality
+    // Higher agreement = stronger conviction = higher win rate
     // During debugging, set a much lower threshold to force trades
 #ifdef DEBUG_FORCE_LOW_CONSENSUS
     float consensus_threshold = 0.01f; // VERY LOW for debug - any signal accepted
 #else
-    float consensus_threshold = 0.7f;
+    float consensus_threshold = 0.8f;  // 80% consensus for high WR
 #endif
     
     // Determine base timeframe signal
@@ -2396,7 +2457,8 @@ __kernel void backtest_with_signals(
                 htf_indicators,
                 num_htf_bars,
                 htf_multiplier,
-                enable_mtf
+                enable_mtf,
+                ohlcv
             );
             
             // Manage existing positions
@@ -2923,7 +2985,8 @@ __kernel void backtest_parallel_bot_cycle(
             htf_indicators,
             num_htf_bars,
             htf_multiplier,
-            enable_mtf
+            enable_mtf,
+            ohlcv
         );
         
         // Track signals generated
