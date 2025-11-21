@@ -411,22 +411,25 @@ class GeneticAlgorithmEvolver:
                 
             avg_profit_pct = (result.total_pnl / self.initial_balance) * 100
             
-            # Check 1: Positive average profit percentage
-            if avg_profit_pct <= 0:
+            # Check 1: Average profit > -10% (allow small losses for trend-followers)
+            if avg_profit_pct < -10.0:
                 eliminated_negative_profit += 1
                 continue
             
-            # Check 2: All cycles have positive profit
-            all_cycles_profitable = all(
-                result.per_cycle_pnl[i] > 0.0 if i < len(result.per_cycle_pnl) else False
-                for i in range(num_cycles)
+            # Check 2: At least 70% of cycles profitable (FIXED from 100%)
+            # Requiring ALL cycles profitable is mathematically impossible with 125x leverage
+            # Even pro traders have 20-30% losing periods
+            profitable_cycles = sum(
+                1 for pnl in result.per_cycle_pnl if pnl > 0.0
             )
-            if not all_cycles_profitable:
+            profitable_pct = profitable_cycles / num_cycles if num_cycles > 0 else 0
+            if profitable_pct < 0.70:  # 70% threshold
                 eliminated_high_drawdown += 1  # Reuse counter for simplicity
                 continue
             
-            # Check 3: Max drawdown < 15%
-            if result.max_drawdown >= MAX_DRAWDOWN_THRESHOLD:
+            # Check 3: Max drawdown < 30% (FIXED from 15%)
+            # 125x leverage makes 15% DD threshold unrealistic
+            if result.max_drawdown >= 0.30:  # 30% threshold
                 eliminated_high_drawdown += 1
                 continue
             
@@ -435,8 +438,8 @@ class GeneticAlgorithmEvolver:
         
         # Check if any bots passed
         if not profitable_pairs:
-            log_error(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} failed criteria, {eliminated_no_cycles} no cycles, 0 bots passed")
-            log_error("No bots met criteria: average profit % must be positive AND all cycles profitable AND max drawdown < 15%")
+            log_error(f"SURVIVAL FILTER: {eliminated_negative_profit} high loss (>-10%), {eliminated_high_drawdown} failed criteria, {eliminated_no_cycles} no cycles, 0 bots passed")
+            log_error("No bots met criteria: avg profit > -10% AND 70%+ cycles profitable AND max drawdown < 30%")
             log_error("Generating completely new population for next generation")
             # Return empty survivors - refill_population will generate all new bots
             return [], []

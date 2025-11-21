@@ -995,6 +995,146 @@ float generate_signal_consensus(
 }
 
 /**
+ * Calculate higher timeframe trend direction
+ * 
+ * Multi-Timeframe Analysis: Ensures trades align with higher TF trends
+ * Dramatically improves win rate by filtering out counter-trend signals
+ * 
+ * Method: Uses EMA cross + MACD + ADX to determine trend
+ * Returns: -1 (bearish), 0 (neutral/weak), +1 (bullish)
+ */
+int calculate_htf_trend(
+    __global float *precomputed_indicators,
+    int bar_htf,         // Bar index on higher timeframe
+    int num_bars_htf,    // Total bars on higher timeframe
+    int multiplier       // Multiplier from base TF to this HTF (e.g., 15 for 1m->15m)
+) {
+    // Safety check
+    if (bar_htf >= num_bars_htf || bar_htf < 0) return 0;
+    
+    // Required indicators for trend determination:
+    // EMA(20) = index 0, EMA(50) = index 1, MACD = index 26, ADX = index 27
+    int ema20_idx = 0;
+    int ema50_idx = 1;
+    int macd_idx = 26;
+    int adx_idx = 27;
+    
+    // Read HTF indicator values
+    // Note: HTF indicators are stored in separate section of precomputed buffer
+    // Offset = num_indicators * num_bars_base + indicator_idx * num_bars_htf + bar_htf
+    float ema20 = precomputed_indicators[ema20_idx * num_bars_htf + bar_htf];
+    float ema50 = precomputed_indicators[ema50_idx * num_bars_htf + bar_htf];
+    float macd = precomputed_indicators[macd_idx * num_bars_htf + bar_htf];
+    float adx = precomputed_indicators[adx_idx * num_bars_htf + bar_htf];
+    
+    // Skip if any indicator is invalid
+    if (isnan(ema20) || isnan(ema50) || isnan(macd) || isnan(adx)) return 0;
+    if (isinf(ema20) || isinf(ema50) || isinf(macd) || isinf(adx)) return 0;
+    
+    // Collect trend signals
+    int signals[3];
+    int signal_count = 0;
+    
+    // Signal 1: EMA Cross
+    if (ema20 > ema50 * 1.002f) {  // 0.2% threshold for HTF (stronger filter)
+        signals[signal_count++] = 1;  // Bullish
+    } else if (ema20 < ema50 * 0.998f) {
+        signals[signal_count++] = -1;  // Bearish
+    } else {
+        signals[signal_count++] = 0;  // Neutral
+    }
+    
+    // Signal 2: MACD
+    if (macd > 0.0f) {
+        signals[signal_count++] = 1;  // Bullish
+    } else if (macd < 0.0f) {
+        signals[signal_count++] = -1;  // Bearish
+    } else {
+        signals[signal_count++] = 0;  // Neutral
+    }
+    
+    // Signal 3: ADX (trend strength)
+    if (adx > 25.0f) {
+        // Strong trend - reinforce EMA signal
+        signals[signal_count++] = signals[0];  // Copy EMA signal
+    } else {
+        // Weak trend - stay neutral
+        signals[signal_count++] = 0;
+    }
+    
+    // Consensus: At least 2 out of 3 must agree
+    int bullish_count = 0;
+    int bearish_count = 0;
+    
+    for (int i = 0; i < 3; i++) {
+        if (signals[i] == 1) bullish_count++;
+        else if (signals[i] == -1) bearish_count++;
+    }
+    
+    // Require strong agreement (2+ signals)
+    if (bullish_count >= 2) return 1;   // Bullish trend
+    if (bearish_count >= 2) return -1;  // Bearish trend
+    
+    return 0;  // Neutral / mixed signals
+}
+
+/**
+ * Multi-Timeframe Signal Filter
+ * 
+ * Filters base timeframe signals against higher timeframe trends
+ * Only allows trades that align with both higher timeframes
+ * 
+ * Returns: Filtered signal (-1, 0, or 1)
+ */
+float apply_mtf_filter(
+    float base_signal,              // Signal from base timeframe
+    __global float *htf1_indicators, // HTF1 precomputed indicators
+    __global float *htf2_indicators, // HTF2 precomputed indicators  
+    int bar_base,                   // Current bar on base TF
+    int num_bars_base,              // Total bars on base TF
+    int htf1_multiplier,            // Multiplier to HTF1 (e.g., 5 for 1m->5m)
+    int htf2_multiplier,            // Multiplier to HTF2 (e.g., 15 for 1m->15m)
+    int num_bars_htf1,              // Total bars on HTF1
+    int num_bars_htf2               // Total bars on HTF2
+) {
+    // If base signal is neutral, no need to filter
+    if (base_signal == 0.0f) return 0.0f;
+    
+    // Calculate corresponding bar indices on higher timeframes
+    int bar_htf1 = bar_base / htf1_multiplier;
+    int bar_htf2 = bar_base / htf2_multiplier;
+    
+    // Get HTF trends
+    int htf1_trend = calculate_htf_trend(htf1_indicators, bar_htf1, num_bars_htf1, htf1_multiplier);
+    int htf2_trend = calculate_htf_trend(htf2_indicators, bar_htf2, num_bars_htf2, htf2_multiplier);
+    
+    // Filter logic: Base signal must align with BOTH higher timeframes
+    // OR at least one HTF must agree and the other must be neutral
+    
+    if (base_signal > 0.0f) {  // LONG signal
+        // Block if either HTF is bearish
+        if (htf1_trend < 0 || htf2_trend < 0) {
+            return 0.0f;  // Blocked - fighting higher TF trend
+        }
+        // Allow if both HTF are bullish or neutral
+        if (htf1_trend >= 0 && htf2_trend >= 0) {
+            return base_signal;  // Allowed - aligned with HTF
+        }
+    } else if (base_signal < 0.0f) {  // SHORT signal
+        // Block if either HTF is bullish
+        if (htf1_trend > 0 || htf2_trend > 0) {
+            return 0.0f;  // Blocked - fighting higher TF trend
+        }
+        // Allow if both HTF are bearish or neutral
+        if (htf1_trend <= 0 && htf2_trend <= 0) {
+            return base_signal;  // Allowed - aligned with HTF
+        }
+    }
+    
+    return 0.0f;  // Default: block if unclear
+}
+
+/**
  * Open new position with TRUE MARGIN TRADING
  * 
  * REALISTIC APPROACH:
