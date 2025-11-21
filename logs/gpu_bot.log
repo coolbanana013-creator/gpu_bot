@@ -1141,3 +1141,757 @@
 2025-11-21 00:41:34,874 - src.utils.validation - ERROR - 
 
 Fatal error: No data available for BTCUSDT 1m
+2025-11-21 00:42:58,244 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-21 00:42:58,333 - src.utils.validation - INFO - ============================================================
+2025-11-21 00:42:58,334 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-21 00:42:58,335 - src.utils.validation - INFO - ============================================================
+2025-11-21 00:42:58,335 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-21 00:42:58,336 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-21 00:42:58,336 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-21 00:42:58,337 - src.utils.validation - INFO - Compute Units: 80
+2025-11-21 00:42:58,338 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-21 00:42:58,339 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-21 00:42:58,339 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-21 00:42:58,340 - src.utils.validation - INFO - ============================================================
+
+2025-11-21 00:43:02,624 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-21 00:43:02,631 - src.utils.validation - INFO - Initialized Kucoin Spot API connection
+2025-11-21 00:43:04,408 - src.utils.validation - INFO - Symbol 'BTCUSDT' normalized to 'BTC/USDT' for spot exchange
+2025-11-21 00:43:04,408 - src.utils.validation - INFO - Fetching 560 days of BTC/USDT 1m data ending 2025-11-19 (excludes today)
+2025-11-21 00:43:04,464 - src.utils.validation - INFO - [CACHE] 0/560 files cached (0.0%), 560 need download
+2025-11-21 00:43:04,465 - src.utils.validation - INFO - [DOWNLOAD] Fetching 560 missing day(s) using 4 parallel threads...
+2025-11-21 00:43:04,937 - src.utils.validation - INFO - [1/560] Downloaded 1440 candles for 2025-11-18
+2025-11-21 00:43:05,071 - src.utils.validation - INFO - [2/560] Downloaded 1440 candles for 2025-11-16
+2025-11-21 00:43:05,121 - src.utils.validation - INFO - [3/560] Downloaded 1440 candles for 2025-11-17
+2025-11-21 00:43:05,294 - src.utils.validation - INFO - [4/560] Downloaded 1440 candles for 2025-11-14
+2025-11-21 00:43:05,441 - src.utils.validation - INFO - [5/560] Downloaded 1440 candles for 2025-11-13
+2025-11-21 00:43:05,485 - src.utils.validation - INFO - [6/560] Downloaded 1440 candles for 2025-11-12
+2025-11-21 00:43:05,576 - src.utils.validation - INFO - [7/560] Downloaded 1440 candles for 2025-11-15
+2025-11-21 00:43:05,647 - src.utils.validation - INFO - [8/560] Downloaded 1440 candles for 2025-11-11
+2025-11-21 00:43:05,810 - src.utils.validation - INFO - [9/560] Downloaded 1440 candles for 2025-11-10
+2025-11-21 00:43:05,869 - src.utils.validation - INFO - [10/560] Downloaded 1440 candles for 2025-11-09
+2025-11-21 00:43:06,048 - src.utils.validation - INFO - [11/560] Downloaded 1440 candles for 2025-11-07
+2025-11-21 00:43:06,194 - src.utils.validation - INFO - [12/560] Downloaded 1440 candles for 2025-11-06
+2025-11-21 00:43:06,240 - src.utils.validation - INFO - [13/560] Downloaded 1440 candles for 2025-11-05
+2025-11-21 00:43:06,355 - src.utils.validation - INFO - [14/560] Downloaded 1440 candles for 2025-11-08
+2025-11-21 00:43:06,424 - src.utils.validation - INFO - [15/560] Downloaded 1440 candles for 2025-11-04
+2025-11-21 00:43:06,561 - src.utils.validation - INFO - [16/560] Downloaded 1440 candles for 2025-11-03
+2025-11-21 00:43:06,620 - src.utils.validation - INFO - [17/560] Downloaded 1440 candles for 2025-11-02
+2025-11-21 00:43:06,835 - src.utils.validation - INFO - [18/560] Downloaded 1440 candles for 2025-11-01
+2025-11-21 00:43:06,882 - src.utils.validation - INFO - [19/560] Downloaded 1440 candles for 2025-10-31
+2025-11-21 00:43:06,960 - src.utils.validation - INFO - [20/560] Downloaded 1440 candles for 2025-10-30
+2025-11-21 00:43:06,991 - src.utils.validation - INFO - [21/560] Downloaded 1440 candles for 2025-10-29
+2025-11-21 00:43:07,253 - src.utils.validation - INFO - [22/560] Downloaded 1440 candles for 2025-10-28
+2025-11-21 00:43:07,305 - src.utils.validation - INFO - [23/560] Downloaded 1440 candles for 2025-10-27
+2025-11-21 00:43:07,421 - src.utils.validation - INFO - [24/560] Downloaded 1440 candles for 2025-10-25
+2025-11-21 00:43:07,472 - src.utils.validation - INFO - [25/560] Downloaded 1500 candles for 2025-10-26
+2025-11-21 00:43:07,640 - src.utils.validation - INFO - [26/560] Downloaded 1440 candles for 2025-10-24
+2025-11-21 00:43:07,717 - src.utils.validation - INFO - [27/560] Downloaded 1440 candles for 2025-10-23
+2025-11-21 00:43:07,820 - src.utils.validation - INFO - [28/560] Downloaded 1440 candles for 2025-10-22
+2025-11-21 00:43:07,886 - src.utils.validation - INFO - [29/560] Downloaded 1440 candles for 2025-10-21
+2025-11-21 00:43:08,022 - src.utils.validation - INFO - [30/560] Downloaded 1440 candles for 2025-10-20
+2025-11-21 00:43:08,081 - src.utils.validation - INFO - [31/560] Downloaded 1440 candles for 2025-10-19
+2025-11-21 00:43:08,258 - src.utils.validation - INFO - [32/560] Downloaded 1440 candles for 2025-10-18
+2025-11-21 00:43:08,300 - src.utils.validation - INFO - [33/560] Downloaded 1440 candles for 2025-10-17
+2025-11-21 00:43:08,405 - src.utils.validation - INFO - [34/560] Downloaded 1440 candles for 2025-10-16
+2025-11-21 00:43:08,456 - src.utils.validation - INFO - [35/560] Downloaded 1440 candles for 2025-10-15
+2025-11-21 00:43:08,615 - src.utils.validation - INFO - [36/560] Downloaded 1440 candles for 2025-10-14
+2025-11-21 00:43:08,684 - src.utils.validation - INFO - [37/560] Downloaded 1440 candles for 2025-10-13
+2025-11-21 00:43:08,806 - src.utils.validation - INFO - [38/560] Downloaded 1440 candles for 2025-10-12
+2025-11-21 00:43:08,832 - src.utils.validation - INFO - [39/560] Downloaded 1440 candles for 2025-10-11
+2025-11-21 00:43:09,027 - src.utils.validation - INFO - [40/560] Downloaded 1440 candles for 2025-10-10
+2025-11-21 00:43:09,146 - src.utils.validation - INFO - [41/560] Downloaded 1440 candles for 2025-10-09
+2025-11-21 00:43:09,185 - src.utils.validation - INFO - [42/560] Downloaded 1440 candles for 2025-10-08
+2025-11-21 00:43:09,225 - src.utils.validation - INFO - [43/560] Downloaded 1440 candles for 2025-10-07
+2025-11-21 00:43:09,389 - src.utils.validation - INFO - [44/560] Downloaded 1440 candles for 2025-10-06
+2025-11-21 00:43:09,519 - src.utils.validation - INFO - [45/560] Downloaded 1440 candles for 2025-10-05
+2025-11-21 00:43:09,570 - src.utils.validation - INFO - [46/560] Downloaded 1440 candles for 2025-10-04
+2025-11-21 00:43:09,616 - src.utils.validation - INFO - [47/560] Downloaded 1440 candles for 2025-10-03
+2025-11-21 00:43:09,810 - src.utils.validation - INFO - [48/560] Downloaded 1440 candles for 2025-10-02
+2025-11-21 00:43:10,373 - src.utils.validation - INFO - [49/560] Downloaded 1440 candles for 2025-09-30
+2025-11-21 00:43:10,529 - src.utils.validation - INFO - [50/560] Downloaded 1440 candles for 2025-10-01
+2025-11-21 00:43:10,597 - src.utils.validation - INFO - [51/560] Downloaded 1440 candles for 2025-09-28
+2025-11-21 00:43:10,606 - src.utils.validation - INFO - [52/560] Downloaded 1440 candles for 2025-09-29
+2025-11-21 00:43:10,722 - src.utils.validation - INFO - [53/560] Downloaded 1440 candles for 2025-09-27
+2025-11-21 00:43:10,920 - src.utils.validation - INFO - [54/560] Downloaded 1440 candles for 2025-09-26
+2025-11-21 00:43:10,970 - src.utils.validation - INFO - [55/560] Downloaded 1440 candles for 2025-09-25
+2025-11-21 00:43:11,063 - src.utils.validation - INFO - [56/560] Downloaded 1440 candles for 2025-09-24
+2025-11-21 00:43:11,163 - src.utils.validation - INFO - [57/560] Downloaded 1440 candles for 2025-09-23
+2025-11-21 00:43:11,307 - src.utils.validation - INFO - [58/560] Downloaded 1440 candles for 2025-09-22
+2025-11-21 00:43:11,353 - src.utils.validation - INFO - [59/560] Downloaded 1440 candles for 2025-09-21
+2025-11-21 00:43:11,459 - src.utils.validation - INFO - [60/560] Downloaded 1440 candles for 2025-09-20
+2025-11-21 00:43:11,582 - src.utils.validation - INFO - [61/560] Downloaded 1440 candles for 2025-09-19
+2025-11-21 00:43:11,742 - src.utils.validation - INFO - [62/560] Downloaded 1440 candles for 2025-09-18
+2025-11-21 00:43:11,921 - src.utils.validation - INFO - [63/560] Downloaded 1440 candles for 2025-09-17
+2025-11-21 00:43:11,929 - src.utils.validation - INFO - [64/560] Downloaded 1440 candles for 2025-09-16
+2025-11-21 00:43:11,972 - src.utils.validation - INFO - [65/560] Downloaded 1440 candles for 2025-09-15
+2025-11-21 00:43:12,171 - src.utils.validation - INFO - [66/560] Downloaded 1440 candles for 2025-09-14
+2025-11-21 00:43:12,428 - src.utils.validation - INFO - [67/560] Downloaded 1440 candles for 2025-09-13
+2025-11-21 00:43:12,508 - src.utils.validation - INFO - [68/560] Downloaded 1440 candles for 2025-09-11
+2025-11-21 00:43:12,548 - src.utils.validation - INFO - [69/560] Downloaded 1440 candles for 2025-09-12
+2025-11-21 00:43:12,617 - src.utils.validation - INFO - [70/560] Downloaded 1440 candles for 2025-09-10
+2025-11-21 00:43:12,811 - src.utils.validation - INFO - [71/560] Downloaded 1440 candles for 2025-09-09
+2025-11-21 00:43:12,899 - src.utils.validation - INFO - [72/560] Downloaded 1440 candles for 2025-09-08
+2025-11-21 00:43:12,978 - src.utils.validation - INFO - [73/560] Downloaded 1440 candles for 2025-09-07
+2025-11-21 00:43:13,065 - src.utils.validation - INFO - [74/560] Downloaded 1440 candles for 2025-09-06
+2025-11-21 00:43:13,167 - src.utils.validation - INFO - [75/560] Downloaded 1440 candles for 2025-09-05
+2025-11-21 00:43:13,256 - src.utils.validation - INFO - [76/560] Downloaded 1440 candles for 2025-09-04
+2025-11-21 00:43:13,357 - src.utils.validation - INFO - [77/560] Downloaded 1440 candles for 2025-09-03
+2025-11-21 00:43:13,496 - src.utils.validation - INFO - [78/560] Downloaded 1440 candles for 2025-09-02
+2025-11-21 00:43:13,516 - src.utils.validation - INFO - [79/560] Downloaded 1440 candles for 2025-09-01
+2025-11-21 00:43:13,588 - src.utils.validation - INFO - [80/560] Downloaded 1440 candles for 2025-08-31
+2025-11-21 00:43:13,727 - src.utils.validation - INFO - [81/560] Downloaded 1440 candles for 2025-08-30
+2025-11-21 00:43:13,842 - src.utils.validation - INFO - [82/560] Downloaded 1440 candles for 2025-08-29
+2025-11-21 00:43:13,890 - src.utils.validation - INFO - [83/560] Downloaded 1440 candles for 2025-08-28
+2025-11-21 00:43:13,955 - src.utils.validation - INFO - [84/560] Downloaded 1440 candles for 2025-08-27
+2025-11-21 00:43:14,118 - src.utils.validation - INFO - [85/560] Downloaded 1440 candles for 2025-08-26
+2025-11-21 00:43:14,241 - src.utils.validation - INFO - [86/560] Downloaded 1440 candles for 2025-08-25
+2025-11-21 00:43:14,316 - src.utils.validation - INFO - [87/560] Downloaded 1440 candles for 2025-08-24
+2025-11-21 00:43:14,361 - src.utils.validation - INFO - [88/560] Downloaded 1440 candles for 2025-08-23
+2025-11-21 00:43:14,471 - src.utils.validation - INFO - [89/560] Downloaded 1440 candles for 2025-08-22
+2025-11-21 00:43:14,603 - src.utils.validation - INFO - [90/560] Downloaded 1440 candles for 2025-08-21
+2025-11-21 00:43:14,728 - src.utils.validation - INFO - [91/560] Downloaded 1440 candles for 2025-08-20
+2025-11-21 00:43:14,884 - src.utils.validation - INFO - [92/560] Downloaded 1440 candles for 2025-08-19
+2025-11-21 00:43:14,967 - src.utils.validation - INFO - [93/560] Downloaded 1440 candles for 2025-08-18
+2025-11-21 00:43:15,022 - src.utils.validation - INFO - [94/560] Downloaded 1440 candles for 2025-08-17
+2025-11-21 00:43:15,084 - src.utils.validation - INFO - [95/560] Downloaded 1440 candles for 2025-08-16
+2025-11-21 00:43:15,293 - src.utils.validation - INFO - [96/560] Downloaded 1440 candles for 2025-08-15
+2025-11-21 00:43:15,365 - src.utils.validation - INFO - [97/560] Downloaded 1440 candles for 2025-08-14
+2025-11-21 00:43:15,536 - src.utils.validation - INFO - [98/560] Downloaded 1440 candles for 2025-08-12
+2025-11-21 00:43:15,545 - src.utils.validation - INFO - [99/560] Downloaded 1440 candles for 2025-08-13
+2025-11-21 00:43:15,680 - src.utils.validation - INFO - [100/560] Downloaded 1440 candles for 2025-08-11
+2025-11-21 00:43:15,752 - src.utils.validation - INFO - [101/560] Downloaded 1440 candles for 2025-08-10
+2025-11-21 00:43:15,902 - src.utils.validation - INFO - [102/560] Downloaded 1440 candles for 2025-08-09
+2025-11-21 00:43:16,025 - src.utils.validation - INFO - [103/560] Downloaded 1440 candles for 2025-08-08
+2025-11-21 00:43:16,035 - src.utils.validation - INFO - [104/560] Downloaded 1440 candles for 2025-08-07
+2025-11-21 00:43:16,127 - src.utils.validation - INFO - [105/560] Downloaded 1440 candles for 2025-08-06
+2025-11-21 00:43:16,336 - src.utils.validation - INFO - [106/560] Downloaded 1440 candles for 2025-08-05
+2025-11-21 00:43:16,448 - src.utils.validation - INFO - [107/560] Downloaded 1440 candles for 2025-08-04
+2025-11-21 00:43:16,459 - src.utils.validation - INFO - [108/560] Downloaded 1440 candles for 2025-08-03
+2025-11-21 00:43:16,520 - src.utils.validation - INFO - [109/560] Downloaded 1440 candles for 2025-08-02
+2025-11-21 00:43:16,709 - src.utils.validation - INFO - [110/560] Downloaded 1440 candles for 2025-08-01
+2025-11-21 00:43:16,823 - src.utils.validation - INFO - [111/560] Downloaded 1440 candles for 2025-07-31
+2025-11-21 00:43:16,836 - src.utils.validation - INFO - [112/560] Downloaded 1440 candles for 2025-07-30
+2025-11-21 00:43:16,902 - src.utils.validation - INFO - [113/560] Downloaded 1440 candles for 2025-07-29
+2025-11-21 00:43:17,065 - src.utils.validation - INFO - [114/560] Downloaded 1440 candles for 2025-07-28
+2025-11-21 00:43:17,196 - src.utils.validation - INFO - [115/560] Downloaded 1440 candles for 2025-07-27
+2025-11-21 00:43:17,223 - src.utils.validation - INFO - [116/560] Downloaded 1440 candles for 2025-07-26
+2025-11-21 00:43:17,285 - src.utils.validation - INFO - [117/560] Downloaded 1440 candles for 2025-07-25
+2025-11-21 00:43:17,410 - src.utils.validation - INFO - [118/560] Downloaded 1440 candles for 2025-07-24
+2025-11-21 00:43:17,568 - src.utils.validation - INFO - [119/560] Downloaded 1440 candles for 2025-07-23
+2025-11-21 00:43:17,596 - src.utils.validation - INFO - [120/560] Downloaded 1440 candles for 2025-07-22
+2025-11-21 00:43:17,658 - src.utils.validation - INFO - [121/560] Downloaded 1440 candles for 2025-07-21
+2025-11-21 00:43:17,772 - src.utils.validation - INFO - [122/560] Downloaded 1440 candles for 2025-07-20
+2025-11-21 00:43:18,060 - src.utils.validation - INFO - [123/560] Downloaded 1440 candles for 2025-07-19
+2025-11-21 00:43:18,121 - src.utils.validation - INFO - [124/560] Downloaded 1440 candles for 2025-07-18
+2025-11-21 00:43:18,233 - src.utils.validation - INFO - [125/560] Downloaded 1440 candles for 2025-07-17
+2025-11-21 00:43:18,314 - src.utils.validation - INFO - [126/560] Downloaded 1440 candles for 2025-07-16
+2025-11-21 00:43:18,539 - src.utils.validation - INFO - [127/560] Downloaded 1440 candles for 2025-07-15
+2025-11-21 00:43:18,562 - src.utils.validation - INFO - [128/560] Downloaded 1440 candles for 2025-07-14
+2025-11-21 00:43:18,593 - src.utils.validation - INFO - [129/560] Downloaded 1440 candles for 2025-07-13
+2025-11-21 00:43:18,687 - src.utils.validation - INFO - [130/560] Downloaded 1440 candles for 2025-07-12
+2025-11-21 00:43:18,955 - src.utils.validation - INFO - [131/560] Downloaded 1440 candles for 2025-07-11
+2025-11-21 00:43:18,991 - src.utils.validation - INFO - [132/560] Downloaded 1440 candles for 2025-07-10
+2025-11-21 00:43:19,030 - src.utils.validation - INFO - [133/560] Downloaded 1440 candles for 2025-07-09
+2025-11-21 00:43:19,061 - src.utils.validation - INFO - [134/560] Downloaded 1440 candles for 2025-07-08
+2025-11-21 00:43:19,397 - src.utils.validation - INFO - [135/560] Downloaded 1440 candles for 2025-07-07
+2025-11-21 00:43:19,438 - src.utils.validation - INFO - [136/560] Downloaded 1440 candles for 2025-07-06
+2025-11-21 00:43:19,463 - src.utils.validation - INFO - [137/560] Downloaded 1440 candles for 2025-07-05
+2025-11-21 00:43:19,483 - src.utils.validation - INFO - [138/560] Downloaded 1440 candles for 2025-07-04
+2025-11-21 00:43:19,787 - src.utils.validation - INFO - [139/560] Downloaded 1440 candles for 2025-07-03
+2025-11-21 00:43:19,803 - src.utils.validation - INFO - [140/560] Downloaded 1440 candles for 2025-07-02
+2025-11-21 00:43:19,820 - src.utils.validation - INFO - [141/560] Downloaded 1440 candles for 2025-07-01
+2025-11-21 00:43:19,840 - src.utils.validation - INFO - [142/560] Downloaded 1440 candles for 2025-06-30
+2025-11-21 00:43:20,153 - src.utils.validation - INFO - [143/560] Downloaded 1440 candles for 2025-06-29
+2025-11-21 00:43:20,182 - src.utils.validation - INFO - [144/560] Downloaded 1440 candles for 2025-06-28
+2025-11-21 00:43:20,209 - src.utils.validation - INFO - [145/560] Downloaded 1440 candles for 2025-06-27
+2025-11-21 00:43:20,235 - src.utils.validation - INFO - [146/560] Downloaded 1440 candles for 2025-06-26
+2025-11-21 00:43:20,563 - src.utils.validation - INFO - [147/560] Downloaded 1440 candles for 2025-06-25
+2025-11-21 00:43:20,633 - src.utils.validation - INFO - [148/560] Downloaded 1440 candles for 2025-06-24
+2025-11-21 00:43:20,722 - src.utils.validation - INFO - [149/560] Downloaded 1440 candles for 2025-06-22
+2025-11-21 00:43:21,080 - src.utils.validation - INFO - [150/560] Downloaded 1440 candles for 2025-06-21
+2025-11-21 00:43:21,107 - src.utils.validation - INFO - [151/560] Downloaded 1440 candles for 2025-06-20
+2025-11-21 00:43:21,115 - src.utils.validation - INFO - [152/560] Downloaded 1440 candles for 2025-06-23
+2025-11-21 00:43:21,117 - src.utils.validation - INFO - [153/560] Downloaded 1440 candles for 2025-06-19
+2025-11-21 00:43:21,498 - src.utils.validation - INFO - [154/560] Downloaded 1440 candles for 2025-06-18
+2025-11-21 00:43:21,523 - src.utils.validation - INFO - [155/560] Downloaded 1440 candles for 2025-06-17
+2025-11-21 00:43:21,551 - src.utils.validation - INFO - [156/560] Downloaded 1440 candles for 2025-06-15
+2025-11-21 00:43:21,582 - src.utils.validation - INFO - [157/560] Downloaded 1440 candles for 2025-06-16
+2025-11-21 00:43:21,869 - src.utils.validation - INFO - [158/560] Downloaded 1440 candles for 2025-06-14
+2025-11-21 00:43:21,923 - src.utils.validation - INFO - [159/560] Downloaded 1440 candles for 2025-06-13
+2025-11-21 00:43:21,985 - src.utils.validation - INFO - [160/560] Downloaded 1440 candles for 2025-06-11
+2025-11-21 00:43:22,124 - src.utils.validation - INFO - [161/560] Downloaded 1440 candles for 2025-06-12
+2025-11-21 00:43:22,283 - src.utils.validation - INFO - [162/560] Downloaded 1440 candles for 2025-06-10
+2025-11-21 00:43:22,423 - src.utils.validation - INFO - [163/560] Downloaded 1440 candles for 2025-06-09
+2025-11-21 00:43:22,433 - src.utils.validation - INFO - [164/560] Downloaded 1440 candles for 2025-06-08
+2025-11-21 00:43:22,524 - src.utils.validation - INFO - [165/560] Downloaded 1440 candles for 2025-06-07
+2025-11-21 00:43:22,698 - src.utils.validation - INFO - [166/560] Downloaded 1440 candles for 2025-06-06
+2025-11-21 00:43:22,861 - src.utils.validation - INFO - [167/560] Downloaded 1440 candles for 2025-06-05
+2025-11-21 00:43:22,986 - src.utils.validation - INFO - [168/560] Downloaded 1440 candles for 2025-06-04
+2025-11-21 00:43:23,006 - src.utils.validation - INFO - [169/560] Downloaded 1440 candles for 2025-06-03
+2025-11-21 00:43:23,076 - src.utils.validation - INFO - [170/560] Downloaded 1440 candles for 2025-06-02
+2025-11-21 00:43:23,232 - src.utils.validation - INFO - [171/560] Downloaded 1440 candles for 2025-06-01
+2025-11-21 00:43:23,363 - src.utils.validation - INFO - [172/560] Downloaded 1440 candles for 2025-05-31
+2025-11-21 00:43:23,404 - src.utils.validation - INFO - [173/560] Downloaded 1440 candles for 2025-05-30
+2025-11-21 00:43:23,464 - src.utils.validation - INFO - [174/560] Downloaded 1440 candles for 2025-05-29
+2025-11-21 00:43:23,634 - src.utils.validation - INFO - [175/560] Downloaded 1440 candles for 2025-05-28
+2025-11-21 00:43:23,720 - src.utils.validation - INFO - [176/560] Downloaded 1440 candles for 2025-05-27
+2025-11-21 00:43:23,853 - src.utils.validation - INFO - [177/560] Downloaded 1440 candles for 2025-05-26
+2025-11-21 00:43:23,862 - src.utils.validation - INFO - [178/560] Downloaded 1440 candles for 2025-05-25
+2025-11-21 00:43:23,985 - src.utils.validation - INFO - [179/560] Downloaded 1440 candles for 2025-05-24
+2025-11-21 00:43:24,142 - src.utils.validation - INFO - [180/560] Downloaded 1440 candles for 2025-05-23
+2025-11-21 00:43:24,251 - src.utils.validation - INFO - [181/560] Downloaded 1440 candles for 2025-05-22
+2025-11-21 00:43:24,315 - src.utils.validation - INFO - [182/560] Downloaded 1440 candles for 2025-05-21
+2025-11-21 00:43:24,347 - src.utils.validation - INFO - [183/560] Downloaded 1440 candles for 2025-05-20
+2025-11-21 00:43:24,535 - src.utils.validation - INFO - [184/560] Downloaded 1440 candles for 2025-05-19
+2025-11-21 00:43:24,586 - src.utils.validation - INFO - [185/560] Downloaded 1440 candles for 2025-05-18
+2025-11-21 00:43:24,672 - src.utils.validation - INFO - [186/560] Downloaded 1440 candles for 2025-05-17
+2025-11-21 00:43:24,878 - src.utils.validation - INFO - [187/560] Downloaded 1440 candles for 2025-05-16
+2025-11-21 00:43:24,915 - src.utils.validation - INFO - [188/560] Downloaded 1440 candles for 2025-05-15
+2025-11-21 00:43:24,956 - src.utils.validation - INFO - [189/560] Downloaded 1440 candles for 2025-05-14
+2025-11-21 00:43:25,061 - src.utils.validation - INFO - [190/560] Downloaded 1440 candles for 2025-05-13
+2025-11-21 00:43:25,293 - src.utils.validation - INFO - [191/560] Downloaded 1440 candles for 2025-05-12
+2025-11-21 00:43:25,319 - src.utils.validation - INFO - [192/560] Downloaded 1440 candles for 2025-05-11
+2025-11-21 00:43:25,337 - src.utils.validation - INFO - [193/560] Downloaded 1440 candles for 2025-05-10
+2025-11-21 00:43:25,459 - src.utils.validation - INFO - [194/560] Downloaded 1440 candles for 2025-05-09
+2025-11-21 00:43:25,660 - src.utils.validation - INFO - [195/560] Downloaded 1440 candles for 2025-05-08
+2025-11-21 00:43:25,701 - src.utils.validation - INFO - [196/560] Downloaded 1440 candles for 2025-05-06
+2025-11-21 00:43:25,725 - src.utils.validation - INFO - [197/560] Downloaded 1440 candles for 2025-05-07
+2025-11-21 00:43:26,067 - src.utils.validation - INFO - [198/560] Downloaded 1440 candles for 2025-05-05
+2025-11-21 00:43:26,077 - src.utils.validation - INFO - [199/560] Downloaded 1440 candles for 2025-05-04
+2025-11-21 00:43:26,088 - src.utils.validation - INFO - [200/560] Downloaded 1440 candles for 2025-05-03
+2025-11-21 00:43:26,154 - src.utils.validation - INFO - [201/560] Downloaded 1440 candles for 2025-05-02
+2025-11-21 00:43:26,454 - src.utils.validation - INFO - [202/560] Downloaded 1440 candles for 2025-05-01
+2025-11-21 00:43:26,521 - src.utils.validation - INFO - [203/560] Downloaded 1440 candles for 2025-04-30
+2025-11-21 00:43:26,702 - src.utils.validation - INFO - [204/560] Downloaded 1440 candles for 2025-04-29
+2025-11-21 00:43:26,797 - src.utils.validation - INFO - [205/560] Downloaded 1440 candles for 2025-04-28
+2025-11-21 00:43:27,150 - src.utils.validation - INFO - [206/560] Downloaded 1440 candles for 2025-04-27
+2025-11-21 00:43:27,150 - src.utils.validation - INFO - [207/560] Downloaded 1440 candles for 2025-04-26
+2025-11-21 00:43:27,199 - src.utils.validation - INFO - [208/560] Downloaded 1440 candles for 2025-04-25
+2025-11-21 00:43:27,286 - src.utils.validation - INFO - [209/560] Downloaded 1440 candles for 2025-04-24
+2025-11-21 00:43:27,552 - src.utils.validation - INFO - [210/560] Downloaded 1440 candles for 2025-04-23
+2025-11-21 00:43:27,651 - src.utils.validation - INFO - [211/560] Downloaded 1440 candles for 2025-04-22
+2025-11-21 00:43:27,668 - src.utils.validation - INFO - [212/560] Downloaded 1440 candles for 2025-04-20
+2025-11-21 00:43:27,668 - src.utils.validation - INFO - [213/560] Downloaded 1440 candles for 2025-04-21
+2025-11-21 00:43:27,904 - src.utils.validation - INFO - [214/560] Downloaded 1440 candles for 2025-04-19
+2025-11-21 00:43:28,055 - src.utils.validation - INFO - [215/560] Downloaded 1440 candles for 2025-04-18
+2025-11-21 00:43:28,098 - src.utils.validation - INFO - [216/560] Downloaded 1440 candles for 2025-04-17
+2025-11-21 00:43:28,193 - src.utils.validation - INFO - [217/560] Downloaded 1440 candles for 2025-04-16
+2025-11-21 00:43:28,293 - src.utils.validation - INFO - [218/560] Downloaded 1440 candles for 2025-04-15
+2025-11-21 00:43:28,417 - src.utils.validation - INFO - [219/560] Downloaded 1440 candles for 2025-04-14
+2025-11-21 00:43:28,469 - src.utils.validation - INFO - [220/560] Downloaded 1440 candles for 2025-04-13
+2025-11-21 00:43:28,628 - src.utils.validation - INFO - [221/560] Downloaded 1440 candles for 2025-04-12
+2025-11-21 00:43:28,668 - src.utils.validation - INFO - [222/560] Downloaded 1440 candles for 2025-04-11
+2025-11-21 00:43:28,846 - src.utils.validation - INFO - [223/560] Downloaded 1440 candles for 2025-04-10
+2025-11-21 00:43:28,885 - src.utils.validation - INFO - [224/560] Downloaded 1440 candles for 2025-04-09
+2025-11-21 00:43:29,004 - src.utils.validation - INFO - [225/560] Downloaded 1440 candles for 2025-04-08
+2025-11-21 00:43:29,041 - src.utils.validation - INFO - [226/560] Downloaded 1440 candles for 2025-04-07
+2025-11-21 00:43:29,171 - src.utils.validation - INFO - [227/560] Downloaded 1440 candles for 2025-04-06
+2025-11-21 00:43:29,268 - src.utils.validation - INFO - [228/560] Downloaded 1440 candles for 2025-04-05
+2025-11-21 00:43:29,385 - src.utils.validation - INFO - [229/560] Downloaded 1440 candles for 2025-04-04
+2025-11-21 00:43:29,411 - src.utils.validation - INFO - [230/560] Downloaded 1440 candles for 2025-04-03
+2025-11-21 00:43:29,531 - src.utils.validation - INFO - [231/560] Downloaded 1440 candles for 2025-04-02
+2025-11-21 00:43:29,629 - src.utils.validation - INFO - [232/560] Downloaded 1440 candles for 2025-04-01
+2025-11-21 00:43:29,761 - src.utils.validation - INFO - [233/560] Downloaded 1440 candles for 2025-03-31
+2025-11-21 00:43:29,806 - src.utils.validation - INFO - [234/560] Downloaded 1380 candles for 2025-03-30
+2025-11-21 00:43:29,882 - src.utils.validation - INFO - [235/560] Downloaded 1440 candles for 2025-03-29
+2025-11-21 00:43:30,003 - src.utils.validation - INFO - [236/560] Downloaded 1440 candles for 2025-03-28
+2025-11-21 00:43:30,161 - src.utils.validation - INFO - [237/560] Downloaded 1440 candles for 2025-03-27
+2025-11-21 00:43:30,191 - src.utils.validation - INFO - [238/560] Downloaded 1440 candles for 2025-03-26
+2025-11-21 00:43:30,307 - src.utils.validation - INFO - [239/560] Downloaded 1440 candles for 2025-03-25
+2025-11-21 00:43:30,367 - src.utils.validation - INFO - [240/560] Downloaded 1440 candles for 2025-03-24
+2025-11-21 00:43:30,519 - src.utils.validation - INFO - [241/560] Downloaded 1440 candles for 2025-03-23
+2025-11-21 00:43:30,545 - src.utils.validation - INFO - [242/560] Downloaded 1440 candles for 2025-03-22
+2025-11-21 00:43:30,661 - src.utils.validation - INFO - [243/560] Downloaded 1440 candles for 2025-03-21
+2025-11-21 00:43:30,719 - src.utils.validation - INFO - [244/560] Downloaded 1440 candles for 2025-03-20
+2025-11-21 00:43:30,916 - src.utils.validation - INFO - [245/560] Downloaded 1440 candles for 2025-03-19
+2025-11-21 00:43:31,009 - src.utils.validation - INFO - [246/560] Downloaded 1440 candles for 2025-03-18
+2025-11-21 00:43:31,040 - src.utils.validation - INFO - [247/560] Downloaded 1440 candles for 2025-03-17
+2025-11-21 00:43:31,079 - src.utils.validation - INFO - [248/560] Downloaded 1440 candles for 2025-03-16
+2025-11-21 00:43:31,317 - src.utils.validation - INFO - [249/560] Downloaded 1440 candles for 2025-03-15
+2025-11-21 00:43:31,427 - src.utils.validation - INFO - [250/560] Downloaded 1440 candles for 2025-03-13
+2025-11-21 00:43:31,494 - src.utils.validation - INFO - [251/560] Downloaded 1440 candles for 2025-03-12
+2025-11-21 00:43:31,527 - src.utils.validation - INFO - [252/560] Downloaded 1440 candles for 2025-03-14
+2025-11-21 00:43:31,675 - src.utils.validation - INFO - [253/560] Downloaded 1440 candles for 2025-03-11
+2025-11-21 00:43:31,783 - src.utils.validation - INFO - [254/560] Downloaded 1440 candles for 2025-03-10
+2025-11-21 00:43:31,889 - src.utils.validation - INFO - [255/560] Downloaded 1440 candles for 2025-03-09
+2025-11-21 00:43:31,912 - src.utils.validation - INFO - [256/560] Downloaded 1440 candles for 2025-03-08
+2025-11-21 00:43:32,021 - src.utils.validation - INFO - [257/560] Downloaded 1440 candles for 2025-03-07
+2025-11-21 00:43:32,134 - src.utils.validation - INFO - [258/560] Downloaded 1440 candles for 2025-03-06
+2025-11-21 00:43:32,304 - src.utils.validation - INFO - [259/560] Downloaded 1440 candles for 2025-03-05
+2025-11-21 00:43:32,339 - src.utils.validation - INFO - [260/560] Downloaded 1440 candles for 2025-03-04
+2025-11-21 00:43:32,381 - src.utils.validation - INFO - [261/560] Downloaded 1440 candles for 2025-03-03
+2025-11-21 00:43:32,518 - src.utils.validation - INFO - [262/560] Downloaded 1440 candles for 2025-03-02
+2025-11-21 00:43:32,688 - src.utils.validation - INFO - [263/560] Downloaded 1440 candles for 2025-03-01
+2025-11-21 00:43:32,718 - src.utils.validation - INFO - [264/560] Downloaded 1440 candles for 2025-02-28
+2025-11-21 00:43:32,735 - src.utils.validation - INFO - [265/560] Downloaded 1440 candles for 2025-02-27
+2025-11-21 00:43:32,906 - src.utils.validation - INFO - [266/560] Downloaded 1440 candles for 2025-02-26
+2025-11-21 00:43:33,073 - src.utils.validation - INFO - [267/560] Downloaded 1440 candles for 2025-02-25
+2025-11-21 00:43:33,105 - src.utils.validation - INFO - [268/560] Downloaded 1440 candles for 2025-02-24
+2025-11-21 00:43:33,140 - src.utils.validation - INFO - [269/560] Downloaded 1440 candles for 2025-02-23
+2025-11-21 00:43:33,271 - src.utils.validation - INFO - [270/560] Downloaded 1440 candles for 2025-02-22
+2025-11-21 00:43:33,453 - src.utils.validation - INFO - [271/560] Downloaded 1440 candles for 2025-02-21
+2025-11-21 00:43:33,468 - src.utils.validation - INFO - [272/560] Downloaded 1440 candles for 2025-02-20
+2025-11-21 00:43:33,518 - src.utils.validation - INFO - [273/560] Downloaded 1440 candles for 2025-02-19
+2025-11-21 00:43:33,635 - src.utils.validation - INFO - [274/560] Downloaded 1440 candles for 2025-02-18
+2025-11-21 00:43:33,824 - src.utils.validation - INFO - [275/560] Downloaded 1440 candles for 2025-02-17
+2025-11-21 00:43:33,863 - src.utils.validation - INFO - [276/560] Downloaded 1440 candles for 2025-02-16
+2025-11-21 00:43:33,919 - src.utils.validation - INFO - [277/560] Downloaded 1440 candles for 2025-02-15
+2025-11-21 00:43:33,978 - src.utils.validation - INFO - [278/560] Downloaded 1440 candles for 2025-02-14
+2025-11-21 00:43:34,188 - src.utils.validation - INFO - [279/560] Downloaded 1440 candles for 2025-02-13
+2025-11-21 00:43:34,223 - src.utils.validation - INFO - [280/560] Downloaded 1440 candles for 2025-02-12
+2025-11-21 00:43:34,285 - src.utils.validation - INFO - [281/560] Downloaded 1440 candles for 2025-02-11
+2025-11-21 00:43:34,337 - src.utils.validation - INFO - [282/560] Downloaded 1440 candles for 2025-02-10
+2025-11-21 00:43:34,569 - src.utils.validation - INFO - [283/560] Downloaded 1440 candles for 2025-02-09
+2025-11-21 00:43:34,584 - src.utils.validation - INFO - [284/560] Downloaded 1440 candles for 2025-02-08
+2025-11-21 00:43:34,621 - src.utils.validation - INFO - [285/560] Downloaded 1440 candles for 2025-02-07
+2025-11-21 00:43:34,743 - src.utils.validation - INFO - [286/560] Downloaded 1440 candles for 2025-02-06
+2025-11-21 00:43:34,957 - src.utils.validation - INFO - [287/560] Downloaded 1440 candles for 2025-02-05
+2025-11-21 00:43:34,992 - src.utils.validation - INFO - [288/560] Downloaded 1440 candles for 2025-02-04
+2025-11-21 00:43:35,031 - src.utils.validation - INFO - [289/560] Downloaded 1440 candles for 2025-02-03
+2025-11-21 00:43:35,118 - src.utils.validation - INFO - [290/560] Downloaded 1440 candles for 2025-02-02
+2025-11-21 00:43:35,358 - src.utils.validation - INFO - [291/560] Downloaded 1440 candles for 2025-02-01
+2025-11-21 00:43:35,389 - src.utils.validation - INFO - [292/560] Downloaded 1440 candles for 2025-01-31
+2025-11-21 00:43:35,421 - src.utils.validation - INFO - [293/560] Downloaded 1440 candles for 2025-01-30
+2025-11-21 00:43:35,456 - src.utils.validation - INFO - [294/560] Downloaded 1440 candles for 2025-01-29
+2025-11-21 00:43:35,747 - src.utils.validation - INFO - [295/560] Downloaded 1440 candles for 2025-01-28
+2025-11-21 00:43:35,761 - src.utils.validation - INFO - [296/560] Downloaded 1440 candles for 2025-01-27
+2025-11-21 00:43:35,819 - src.utils.validation - INFO - [297/560] Downloaded 1440 candles for 2025-01-26
+2025-11-21 00:43:35,905 - src.utils.validation - INFO - [298/560] Downloaded 1440 candles for 2025-01-25
+2025-11-21 00:43:36,139 - src.utils.validation - INFO - [299/560] Downloaded 1440 candles for 2025-01-24
+2025-11-21 00:43:36,148 - src.utils.validation - INFO - [300/560] Downloaded 1440 candles for 2025-01-23
+2025-11-21 00:43:36,200 - src.utils.validation - INFO - [301/560] Downloaded 1440 candles for 2025-01-22
+2025-11-21 00:43:36,263 - src.utils.validation - INFO - [302/560] Downloaded 1440 candles for 2025-01-21
+2025-11-21 00:43:36,583 - src.utils.validation - INFO - [303/560] Downloaded 1440 candles for 2025-01-20
+2025-11-21 00:43:36,653 - src.utils.validation - INFO - [304/560] Downloaded 1440 candles for 2025-01-19
+2025-11-21 00:43:36,678 - src.utils.validation - INFO - [305/560] Downloaded 1440 candles for 2025-01-18
+2025-11-21 00:43:36,708 - src.utils.validation - INFO - [306/560] Downloaded 1440 candles for 2025-01-17
+2025-11-21 00:43:36,975 - src.utils.validation - INFO - [307/560] Downloaded 1440 candles for 2025-01-16
+2025-11-21 00:43:37,001 - src.utils.validation - INFO - [308/560] Downloaded 1440 candles for 2025-01-15
+2025-11-21 00:43:37,061 - src.utils.validation - INFO - [309/560] Downloaded 1440 candles for 2025-01-14
+2025-11-21 00:43:37,119 - src.utils.validation - INFO - [310/560] Downloaded 1440 candles for 2025-01-13
+2025-11-21 00:43:37,366 - src.utils.validation - INFO - [311/560] Downloaded 1440 candles for 2025-01-12
+2025-11-21 00:43:37,388 - src.utils.validation - INFO - [312/560] Downloaded 1440 candles for 2025-01-11
+2025-11-21 00:43:37,522 - src.utils.validation - INFO - [313/560] Downloaded 1440 candles for 2025-01-10
+2025-11-21 00:43:37,535 - src.utils.validation - INFO - [314/560] Downloaded 1440 candles for 2025-01-09
+2025-11-21 00:43:37,770 - src.utils.validation - INFO - [315/560] Downloaded 1440 candles for 2025-01-08
+2025-11-21 00:43:37,789 - src.utils.validation - INFO - [316/560] Downloaded 1440 candles for 2025-01-07
+2025-11-21 00:43:37,936 - src.utils.validation - INFO - [317/560] Downloaded 1440 candles for 2025-01-06
+2025-11-21 00:43:37,949 - src.utils.validation - INFO - [318/560] Downloaded 1440 candles for 2025-01-05
+2025-11-21 00:43:38,128 - src.utils.validation - INFO - [319/560] Downloaded 1440 candles for 2025-01-04
+2025-11-21 00:43:38,680 - src.utils.validation - INFO - [320/560] Downloaded 1440 candles for 2025-01-02
+2025-11-21 00:43:38,694 - src.utils.validation - INFO - [321/560] Downloaded 1440 candles for 2025-01-01
+2025-11-21 00:43:38,793 - src.utils.validation - INFO - [322/560] Downloaded 1440 candles for 2025-01-03
+2025-11-21 00:43:38,835 - src.utils.validation - INFO - [323/560] Downloaded 1440 candles for 2024-12-31
+2025-11-21 00:43:39,526 - src.utils.validation - INFO - [324/560] Downloaded 1440 candles for 2024-12-30
+2025-11-21 00:43:39,559 - src.utils.validation - INFO - [325/560] Downloaded 1440 candles for 2024-12-29
+2025-11-21 00:43:39,587 - src.utils.validation - INFO - [326/560] Downloaded 1440 candles for 2024-12-28
+2025-11-21 00:43:39,771 - src.utils.validation - INFO - [327/560] Downloaded 1440 candles for 2024-12-27
+2025-11-21 00:43:40,307 - src.utils.validation - INFO - [328/560] Downloaded 1440 candles for 2024-12-26
+2025-11-21 00:43:40,310 - src.utils.validation - INFO - [329/560] Downloaded 1440 candles for 2024-12-25
+2025-11-21 00:43:40,323 - src.utils.validation - INFO - [330/560] Downloaded 1440 candles for 2024-12-24
+2025-11-21 00:43:40,397 - src.utils.validation - INFO - [331/560] Downloaded 1440 candles for 2024-12-23
+2025-11-21 00:43:40,815 - src.utils.validation - INFO - [332/560] Downloaded 1440 candles for 2024-12-21
+2025-11-21 00:43:40,841 - src.utils.validation - INFO - [333/560] Downloaded 1440 candles for 2024-12-20
+2025-11-21 00:43:40,870 - src.utils.validation - INFO - [334/560] Downloaded 1440 candles for 2024-12-19
+2025-11-21 00:43:40,878 - src.utils.validation - INFO - [335/560] Downloaded 1440 candles for 2024-12-22
+2025-11-21 00:43:41,223 - src.utils.validation - INFO - [336/560] Downloaded 1440 candles for 2024-12-18
+2025-11-21 00:43:41,232 - src.utils.validation - INFO - [337/560] Downloaded 1440 candles for 2024-12-17
+2025-11-21 00:43:41,268 - src.utils.validation - INFO - [338/560] Downloaded 1440 candles for 2024-12-16
+2025-11-21 00:43:41,284 - src.utils.validation - INFO - [339/560] Downloaded 1440 candles for 2024-12-15
+2025-11-21 00:43:41,580 - src.utils.validation - INFO - [340/560] Downloaded 1440 candles for 2024-12-14
+2025-11-21 00:43:41,827 - src.utils.validation - INFO - [341/560] Downloaded 1440 candles for 2024-12-13
+2025-11-21 00:43:41,908 - src.utils.validation - INFO - [342/560] Downloaded 1440 candles for 2024-12-12
+2025-11-21 00:43:41,916 - src.utils.validation - INFO - [343/560] Downloaded 1440 candles for 2024-12-11
+2025-11-21 00:43:42,004 - src.utils.validation - INFO - [344/560] Downloaded 1440 candles for 2024-12-10
+2025-11-21 00:43:42,204 - src.utils.validation - INFO - [345/560] Downloaded 1440 candles for 2024-12-09
+2025-11-21 00:43:42,274 - src.utils.validation - INFO - [346/560] Downloaded 1440 candles for 2024-12-08
+2025-11-21 00:43:42,322 - src.utils.validation - INFO - [347/560] Downloaded 1440 candles for 2024-12-07
+2025-11-21 00:43:42,372 - src.utils.validation - INFO - [348/560] Downloaded 1440 candles for 2024-12-06
+2025-11-21 00:43:42,604 - src.utils.validation - INFO - [349/560] Downloaded 1440 candles for 2024-12-05
+2025-11-21 00:43:42,635 - src.utils.validation - INFO - [350/560] Downloaded 1440 candles for 2024-12-04
+2025-11-21 00:43:42,701 - src.utils.validation - INFO - [351/560] Downloaded 1440 candles for 2024-12-03
+2025-11-21 00:43:42,714 - src.utils.validation - INFO - [352/560] Downloaded 1440 candles for 2024-12-02
+2025-11-21 00:43:43,003 - src.utils.validation - INFO - [353/560] Downloaded 1440 candles for 2024-12-01
+2025-11-21 00:43:43,025 - src.utils.validation - INFO - [354/560] Downloaded 1440 candles for 2024-11-30
+2025-11-21 00:43:43,089 - src.utils.validation - INFO - [355/560] Downloaded 1440 candles for 2024-11-29
+2025-11-21 00:43:43,111 - src.utils.validation - INFO - [356/560] Downloaded 1440 candles for 2024-11-28
+2025-11-21 00:43:43,618 - src.utils.validation - INFO - [357/560] Downloaded 1440 candles for 2024-11-27
+2025-11-21 00:43:43,627 - src.utils.validation - INFO - [358/560] Downloaded 1440 candles for 2024-11-26
+2025-11-21 00:43:43,698 - src.utils.validation - INFO - [359/560] Downloaded 1440 candles for 2024-11-25
+2025-11-21 00:43:43,735 - src.utils.validation - INFO - [360/560] Downloaded 1440 candles for 2024-11-24
+2025-11-21 00:43:44,032 - src.utils.validation - INFO - [361/560] Downloaded 1440 candles for 2024-11-23
+2025-11-21 00:43:44,079 - src.utils.validation - INFO - [362/560] Downloaded 1440 candles for 2024-11-22
+2025-11-21 00:43:44,116 - src.utils.validation - INFO - [363/560] Downloaded 1440 candles for 2024-11-21
+2025-11-21 00:43:44,190 - src.utils.validation - INFO - [364/560] Downloaded 1440 candles for 2024-11-20
+2025-11-21 00:43:44,394 - src.utils.validation - INFO - [365/560] Downloaded 1440 candles for 2024-11-19
+2025-11-21 00:43:44,453 - src.utils.validation - INFO - [366/560] Downloaded 1440 candles for 2024-11-18
+2025-11-21 00:43:44,480 - src.utils.validation - INFO - [367/560] Downloaded 1440 candles for 2024-11-17
+2025-11-21 00:43:44,565 - src.utils.validation - INFO - [368/560] Downloaded 1440 candles for 2024-11-16
+2025-11-21 00:43:44,767 - src.utils.validation - INFO - [369/560] Downloaded 1440 candles for 2024-11-15
+2025-11-21 00:43:44,816 - src.utils.validation - INFO - [370/560] Downloaded 1440 candles for 2024-11-14
+2025-11-21 00:43:44,999 - src.utils.validation - INFO - [371/560] Downloaded 1440 candles for 2024-11-13
+2025-11-21 00:43:45,025 - src.utils.validation - INFO - [372/560] Downloaded 1440 candles for 2024-11-12
+2025-11-21 00:43:45,173 - src.utils.validation - INFO - [373/560] Downloaded 1440 candles for 2024-11-11
+2025-11-21 00:43:45,182 - src.utils.validation - INFO - [374/560] Downloaded 1440 candles for 2024-11-10
+2025-11-21 00:43:45,340 - src.utils.validation - INFO - [375/560] Downloaded 1440 candles for 2024-11-09
+2025-11-21 00:43:45,417 - src.utils.validation - INFO - [376/560] Downloaded 1440 candles for 2024-11-08
+2025-11-21 00:43:45,588 - src.utils.validation - INFO - [377/560] Downloaded 1440 candles for 2024-11-07
+2025-11-21 00:43:45,598 - src.utils.validation - INFO - [378/560] Downloaded 1440 candles for 2024-11-06
+2025-11-21 00:43:45,747 - src.utils.validation - INFO - [379/560] Downloaded 1440 candles for 2024-11-05
+2025-11-21 00:43:45,808 - src.utils.validation - INFO - [380/560] Downloaded 1440 candles for 2024-11-04
+2025-11-21 00:43:45,933 - src.utils.validation - INFO - [381/560] Downloaded 1440 candles for 2024-11-03
+2025-11-21 00:43:45,985 - src.utils.validation - INFO - [382/560] Downloaded 1440 candles for 2024-11-02
+2025-11-21 00:43:46,120 - src.utils.validation - INFO - [383/560] Downloaded 1440 candles for 2024-11-01
+2025-11-21 00:43:46,170 - src.utils.validation - INFO - [384/560] Downloaded 1440 candles for 2024-10-31
+2025-11-21 00:43:46,312 - src.utils.validation - INFO - [385/560] Downloaded 1440 candles for 2024-10-30
+2025-11-21 00:43:46,334 - src.utils.validation - INFO - [386/560] Downloaded 1440 candles for 2024-10-29
+2025-11-21 00:43:46,488 - src.utils.validation - INFO - [387/560] Downloaded 1440 candles for 2024-10-28
+2025-11-21 00:43:46,639 - src.utils.validation - INFO - [388/560] Downloaded 1500 candles for 2024-10-27
+2025-11-21 00:43:47,232 - src.utils.validation - INFO - [389/560] Downloaded 1440 candles for 2024-10-25
+2025-11-21 00:43:47,258 - src.utils.validation - INFO - [390/560] Downloaded 1440 candles for 2024-10-26
+2025-11-21 00:43:47,351 - src.utils.validation - INFO - [391/560] Downloaded 1440 candles for 2024-10-24
+2025-11-21 00:43:47,457 - src.utils.validation - INFO - [392/560] Downloaded 1440 candles for 2024-10-23
+2025-11-21 00:43:47,992 - src.utils.validation - INFO - [393/560] Downloaded 1440 candles for 2024-10-22
+2025-11-21 00:43:48,078 - src.utils.validation - INFO - [394/560] Downloaded 1440 candles for 2024-10-21
+2025-11-21 00:43:48,233 - src.utils.validation - INFO - [395/560] Downloaded 1440 candles for 2024-10-19
+2025-11-21 00:43:48,455 - src.utils.validation - INFO - [396/560] Downloaded 1440 candles for 2024-10-20
+2025-11-21 00:43:48,788 - src.utils.validation - INFO - [397/560] Downloaded 1440 candles for 2024-10-18
+2025-11-21 00:43:48,822 - src.utils.validation - INFO - [398/560] Downloaded 1440 candles for 2024-10-16
+2025-11-21 00:43:48,861 - src.utils.validation - INFO - [399/560] Downloaded 1440 candles for 2024-10-17
+2025-11-21 00:43:48,907 - src.utils.validation - INFO - [400/560] Downloaded 1440 candles for 2024-10-15
+2025-11-21 00:43:49,218 - src.utils.validation - INFO - [401/560] Downloaded 1440 candles for 2024-10-14
+2025-11-21 00:43:49,254 - src.utils.validation - INFO - [402/560] Downloaded 1440 candles for 2024-10-13
+2025-11-21 00:43:49,287 - src.utils.validation - INFO - [403/560] Downloaded 1440 candles for 2024-10-12
+2025-11-21 00:43:49,327 - src.utils.validation - INFO - [404/560] Downloaded 1440 candles for 2024-10-11
+2025-11-21 00:43:49,711 - src.utils.validation - INFO - [405/560] Downloaded 1440 candles for 2024-10-10
+2025-11-21 00:43:49,796 - src.utils.validation - INFO - [406/560] Downloaded 1440 candles for 2024-10-08
+2025-11-21 00:43:49,924 - src.utils.validation - INFO - [407/560] Downloaded 1440 candles for 2024-10-09
+2025-11-21 00:43:50,075 - src.utils.validation - INFO - [408/560] Downloaded 1440 candles for 2024-10-07
+2025-11-21 00:43:50,155 - src.utils.validation - INFO - [409/560] Downloaded 1440 candles for 2024-10-06
+2025-11-21 00:43:50,258 - src.utils.validation - INFO - [410/560] Downloaded 1440 candles for 2024-10-05
+2025-11-21 00:43:50,355 - src.utils.validation - INFO - [411/560] Downloaded 1440 candles for 2024-10-04
+2025-11-21 00:43:50,485 - src.utils.validation - INFO - [412/560] Downloaded 1440 candles for 2024-10-03
+2025-11-21 00:43:50,764 - src.utils.validation - INFO - [413/560] Downloaded 1440 candles for 2024-10-02
+2025-11-21 00:43:51,010 - src.utils.validation - INFO - [414/560] Downloaded 1440 candles for 2024-09-30
+2025-11-21 00:43:51,087 - src.utils.validation - INFO - [415/560] Downloaded 1440 candles for 2024-09-29
+2025-11-21 00:43:51,094 - src.utils.validation - INFO - [416/560] Downloaded 1440 candles for 2024-10-01
+2025-11-21 00:43:51,300 - src.utils.validation - INFO - [417/560] Downloaded 1440 candles for 2024-09-28
+2025-11-21 00:43:51,479 - src.utils.validation - INFO - [418/560] Downloaded 1440 candles for 2024-09-27
+2025-11-21 00:43:51,570 - src.utils.validation - INFO - [419/560] Downloaded 1440 candles for 2024-09-26
+2025-11-21 00:43:51,708 - src.utils.validation - INFO - [420/560] Downloaded 1440 candles for 2024-09-25
+2025-11-21 00:43:51,842 - src.utils.validation - INFO - [421/560] Downloaded 1440 candles for 2024-09-24
+2025-11-21 00:43:51,898 - src.utils.validation - INFO - [422/560] Downloaded 1440 candles for 2024-09-23
+2025-11-21 00:43:52,034 - src.utils.validation - INFO - [423/560] Downloaded 1440 candles for 2024-09-22
+2025-11-21 00:43:52,085 - src.utils.validation - INFO - [424/560] Downloaded 1440 candles for 2024-09-21
+2025-11-21 00:43:52,218 - src.utils.validation - INFO - [425/560] Downloaded 1440 candles for 2024-09-20
+2025-11-21 00:43:52,311 - src.utils.validation - INFO - [426/560] Downloaded 1440 candles for 2024-09-19
+2025-11-21 00:43:52,400 - src.utils.validation - INFO - [427/560] Downloaded 1440 candles for 2024-09-18
+2025-11-21 00:43:52,473 - src.utils.validation - INFO - [428/560] Downloaded 1440 candles for 2024-09-17
+2025-11-21 00:43:52,602 - src.utils.validation - INFO - [429/560] Downloaded 1440 candles for 2024-09-16
+2025-11-21 00:43:52,662 - src.utils.validation - INFO - [430/560] Downloaded 1440 candles for 2024-09-15
+2025-11-21 00:43:52,758 - src.utils.validation - INFO - [431/560] Downloaded 1440 candles for 2024-09-14
+2025-11-21 00:43:52,833 - src.utils.validation - INFO - [432/560] Downloaded 1440 candles for 2024-09-13
+2025-11-21 00:43:52,950 - src.utils.validation - INFO - [433/560] Downloaded 1440 candles for 2024-09-12
+2025-11-21 00:43:53,039 - src.utils.validation - INFO - [434/560] Downloaded 1440 candles for 2024-09-11
+2025-11-21 00:43:53,121 - src.utils.validation - INFO - [435/560] Downloaded 1440 candles for 2024-09-10
+2025-11-21 00:43:53,202 - src.utils.validation - INFO - [436/560] Downloaded 1440 candles for 2024-09-09
+2025-11-21 00:43:53,332 - src.utils.validation - INFO - [437/560] Downloaded 1440 candles for 2024-09-08
+2025-11-21 00:43:53,474 - src.utils.validation - INFO - [438/560] Downloaded 1440 candles for 2024-09-07
+2025-11-21 00:43:53,512 - src.utils.validation - INFO - [439/560] Downloaded 1440 candles for 2024-09-06
+2025-11-21 00:43:53,633 - src.utils.validation - INFO - [440/560] Downloaded 1440 candles for 2024-09-05
+2025-11-21 00:43:53,704 - src.utils.validation - INFO - [441/560] Downloaded 1440 candles for 2024-09-04
+2025-11-21 00:43:53,851 - src.utils.validation - INFO - [442/560] Downloaded 1440 candles for 2024-09-03
+2025-11-21 00:43:53,876 - src.utils.validation - INFO - [443/560] Downloaded 1440 candles for 2024-09-02
+2025-11-21 00:43:54,003 - src.utils.validation - INFO - [444/560] Downloaded 1440 candles for 2024-09-01
+2025-11-21 00:43:54,126 - src.utils.validation - INFO - [445/560] Downloaded 1440 candles for 2024-08-31
+2025-11-21 00:43:54,294 - src.utils.validation - INFO - [446/560] Downloaded 1440 candles for 2024-08-30
+2025-11-21 00:43:54,336 - src.utils.validation - INFO - [447/560] Downloaded 1440 candles for 2024-08-29
+2025-11-21 00:43:54,412 - src.utils.validation - INFO - [448/560] Downloaded 1440 candles for 2024-08-28
+2025-11-21 00:43:54,543 - src.utils.validation - INFO - [449/560] Downloaded 1440 candles for 2024-08-27
+2025-11-21 00:43:54,743 - src.utils.validation - INFO - [450/560] Downloaded 1440 candles for 2024-08-26
+2025-11-21 00:43:54,934 - src.utils.validation - INFO - [451/560] Downloaded 1440 candles for 2024-08-25
+2025-11-21 00:43:54,989 - src.utils.validation - INFO - [452/560] Downloaded 1440 candles for 2024-08-24
+2025-11-21 00:43:55,052 - src.utils.validation - INFO - [453/560] Downloaded 1440 candles for 2024-08-23
+2025-11-21 00:43:55,180 - src.utils.validation - INFO - [454/560] Downloaded 1440 candles for 2024-08-22
+2025-11-21 00:43:55,320 - src.utils.validation - INFO - [455/560] Downloaded 1440 candles for 2024-08-21
+2025-11-21 00:43:55,472 - src.utils.validation - INFO - [456/560] Downloaded 1440 candles for 2024-08-20
+2025-11-21 00:43:55,572 - src.utils.validation - INFO - [457/560] Downloaded 1440 candles for 2024-08-19
+2025-11-21 00:43:55,594 - src.utils.validation - INFO - [458/560] Downloaded 1440 candles for 2024-08-18
+2025-11-21 00:43:55,704 - src.utils.validation - INFO - [459/560] Downloaded 1440 candles for 2024-08-17
+2025-11-21 00:43:55,849 - src.utils.validation - INFO - [460/560] Downloaded 1440 candles for 2024-08-16
+2025-11-21 00:43:55,943 - src.utils.validation - INFO - [461/560] Downloaded 1440 candles for 2024-08-15
+2025-11-21 00:43:55,997 - src.utils.validation - INFO - [462/560] Downloaded 1440 candles for 2024-08-14
+2025-11-21 00:43:56,086 - src.utils.validation - INFO - [463/560] Downloaded 1440 candles for 2024-08-13
+2025-11-21 00:43:56,221 - src.utils.validation - INFO - [464/560] Downloaded 1440 candles for 2024-08-12
+2025-11-21 00:43:56,329 - src.utils.validation - INFO - [465/560] Downloaded 1440 candles for 2024-08-11
+2025-11-21 00:43:56,387 - src.utils.validation - INFO - [466/560] Downloaded 1440 candles for 2024-08-10
+2025-11-21 00:43:56,482 - src.utils.validation - INFO - [467/560] Downloaded 1440 candles for 2024-08-09
+2025-11-21 00:43:56,606 - src.utils.validation - INFO - [468/560] Downloaded 1440 candles for 2024-08-08
+2025-11-21 00:43:56,700 - src.utils.validation - INFO - [469/560] Downloaded 1440 candles for 2024-08-07
+2025-11-21 00:43:56,760 - src.utils.validation - INFO - [470/560] Downloaded 1440 candles for 2024-08-06
+2025-11-21 00:43:56,862 - src.utils.validation - INFO - [471/560] Downloaded 1440 candles for 2024-08-05
+2025-11-21 00:43:56,965 - src.utils.validation - INFO - [472/560] Downloaded 1440 candles for 2024-08-04
+2025-11-21 00:43:57,097 - src.utils.validation - INFO - [473/560] Downloaded 1440 candles for 2024-08-03
+2025-11-21 00:43:57,141 - src.utils.validation - INFO - [474/560] Downloaded 1440 candles for 2024-08-02
+2025-11-21 00:43:57,303 - src.utils.validation - INFO - [475/560] Downloaded 1440 candles for 2024-08-01
+2025-11-21 00:43:57,328 - src.utils.validation - INFO - [476/560] Downloaded 1440 candles for 2024-07-31
+2025-11-21 00:43:57,490 - src.utils.validation - INFO - [477/560] Downloaded 1440 candles for 2024-07-30
+2025-11-21 00:43:57,508 - src.utils.validation - INFO - [478/560] Downloaded 1440 candles for 2024-07-29
+2025-11-21 00:43:57,767 - src.utils.validation - INFO - [479/560] Downloaded 1440 candles for 2024-07-28
+2025-11-21 00:43:57,778 - src.utils.validation - INFO - [480/560] Downloaded 1440 candles for 2024-07-27
+2025-11-21 00:43:58,948 - src.utils.validation - INFO - [481/560] Downloaded 1440 candles for 2024-07-23
+2025-11-21 00:43:58,969 - src.utils.validation - INFO - [482/560] Downloaded 1440 candles for 2024-07-26
+2025-11-21 00:43:59,226 - src.utils.validation - INFO - [483/560] Downloaded 1440 candles for 2024-07-25
+2025-11-21 00:43:59,383 - src.utils.validation - INFO - [484/560] Downloaded 1440 candles for 2024-07-24
+2025-11-21 00:44:00,137 - src.utils.validation - INFO - [485/560] Downloaded 1440 candles for 2024-07-22
+2025-11-21 00:44:00,219 - src.utils.validation - INFO - [486/560] Downloaded 1440 candles for 2024-07-21
+2025-11-21 00:44:00,257 - src.utils.validation - INFO - [487/560] Downloaded 1440 candles for 2024-07-19
+2025-11-21 00:44:00,317 - src.utils.validation - INFO - [488/560] Downloaded 1440 candles for 2024-07-20
+2025-11-21 00:44:01,327 - src.utils.validation - INFO - [489/560] Downloaded 1440 candles for 2024-07-18
+2025-11-21 00:44:01,378 - src.utils.validation - INFO - [490/560] Downloaded 1440 candles for 2024-07-17
+2025-11-21 00:44:01,480 - src.utils.validation - INFO - [491/560] Downloaded 1440 candles for 2024-07-16
+2025-11-21 00:44:01,481 - src.utils.validation - INFO - [492/560] Downloaded 1440 candles for 2024-07-15
+2025-11-21 00:44:02,422 - src.utils.validation - INFO - [493/560] Downloaded 1440 candles for 2024-07-14
+2025-11-21 00:44:02,479 - src.utils.validation - INFO - [494/560] Downloaded 1440 candles for 2024-07-13
+2025-11-21 00:44:02,502 - src.utils.validation - INFO - [495/560] Downloaded 1440 candles for 2024-07-12
+2025-11-21 00:44:02,529 - src.utils.validation - INFO - [496/560] Downloaded 1440 candles for 2024-07-11
+2025-11-21 00:44:02,885 - src.utils.validation - INFO - [497/560] Downloaded 1440 candles for 2024-07-10
+2025-11-21 00:44:02,894 - src.utils.validation - INFO - [498/560] Downloaded 1440 candles for 2024-07-09
+2025-11-21 00:44:02,920 - src.utils.validation - INFO - [499/560] Downloaded 1440 candles for 2024-07-08
+2025-11-21 00:44:03,026 - src.utils.validation - INFO - [500/560] Downloaded 1440 candles for 2024-07-07
+2025-11-21 00:44:03,250 - src.utils.validation - INFO - [501/560] Downloaded 1440 candles for 2024-07-06
+2025-11-21 00:44:03,279 - src.utils.validation - INFO - [502/560] Downloaded 1440 candles for 2024-07-04
+2025-11-21 00:44:03,286 - src.utils.validation - INFO - [503/560] Downloaded 1440 candles for 2024-07-05
+2025-11-21 00:44:03,435 - src.utils.validation - INFO - [504/560] Downloaded 1440 candles for 2024-07-03
+2025-11-21 00:44:03,597 - src.utils.validation - INFO - [505/560] Downloaded 1440 candles for 2024-07-02
+2025-11-21 00:44:03,677 - src.utils.validation - INFO - [506/560] Downloaded 1440 candles for 2024-07-01
+2025-11-21 00:44:03,750 - src.utils.validation - INFO - [507/560] Downloaded 1440 candles for 2024-06-30
+2025-11-21 00:44:03,793 - src.utils.validation - INFO - [508/560] Downloaded 1440 candles for 2024-06-29
+2025-11-21 00:44:03,968 - src.utils.validation - INFO - [509/560] Downloaded 1440 candles for 2024-06-28
+2025-11-21 00:44:04,068 - src.utils.validation - INFO - [510/560] Downloaded 1440 candles for 2024-06-27
+2025-11-21 00:44:04,129 - src.utils.validation - INFO - [511/560] Downloaded 1440 candles for 2024-06-26
+2025-11-21 00:44:04,155 - src.utils.validation - INFO - [512/560] Downloaded 1440 candles for 2024-06-25
+2025-11-21 00:44:04,331 - src.utils.validation - INFO - [513/560] Downloaded 1440 candles for 2024-06-24
+2025-11-21 00:44:04,438 - src.utils.validation - INFO - [514/560] Downloaded 1440 candles for 2024-06-23
+2025-11-21 00:44:04,509 - src.utils.validation - INFO - [515/560] Downloaded 1440 candles for 2024-06-22
+2025-11-21 00:44:04,538 - src.utils.validation - INFO - [516/560] Downloaded 1440 candles for 2024-06-21
+2025-11-21 00:44:04,706 - src.utils.validation - INFO - [517/560] Downloaded 1440 candles for 2024-06-20
+2025-11-21 00:44:04,813 - src.utils.validation - INFO - [518/560] Downloaded 1440 candles for 2024-06-19
+2025-11-21 00:44:04,897 - src.utils.validation - INFO - [519/560] Downloaded 1440 candles for 2024-06-18
+2025-11-21 00:44:04,913 - src.utils.validation - INFO - [520/560] Downloaded 1440 candles for 2024-06-17
+2025-11-21 00:44:05,122 - src.utils.validation - INFO - [521/560] Downloaded 1440 candles for 2024-06-16
+2025-11-21 00:44:05,190 - src.utils.validation - INFO - [522/560] Downloaded 1440 candles for 2024-06-15
+2025-11-21 00:44:05,277 - src.utils.validation - INFO - [523/560] Downloaded 1440 candles for 2024-06-14
+2025-11-21 00:44:05,319 - src.utils.validation - INFO - [524/560] Downloaded 1440 candles for 2024-06-13
+2025-11-21 00:44:05,481 - src.utils.validation - INFO - [525/560] Downloaded 1440 candles for 2024-06-12
+2025-11-21 00:44:05,557 - src.utils.validation - INFO - [526/560] Downloaded 1440 candles for 2024-06-11
+2025-11-21 00:44:05,670 - src.utils.validation - INFO - [527/560] Downloaded 1440 candles for 2024-06-10
+2025-11-21 00:44:05,690 - src.utils.validation - INFO - [528/560] Downloaded 1440 candles for 2024-06-09
+2025-11-21 00:44:05,852 - src.utils.validation - INFO - [529/560] Downloaded 1440 candles for 2024-06-08
+2025-11-21 00:44:05,912 - src.utils.validation - INFO - [530/560] Downloaded 1440 candles for 2024-06-07
+2025-11-21 00:44:06,044 - src.utils.validation - INFO - [531/560] Downloaded 1440 candles for 2024-06-06
+2025-11-21 00:44:06,067 - src.utils.validation - INFO - [532/560] Downloaded 1440 candles for 2024-06-05
+2025-11-21 00:44:06,266 - src.utils.validation - INFO - [533/560] Downloaded 1440 candles for 2024-06-04
+2025-11-21 00:44:06,275 - src.utils.validation - INFO - [534/560] Downloaded 1440 candles for 2024-06-03
+2025-11-21 00:44:06,403 - src.utils.validation - INFO - [535/560] Downloaded 1440 candles for 2024-06-02
+2025-11-21 00:44:06,478 - src.utils.validation - INFO - [536/560] Downloaded 1440 candles for 2024-06-01
+2025-11-21 00:44:06,623 - src.utils.validation - INFO - [537/560] Downloaded 1440 candles for 2024-05-31
+2025-11-21 00:44:06,669 - src.utils.validation - INFO - [538/560] Downloaded 1440 candles for 2024-05-30
+2025-11-21 00:44:06,766 - src.utils.validation - INFO - [539/560] Downloaded 1440 candles for 2024-05-29
+2025-11-21 00:44:06,849 - src.utils.validation - INFO - [540/560] Downloaded 1440 candles for 2024-05-28
+2025-11-21 00:44:06,988 - src.utils.validation - INFO - [541/560] Downloaded 1440 candles for 2024-05-27
+2025-11-21 00:44:07,062 - src.utils.validation - INFO - [542/560] Downloaded 1440 candles for 2024-05-26
+2025-11-21 00:44:07,123 - src.utils.validation - INFO - [543/560] Downloaded 1440 candles for 2024-05-25
+2025-11-21 00:44:07,221 - src.utils.validation - INFO - [544/560] Downloaded 1440 candles for 2024-05-24
+2025-11-21 00:44:07,356 - src.utils.validation - INFO - [545/560] Downloaded 1440 candles for 2024-05-23
+2025-11-21 00:44:07,437 - src.utils.validation - INFO - [546/560] Downloaded 1440 candles for 2024-05-22
+2025-11-21 00:44:07,483 - src.utils.validation - INFO - [547/560] Downloaded 1440 candles for 2024-05-21
+2025-11-21 00:44:07,594 - src.utils.validation - INFO - [548/560] Downloaded 1440 candles for 2024-05-20
+2025-11-21 00:44:07,745 - src.utils.validation - INFO - [549/560] Downloaded 1440 candles for 2024-05-19
+2025-11-21 00:44:07,808 - src.utils.validation - INFO - [550/560] Downloaded 1440 candles for 2024-05-18
+2025-11-21 00:44:08,007 - src.utils.validation - INFO - [551/560] Downloaded 1440 candles for 2024-05-17
+2025-11-21 00:44:08,014 - src.utils.validation - INFO - [552/560] Downloaded 1440 candles for 2024-05-16
+2025-11-21 00:44:08,116 - src.utils.validation - INFO - [553/560] Downloaded 1440 candles for 2024-05-15
+2025-11-21 00:44:08,173 - src.utils.validation - INFO - [554/560] Downloaded 1440 candles for 2024-05-14
+2025-11-21 00:44:08,371 - src.utils.validation - INFO - [555/560] Downloaded 1440 candles for 2024-05-13
+2025-11-21 00:44:08,399 - src.utils.validation - INFO - [556/560] Downloaded 1440 candles for 2024-05-12
+2025-11-21 00:44:08,474 - src.utils.validation - INFO - [557/560] Downloaded 1440 candles for 2024-05-11
+2025-11-21 00:44:08,534 - src.utils.validation - INFO - [558/560] Downloaded 1440 candles for 2024-05-10
+2025-11-21 00:44:08,726 - src.utils.validation - INFO - [559/560] Downloaded 1440 candles for 2024-05-09
+2025-11-21 00:44:08,789 - src.utils.validation - INFO - [560/560] Downloaded 1440 candles for 2024-05-08
+2025-11-21 00:44:11,389 - src.utils.validation - INFO - [OK] Downloaded and saved 560 new file(s)
+2025-11-21 00:44:11,390 - src.utils.validation - INFO - Data ready: 560 file(s) total (0 from cache, 560 newly downloaded)
+2025-11-21 00:44:11,403 - src.utils.validation - INFO - Loading 560 data files in parallel
+2025-11-21 00:44:13,475 - src.utils.validation - INFO - Loaded total of 806460 candles (excludes today's incomplete data)
+2025-11-21 00:44:13,477 - src.utils.validation - INFO - Validating data integrity
+2025-11-21 00:44:13,583 - src.utils.validation - INFO - Data validation passed
+2025-11-21 00:44:13,630 - src.utils.validation - INFO - Generating 20 non-overlapping cycle ranges (7 days each)
+2025-11-21 00:44:13,632 - src.utils.validation - INFO - Successfully generated 20 non-overlapping cycle ranges
+2025-11-21 00:44:13,674 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-21 00:44:13,675 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-21 00:44:13,676 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-21 00:44:13,676 - src.utils.validation - INFO -   Indicators: 1-3 per bot (50 available)
+2025-11-21 00:44:13,677 - src.utils.validation - INFO -   Risk strategies: 1-1 per bot
+2025-11-21 00:44:13,677 - src.utils.validation - INFO -   Leverage: 125-125x
+2025-11-21 00:44:13,681 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-21 00:44:13,688 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-21 00:44:13,693 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-21 00:44:13,693 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-21 00:44:13,694 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-21 00:44:13,695 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-21 00:44:13,695 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-21 00:44:13,696 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-21 00:44:13,700 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-21 00:44:13,700 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-21 00:44:13,701 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-21 00:44:13,704 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-21 00:44:13,704 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-21 00:44:13,705 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-21 00:44:13,705 - src.utils.validation - INFO -   Loading 1-indicator combinations from cache...
+2025-11-21 00:44:13,706 - src.utils.validation - INFO -     Loaded 48 combinations from cache
+2025-11-21 00:44:13,706 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-21 00:44:13,707 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-21 00:44:13,708 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-21 00:44:13,780 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-21 00:44:13,781 - src.utils.validation - INFO -   Total combinations ready: 18,472
+2025-11-21 00:44:13,781 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-21 00:44:13,782 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-21 00:44:13,782 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-21 00:44:13,782 - src.utils.validation - INFO -   Pre-computed combination pools: 18,472 total combinations
+2025-11-21 00:44:13,783 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-21 00:44:13,783 - src.utils.validation - INFO - 
+Starting Evolution: 5 generations, 20 cycles
+2025-11-21 00:44:13,783 - src.utils.validation - INFO - Evolution profiler started
+2025-11-21 00:44:13,783 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-21 00:44:13,784 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-21 00:44:13,784 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-21 00:44:13,786 - src.utils.validation - INFO - Launching GPU kernel: 10240 work items, 512 per group (20 groups)
+2025-11-21 00:44:13,791 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-21 00:44:13,843 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-21 00:44:13,844 - src.utils.validation - INFO - Distributing 10000 bots across indicator sizes 1-3
+2025-11-21 00:44:13,869 - src.utils.validation - INFO - Initial population: 10000 bots, 10000 unique (100.0% uniqueness)
+2025-11-21 00:44:13,870 - src.utils.validation - INFO - Global tracking: 10000 combinations marked as used
+2025-11-21 00:44:13,871 - src.utils.validation - INFO - Size distribution: {1: 48, 2: 1128, 3: 8824}
+2025-11-21 00:44:13,873 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-21 00:44:13,873 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-21 00:44:13,876 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 00:44:15,926 - src.utils.validation - INFO - [DEBUG] Serializing 10000 bots -> 1320000 bytes (raw len=1320000)
+2025-11-21 00:44:15,927 - src.utils.validation - INFO - [DEBUG] bots_buf created: 1320000 bytes
+2025-11-21 00:44:15,931 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 6912000 bytes (288000 floats)
+2025-11-21 00:44:15,931 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 20 entries
+2025-11-21 00:44:15,931 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 20 entries
+2025-11-21 00:44:15,931 - src.utils.validation - INFO - [DEBUG] results_buf created: 3200000 bytes
+2025-11-21 00:44:15,932 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 00:44:15,933 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 800000 bytes (len=200000)
+2025-11-21 00:44:15,934 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(200000,), num_bots=10000, num_cycles=20, num_bars=288000
+2025-11-21 00:44:29,948 - src.utils.validation - INFO - [DEBUG] Kernel finished within 14.01s
+2025-11-21 00:44:29,978 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 00:44:29,978 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=800000
+2025-11-21 00:44:29,978 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 00:44:29,980 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 800000)
+2025-11-21 00:44:29,980 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 00:44:29,980 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 00:44:29,981 - src.utils.validation - INFO - [DEBUG] Reading 82463 trade logs for streaming write
+2025-11-21 00:44:30,014 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 00:44:30,129 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 00:44:31,973 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 82463, written: 82463, pending: 0)
+2025-11-21 00:44:31,974 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 82463)
+2025-11-21 00:44:32,184 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 82463
+2025-11-21 00:44:32,184 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 82463)
+2025-11-21 00:44:32,197 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 00:44:32,213 - src.utils.validation - ERROR - SURVIVAL FILTER: 8382 negative profit, 1618 failed criteria, 0 no cycles, 0 bots passed
+2025-11-21 00:44:32,214 - src.utils.validation - ERROR - No bots met criteria: average profit % must be positive AND all cycles profitable AND max drawdown < 15%
+2025-11-21 00:44:32,214 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-21 00:44:32,215 - src.utils.validation - INFO - Logging generation 0 results...
+2025-11-21 00:44:32,310 - src.utils.validation - WARNING - Bot 61: Extreme loss -5020.87% across 20 cycles
+2025-11-21 00:44:32,333 - src.utils.validation - WARNING - Bot 174: Extreme loss -8431.49% across 20 cycles
+2025-11-21 00:44:32,349 - src.utils.validation - WARNING - Bot 255: Extreme loss -4460.62% across 20 cycles
+2025-11-21 00:44:32,373 - src.utils.validation - WARNING - Bot 370: Extreme loss -6090.16% across 20 cycles
+2025-11-21 00:44:32,385 - src.utils.validation - WARNING - Bot 426: Extreme loss -4345.52% across 20 cycles
+2025-11-21 00:44:32,405 - src.utils.validation - WARNING - Bot 529: Extreme loss -4129.44% across 20 cycles
+2025-11-21 00:44:32,432 - src.utils.validation - WARNING - Bot 661: Extreme loss -5109.79% across 20 cycles
+2025-11-21 00:44:32,463 - src.utils.validation - WARNING - Bot 831: Extreme loss -4824.96% across 20 cycles
+2025-11-21 00:44:32,525 - src.utils.validation - WARNING - Bot 1191: Extreme loss -5697.49% across 20 cycles
+2025-11-21 00:44:32,531 - src.utils.validation - WARNING - Bot 1221: Extreme loss -4743.58% across 20 cycles
+2025-11-21 00:44:32,538 - src.utils.validation - WARNING - Bot 1248: Extreme loss -4399.51% across 20 cycles
+2025-11-21 00:44:32,541 - src.utils.validation - WARNING - Bot 1258: Extreme loss -4178.88% across 20 cycles
+2025-11-21 00:44:32,567 - src.utils.validation - WARNING - Bot 1399: Extreme loss -4807.19% across 20 cycles
+2025-11-21 00:44:32,584 - src.utils.validation - WARNING - Bot 1491: Extreme loss -5270.65% across 20 cycles
+2025-11-21 00:44:32,601 - src.utils.validation - WARNING - Bot 1578: Extreme loss -4188.91% across 20 cycles
+2025-11-21 00:44:32,609 - src.utils.validation - WARNING - Bot 1618: Extreme loss -4052.46% across 20 cycles
+2025-11-21 00:44:32,643 - src.utils.validation - WARNING - Bot 1797: Extreme loss -4549.68% across 20 cycles
+2025-11-21 00:44:32,646 - src.utils.validation - WARNING - Bot 1804: Extreme loss -4849.31% across 20 cycles
+2025-11-21 00:44:32,648 - src.utils.validation - WARNING - Bot 1810: Extreme loss -4877.90% across 20 cycles
+2025-11-21 00:44:32,651 - src.utils.validation - WARNING - Bot 1823: Extreme loss -4532.12% across 20 cycles
+2025-11-21 00:44:32,673 - src.utils.validation - WARNING - Bot 1952: Extreme loss -6013.56% across 20 cycles
+2025-11-21 00:44:32,676 - src.utils.validation - WARNING - Bot 1955: Extreme loss -6124.52% across 20 cycles
+2025-11-21 00:44:32,681 - src.utils.validation - WARNING - Bot 1977: Extreme loss -5436.67% across 20 cycles
+2025-11-21 00:44:32,713 - src.utils.validation - WARNING - Bot 2154: Extreme loss -4019.10% across 20 cycles
+2025-11-21 00:44:32,737 - src.utils.validation - WARNING - Bot 2288: Extreme loss -4188.10% across 20 cycles
+2025-11-21 00:44:32,839 - src.utils.validation - WARNING - Bot 2890: Extreme loss -4955.57% across 20 cycles
+2025-11-21 00:44:32,841 - src.utils.validation - WARNING - Bot 2898: Extreme loss -6252.70% across 20 cycles
+2025-11-21 00:44:32,935 - src.utils.validation - WARNING - Bot 3419: Extreme loss -4044.49% across 20 cycles
+2025-11-21 00:44:33,021 - src.utils.validation - WARNING - Bot 3932: Extreme loss -4124.10% across 20 cycles
+2025-11-21 00:44:33,061 - src.utils.validation - WARNING - Bot 4170: Extreme loss -4731.14% across 20 cycles
+2025-11-21 00:44:33,153 - src.utils.validation - WARNING - Bot 4715: Extreme loss -8492.51% across 20 cycles
+2025-11-21 00:44:33,249 - src.utils.validation - WARNING - Bot 5298: Extreme loss -6130.44% across 20 cycles
+2025-11-21 00:44:33,263 - src.utils.validation - WARNING - Bot 5372: Extreme loss -5193.10% across 20 cycles
+2025-11-21 00:44:33,287 - src.utils.validation - WARNING - Bot 5499: Extreme loss -4447.51% across 20 cycles
+2025-11-21 00:44:33,325 - src.utils.validation - WARNING - Bot 5711: Extreme loss -4397.82% across 20 cycles
+2025-11-21 00:44:33,337 - src.utils.validation - WARNING - Bot 5778: Extreme loss -6138.81% across 20 cycles
+2025-11-21 00:44:33,357 - src.utils.validation - WARNING - Bot 5886: Extreme loss -4150.58% across 20 cycles
+2025-11-21 00:44:33,383 - src.utils.validation - WARNING - Bot 6028: Extreme loss -4602.27% across 20 cycles
+2025-11-21 00:44:33,422 - src.utils.validation - WARNING - Bot 6254: Extreme loss -6140.77% across 20 cycles
+2025-11-21 00:44:33,428 - src.utils.validation - WARNING - Bot 6284: Extreme loss -4400.32% across 20 cycles
+2025-11-21 00:44:33,452 - src.utils.validation - WARNING - Bot 6412: Extreme loss -4305.24% across 20 cycles
+2025-11-21 00:44:33,463 - src.utils.validation - WARNING - Bot 6467: Extreme loss -4270.72% across 20 cycles
+2025-11-21 00:44:33,493 - src.utils.validation - WARNING - Bot 6623: Extreme loss -4633.94% across 20 cycles
+2025-11-21 00:44:33,498 - src.utils.validation - WARNING - Bot 6653: Extreme loss -4117.20% across 20 cycles
+2025-11-21 00:44:33,621 - src.utils.validation - WARNING - Bot 7341: Extreme loss -5364.61% across 20 cycles
+2025-11-21 00:44:33,624 - src.utils.validation - WARNING - Bot 7355: Extreme loss -4143.41% across 20 cycles
+2025-11-21 00:44:33,646 - src.utils.validation - WARNING - Bot 7460: Extreme loss -4479.93% across 20 cycles
+2025-11-21 00:44:33,701 - src.utils.validation - WARNING - Bot 7753: Extreme loss -4919.81% across 20 cycles
+2025-11-21 00:44:33,722 - src.utils.validation - WARNING - Bot 7877: Extreme loss -4812.05% across 20 cycles
+2025-11-21 00:44:33,739 - src.utils.validation - WARNING - Bot 7966: Extreme loss -4345.72% across 20 cycles
+2025-11-21 00:44:33,769 - src.utils.validation - WARNING - Bot 8127: Extreme loss -4181.83% across 20 cycles
+2025-11-21 00:44:33,785 - src.utils.validation - WARNING - Bot 8215: Extreme loss -5054.69% across 20 cycles
+2025-11-21 00:44:33,798 - src.utils.validation - WARNING - Bot 8281: Extreme loss -4104.82% across 20 cycles
+2025-11-21 00:44:33,898 - src.utils.validation - WARNING - Bot 8850: Extreme loss -4266.10% across 20 cycles
+2025-11-21 00:44:33,949 - src.utils.validation - WARNING - Bot 9154: Extreme loss -5897.98% across 20 cycles
+2025-11-21 00:44:33,971 - src.utils.validation - WARNING - Bot 9289: Extreme loss -4919.60% across 20 cycles
+2025-11-21 00:44:34,015 - src.utils.validation - WARNING - Bot 9517: Extreme loss -5193.09% across 20 cycles
+2025-11-21 00:44:34,051 - src.utils.validation - WARNING - Bot 9726: Extreme loss -4091.29% across 20 cycles
+2025-11-21 00:44:34,074 - src.utils.validation - WARNING - Bot 9852: Extreme loss -4662.34% across 20 cycles
+2025-11-21 00:44:34,107 - src.utils.validation - INFO - GPU logging completed for generation 0 in 1.892s
+2025-11-21 00:44:34,113 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 00:44:34,114 - src.utils.validation - WARNING - No survivors! Generating completely new population
+2025-11-21 00:44:34,114 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-21 00:44:34,115 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-21 00:44:34,115 - src.utils.validation - INFO - Launching GPU kernel: 10240 work items, 512 per group (20 groups)
+2025-11-21 00:44:34,117 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-21 00:44:34,163 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-21 00:44:34,166 - src.utils.validation - INFO - Population refilled: 10000 bots
+2025-11-21 00:44:34,167 - src.utils.validation - INFO - Generation 0 completed in 20.294s
+2025-11-21 00:44:34,167 - src.utils.validation - INFO - 
+--- GENERATION 1 ---
+2025-11-21 00:44:34,167 - src.utils.validation - INFO - Evaluating 10000 bots...
+2025-11-21 00:44:34,170 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 00:44:36,147 - src.utils.validation - INFO - [DEBUG] Serializing 10000 bots -> 1320000 bytes (raw len=1320000)
+2025-11-21 00:44:36,149 - src.utils.validation - INFO - [DEBUG] bots_buf created: 1320000 bytes
+2025-11-21 00:44:36,153 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 6912000 bytes (288000 floats)
+2025-11-21 00:44:36,153 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 20 entries
+2025-11-21 00:44:36,154 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 20 entries
+2025-11-21 00:44:36,155 - src.utils.validation - INFO - [DEBUG] results_buf created: 3200000 bytes
+2025-11-21 00:44:36,156 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 00:44:36,157 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 800000 bytes (len=200000)
+2025-11-21 00:44:36,157 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(200000,), num_bots=10000, num_cycles=20, num_bars=288000
+2025-11-21 00:44:47,114 - src.utils.validation - WARNING - 
+
+Execution interrupted by user
+2025-11-21 00:44:50,550 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 00:44:50,939 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 00:45:20,553 - src.utils.validation - WARNING - TradeLogStreamWriter worker did not finish within 30.0s
+2025-11-21 00:45:20,953 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 82463)
