@@ -7040,3 +7040,114 @@ Execution interrupted by user
 2025-11-21 22:20:05,666 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 281)
 2025-11-21 22:20:05,667 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 78196)
 2025-11-21 22:20:05,668 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-21 22:22:56,666 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-21 22:22:56,667 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-21 22:22:56,669 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-21 22:22:56,669 - src.utils.validation - INFO -   Indicators: 2-4 per bot (50 available)
+2025-11-21 22:22:56,670 - src.utils.validation - INFO -   Risk strategies: 1-2 per bot
+2025-11-21 22:22:56,671 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-21 22:23:14,529 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-21 22:23:14,529 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-21 22:23:14,530 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-21 22:23:14,531 - src.utils.validation - INFO -   Indicators: 2-4 per bot (50 available)
+2025-11-21 22:23:14,531 - src.utils.validation - INFO -   Risk strategies: 1-2 per bot
+2025-11-21 22:23:14,532 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-21 22:23:14,532 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-21 22:23:14,533 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-21 22:23:14,534 - src.utils.validation - INFO - Launching GPU kernel: 10240 work items, 512 per group (20 groups)
+2025-11-21 22:23:14,537 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-21 22:23:14,610 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-21 22:24:38,256 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-21 22:24:38,256 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-21 22:24:38,257 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-21 22:24:38,258 - src.utils.validation - INFO -   Indicators: 2-4 per bot (50 available)
+2025-11-21 22:24:38,258 - src.utils.validation - INFO -   Risk strategies: 1-2 per bot
+2025-11-21 22:24:38,259 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-21 22:24:38,259 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-21 22:24:38,259 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-21 22:24:38,261 - src.utils.validation - INFO - Launching GPU kernel: 10240 work items, 512 per group (20 groups)
+2025-11-21 22:24:38,263 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-21 22:24:38,338 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-21 22:24:38,346 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-21 22:24:42,598 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-21 22:24:42,602 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-21 22:24:42,605 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-21 22:24:42,606 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-21 22:24:42,606 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-21 22:24:42,607 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-21 22:24:42,607 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-21 22:24:42,607 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-21 22:24:42,611 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 22:24:42,709 - src.utils.validation - INFO - [DEBUG] Serializing 10000 bots -> 1320000 bytes (raw len=1320000)
+2025-11-21 22:24:42,710 - src.utils.validation - INFO - [DEBUG] bots_buf created: 1320000 bytes
+2025-11-21 22:24:42,711 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 201600 bytes (10080 floats)
+2025-11-21 22:24:42,712 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 22:24:42,712 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 22:24:42,712 - src.utils.validation - INFO - [DEBUG] results_buf created: 1600000 bytes
+2025-11-21 22:24:42,713 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 22:24:42,714 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 400000 bytes (len=100000)
+2025-11-21 22:24:42,714 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(100000,), num_bots=10000, num_cycles=10, num_bars=10080
+2025-11-21 22:24:46,218 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 22:24:46,222 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 22:24:46,224 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=400000
+2025-11-21 22:24:46,225 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 22:24:46,228 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 400000)
+2025-11-21 22:24:46,229 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 22:24:46,230 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 22:24:46,233 - src.utils.validation - INFO - [DEBUG] Reading 200000 trade logs for streaming write
+2025-11-21 22:24:46,333 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 22:24:46,417 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 22:24:48,429 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 200000, written: 0, pending: 0)
+2025-11-21 22:24:48,437 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 22:24:48,791 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 200000
+2025-11-21 22:24:48,792 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 200000)
+2025-11-21 22:24:48,808 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-21 22:24:48,829 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-21 22:24:48,830 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-21 22:24:48,830 - src.utils.validation - INFO -   Population: 10000 bots
+2025-11-21 22:24:48,831 - src.utils.validation - INFO -   Indicators: 2-4 per bot (50 available)
+2025-11-21 22:24:48,832 - src.utils.validation - INFO -   Risk strategies: 1-2 per bot
+2025-11-21 22:24:48,832 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-21 22:24:48,832 - src.utils.validation - INFO - Generating 10000 compact bots on GPU...
+2025-11-21 22:24:48,833 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-21 22:24:48,834 - src.utils.validation - INFO - Launching GPU kernel: 10240 work items, 512 per group (20 groups)
+2025-11-21 22:24:48,835 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-21 22:24:48,895 - src.utils.validation - INFO - [OK] Generated 10000 compact bots (128 bytes each)
+2025-11-21 22:24:48,899 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-21 22:24:48,937 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-21 22:24:48,941 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-21 22:24:48,944 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-21 22:24:48,944 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-21 22:24:48,945 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-21 22:24:48,945 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-21 22:24:48,946 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-21 22:24:48,946 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-21 22:24:48,946 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-21 22:24:48,951 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 22:24:48,991 - src.utils.validation - INFO - [MTF] Computed 168 HTF bars from 10080 base bars (1:60)
+2025-11-21 22:24:49,044 - src.utils.validation - INFO - [DEBUG] Serializing 10000 bots -> 1320000 bytes (raw len=1320000)
+2025-11-21 22:24:49,046 - src.utils.validation - INFO - [DEBUG] bots_buf created: 1320000 bytes
+2025-11-21 22:24:49,047 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 201600 bytes (10080 floats)
+2025-11-21 22:24:49,047 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 22:24:49,047 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 22:24:49,049 - src.utils.validation - INFO - [DEBUG] results_buf created: 1600000 bytes
+2025-11-21 22:24:49,050 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 22:24:49,051 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 400000 bytes (len=100000)
+2025-11-21 22:24:49,051 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(100000,), num_bots=10000, num_cycles=10, num_bars=10080
+2025-11-21 22:24:53,057 - src.utils.validation - INFO - [DEBUG] Kernel finished within 4.00s
+2025-11-21 22:24:53,057 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 22:24:53,058 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=400000
+2025-11-21 22:24:53,059 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 22:24:53,060 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 400000)
+2025-11-21 22:24:53,060 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 22:24:53,061 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 22:24:53,061 - src.utils.validation - INFO - [DEBUG] Reading 200000 trade logs for streaming write
+2025-11-21 22:24:53,169 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 22:24:53,262 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 22:24:56,082 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 200000, written: 0, pending: 0)
+2025-11-21 22:24:56,084 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 22:24:57,134 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 200000
+2025-11-21 22:24:57,135 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 200000)
+2025-11-21 22:24:57,159 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-21 22:24:57,176 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-21 22:24:57,177 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
