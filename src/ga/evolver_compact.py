@@ -439,15 +439,15 @@ class GeneticAlgorithmEvolver:
                 continue
             
             # Check 4: Minimum win rate threshold when optimizing for win rate
-            if prefer_win_rate and result.win_rate < 40.0:  # 40% minimum win rate
+            if prefer_win_rate and result.win_rate < 55.0:  # 55% minimum win rate for 90%+ target
                 eliminated_high_drawdown += 1
                 continue
             
             # Bot passed all criteria
             # Compute a score that optionally emphasizes win rate (for selecting top bots)
             if prefer_win_rate:
-                # Use win_rate extremely heavily to favor high-win bots (aggressive weight for 80%+ target)
-                win_rate_weight = result.win_rate * 50.0
+                # Use win_rate EXTREMELY heavily to favor high-win bots (100x weight for 90%+ target)
+                win_rate_weight = result.win_rate * 100.0
                 drawdown_penalty = result.max_drawdown * 100.0
                 score = avg_profit_pct + win_rate_weight - drawdown_penalty
             else:
@@ -551,32 +551,36 @@ class GeneticAlgorithmEvolver:
         mutated = copy.deepcopy(bot)
         mutated.bot_id = bot_id
         
-        # Randomly mutate some parameters
+        # Randomly mutate some parameters (lighter mutations for elite bots)
         mutation_type = random.random()
         
-        if mutation_type < 0.3:
-            # Adjust leverage (±20%)
-            leverage_change = random.uniform(0.8, 1.2)
+        if mutation_type < 0.25:
+            # Adjust leverage (±15% for finer tuning)
+            leverage_change = random.uniform(0.85, 1.15)
             mutated.leverage = max(1, min(25, int(mutated.leverage * leverage_change)))
         
-        elif mutation_type < 0.6:
-            # Swap one indicator with a similar one
+        elif mutation_type < 0.5:
+            # Swap one indicator with a nearby one
             if mutated.num_indicators > 0:
                 idx_to_change = random.randint(0, mutated.num_indicators - 1)
-                # Find nearby indicator index (±5)
+                # Find nearby indicator index (±3 for subtle changes)
                 old_indicator = mutated.indicator_indices[idx_to_change]
-                new_indicator = max(0, min(49, old_indicator + random.randint(-5, 5)))
+                new_indicator = max(0, min(49, old_indicator + random.randint(-3, 3)))
                 mutated.indicator_indices[idx_to_change] = new_indicator
         
-        else:
-            # Adjust stop loss or take profit multipliers
+        elif mutation_type < 0.75:
+            # Adjust stop loss or take profit multipliers (±15%)
             mutation_choice = random.random()
             if mutation_choice < 0.5:
-                # Adjust stop loss multiplier (±20%)
-                mutated.sl_multiplier = max(0.5, min(5.0, mutated.sl_multiplier * random.uniform(0.8, 1.2)))
+                # Adjust stop loss multiplier
+                mutated.sl_multiplier = max(0.5, min(5.0, mutated.sl_multiplier * random.uniform(0.85, 1.15)))
             else:
-                # Adjust take profit multiplier (±20%)
-                mutated.tp_multiplier = max(0.5, min(5.0, mutated.tp_multiplier * random.uniform(0.8, 1.2)))
+                # Adjust take profit multiplier
+                mutated.tp_multiplier = max(0.5, min(5.0, mutated.tp_multiplier * random.uniform(0.85, 1.15)))
+        
+        else:
+            # Adjust risk parameter (±10%)
+            mutated.risk_param = max(0.1, min(10.0, mutated.risk_param * random.uniform(0.9, 1.1)))
         
         return mutated
     
@@ -753,8 +757,9 @@ class GeneticAlgorithmEvolver:
             # Use breeding if we have top performers
             bred_count = 0
             mutated_count = 0
+            cloned_count = 0
             if len(self.top_performers_history) >= 5:
-                log_info(f"Generating {num_new_bots} new bots (60% breeding, 40% random)")
+                log_info(f"Generating {num_new_bots} new bots (80% breeding, 15% elite clones, 5% random)")
             else:
                 log_info(f"Generating {num_new_bots} new globally unique bots (insufficient top performers for breeding)")
             
@@ -766,14 +771,25 @@ class GeneticAlgorithmEvolver:
             for i in range(num_new_bots):
                 new_bot = None
                 
-                # 60% chance to breed from top performers (if available)
-                if len(self.top_performers_history) >= 5 and random.random() < 0.6:
+                # 15% chance to clone an elite performer with slight mutation
+                if len(self.top_performers_history) >= 5 and random.random() < 0.15:
+                    # Clone top 5 performers
+                    elite_bot, _ = self.top_performers_history[random.randint(0, min(4, len(self.top_performers_history)-1))]
+                    new_bot = self.mutate_bot_parameters(elite_bot, next_bot_id + i)
+                    combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
+                    if combo not in batch_combinations and combo not in self.used_combinations:
+                        cloned_count += 1
+                    else:
+                        new_bot = None
+                
+                # 80% chance to breed from top performers (if available)
+                if new_bot is None and len(self.top_performers_history) >= 5 and random.random() < 0.85:
                     new_bot = self.breed_top_performers(next_bot_id + i, batch_combinations)
                     if new_bot:
                         bred_count += 1
                 
-                # 20% chance to mutate a top performer
-                if new_bot is None and len(self.top_performers_history) >= 2 and random.random() < 0.25:
+                # 5% chance to mutate a top performer
+                if new_bot is None and len(self.top_performers_history) >= 2 and random.random() < 0.2:
                     parent_bot, _ = random.choice(self.top_performers_history)
                     new_bot = self.mutate_bot_parameters(parent_bot, next_bot_id + i)
                     combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
@@ -794,8 +810,9 @@ class GeneticAlgorithmEvolver:
                 
                 new_population.append(new_bot)
             
-            if bred_count > 0 or mutated_count > 0:
-                log_info(f"Population breeding: {bred_count} bred, {mutated_count} mutated, {num_new_bots - bred_count - mutated_count} random")
+            if bred_count > 0 or mutated_count > 0 or cloned_count > 0:
+                random_count = num_new_bots - bred_count - mutated_count - cloned_count
+                log_info(f"Population breeding: {bred_count} bred, {cloned_count} elite clones, {mutated_count} mutated, {random_count} random")
             
             # Verify final diversity (should always be 100%)
             all_combos = [frozenset(bot.indicator_indices[:bot.num_indicators]) for bot in new_population]

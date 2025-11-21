@@ -8233,3 +8233,710 @@ Starting Evolution: 15 generations, 10 cycles
 2025-11-21 23:01:28,672 - src.utils.validation - INFO - Available combinations: 1,923,308 unused, 2,000 used globally
 2025-11-21 23:01:28,678 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 50000)
 2025-11-21 23:01:29,302 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 50000)
+2025-11-21 23:02:26,596 - src.utils.validation - INFO - Set random seed to 42
+2025-11-21 23:02:26,597 - src.utils.validation - INFO - Loading 850 data files in parallel
+2025-11-21 23:02:27,944 - src.utils.validation - INFO - Loaded total of 1224060 candles (excludes today's incomplete data)
+2025-11-21 23:02:27,945 - src.utils.validation - INFO - Validating data integrity
+2025-11-21 23:02:28,066 - src.utils.validation - INFO - Data validation passed
+2025-11-21 23:02:28,076 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-21 23:02:28,076 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-21 23:02:28,096 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-21 23:02:28,096 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-21 23:02:28,096 - src.utils.validation - INFO -   Population: 2000 bots
+2025-11-21 23:02:28,097 - src.utils.validation - INFO -   Indicators: 2-5 per bot (50 available)
+2025-11-21 23:02:28,097 - src.utils.validation - INFO -   Risk strategies: 1-3 per bot
+2025-11-21 23:02:28,097 - src.utils.validation - INFO -   Leverage: 1-25x
+2025-11-21 23:02:28,101 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-21 23:02:28,107 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-21 23:02:28,111 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-21 23:02:28,113 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-21 23:02:28,113 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-21 23:02:28,114 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-21 23:02:28,114 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-21 23:02:28,114 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-21 23:02:28,114 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-21 23:02:28,114 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-21 23:02:28,119 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-21 23:02:28,119 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-21 23:02:28,119 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-21 23:02:28,122 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-21 23:02:28,123 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-21 23:02:28,123 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-21 23:02:28,123 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-21 23:02:28,124 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-21 23:02:28,124 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-21 23:02:28,131 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-21 23:02:28,132 - src.utils.validation - INFO -   Loading 4-indicator combinations from cache...
+2025-11-21 23:02:28,328 - src.utils.validation - INFO -     Loaded 194,580 combinations from cache
+2025-11-21 23:02:28,329 - src.utils.validation - INFO -   Loading 5-indicator combinations from cache...
+2025-11-21 23:02:32,046 - src.utils.validation - INFO -     Loaded 1,712,304 combinations from cache
+2025-11-21 23:02:32,047 - src.utils.validation - INFO -   Total combinations ready: 1,925,308
+2025-11-21 23:02:32,047 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-21 23:02:32,048 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-21 23:02:32,048 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-21 23:02:32,048 - src.utils.validation - INFO -   Pre-computed combination pools: 1,925,308 total combinations
+2025-11-21 23:02:32,049 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-21 23:02:32,049 - src.utils.validation - INFO - 
+Starting Evolution: 15 generations, 10 cycles
+2025-11-21 23:02:32,049 - src.utils.validation - INFO - Evolution profiler started
+2025-11-21 23:02:32,050 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-21 23:02:32,050 - src.utils.validation - INFO - Generating 2000 compact bots on GPU...
+2025-11-21 23:02:32,051 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-21 23:02:32,051 - src.utils.validation - INFO - Launching GPU kernel: 2048 work items, 512 per group (4 groups)
+2025-11-21 23:02:32,054 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-21 23:02:32,064 - src.utils.validation - INFO - [OK] Generated 2000 compact bots (128 bytes each)
+2025-11-21 23:02:32,065 - src.utils.validation - INFO - Distributing 2000 bots across indicator sizes 2-5
+2025-11-21 23:02:32,071 - src.utils.validation - INFO - Initial population: 2000 bots, 2000 unique (100.0% uniqueness)
+2025-11-21 23:02:32,072 - src.utils.validation - INFO - Global tracking: 2000 combinations marked as used
+2025-11-21 23:02:32,073 - src.utils.validation - INFO - Size distribution: {2: 508, 3: 496, 4: 488, 5: 508}
+2025-11-21 23:02:32,074 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-21 23:02:32,074 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:02:32,123 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:02:32,611 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:02:32,622 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:02:32,623 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:02:32,626 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:02:32,626 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:02:32,627 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:02:32,627 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:02:32,628 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:02:32,628 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:02:32,628 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:02:36,133 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:02:36,135 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:02:36,135 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:02:36,136 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:02:36,137 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:02:36,137 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:02:36,137 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:02:36,239 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:02:36,259 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:02:36,363 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:02:38,587 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:02:38,592 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:02:38,682 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:02:38,685 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:02:38,688 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:02:38,691 - src.utils.validation - INFO - SURVIVAL FILTER: 87 negative profit, 1702 failed criteria, 211 bots passed
+2025-11-21 23:02:38,692 - src.utils.validation - INFO - Survivors: 211 unique bots kept (no cap applied)
+2025-11-21 23:02:38,693 - src.utils.validation - INFO - SURVIVAL: 211 survivors (from 211 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:02:38,693 - src.utils.validation - INFO - ELIMINATED: 1789 bots total
+2025-11-21 23:02:38,694 - src.utils.validation - INFO - Logging generation 0 results...
+2025-11-21 23:02:39,000 - src.utils.validation - INFO - GPU logging completed for generation 0 in 0.306s
+2025-11-21 23:02:39,002 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:02:39,005 - src.utils.validation - INFO - Survivors: 211 total, 211 unique combinations (100.0% diversity)
+2025-11-21 23:02:39,006 - src.utils.validation - INFO - Global tracking: 2000 combinations used across all generations
+2025-11-21 23:02:39,006 - src.utils.validation - INFO - Generating 1789 new bots (60% breeding, 40% random)
+2025-11-21 23:02:39,007 - src.utils.validation - INFO - Available combinations: 1,923,308 unused, 2,000 used globally
+2025-11-21 23:02:40,983 - src.utils.validation - INFO - Population breeding: 574 bred, 53 mutated, 1162 random
+2025-11-21 23:02:40,985 - src.utils.validation - INFO - After refill: 2000 bots, 1996 unique combinations (99.8% diversity)
+2025-11-21 23:02:40,986 - src.utils.validation - ERROR - ERROR: Found 4 duplicate combinations in population!
+2025-11-21 23:02:40,986 - src.utils.validation - INFO - Remaining unused combinations: 1,922,322
+2025-11-21 23:02:40,988 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:02:40,988 - src.utils.validation - INFO - Generation 0 completed in 8.914s
+2025-11-21 23:02:40,988 - src.utils.validation - INFO - 
+--- GENERATION 1 ---
+2025-11-21 23:02:40,988 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:02:41,022 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:02:41,529 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:02:41,544 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:02:41,544 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:02:41,546 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:02:41,547 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:02:41,547 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:02:41,549 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:02:41,552 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:02:41,553 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:02:41,553 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:02:45,058 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:02:45,060 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:02:45,062 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:02:45,064 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:02:45,065 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:02:45,068 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:02:45,069 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:02:45,070 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:02:45,086 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:02:45,174 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:02:47,408 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:02:47,410 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:02:47,472 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:02:47,472 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:02:47,477 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:02:47,482 - src.utils.validation - INFO - SURVIVAL FILTER: 53 negative profit, 1040 failed criteria, 907 bots passed
+2025-11-21 23:02:47,485 - src.utils.validation - INFO - Survivors: 906 unique bots kept (no cap applied)
+2025-11-21 23:02:47,488 - src.utils.validation - INFO - SURVIVAL: 906 survivors (from 907 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:02:47,489 - src.utils.validation - INFO - ELIMINATED: 1093 bots total
+2025-11-21 23:02:47,490 - src.utils.validation - INFO - Logging generation 1 results...
+2025-11-21 23:02:47,804 - src.utils.validation - INFO - GPU logging completed for generation 1 in 0.314s
+2025-11-21 23:02:47,807 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:02:47,821 - src.utils.validation - INFO - Survivors: 906 total, 906 unique combinations (100.0% diversity)
+2025-11-21 23:02:47,822 - src.utils.validation - INFO - Global tracking: 3729 combinations used across all generations
+2025-11-21 23:02:47,823 - src.utils.validation - INFO - Generating 1094 new bots (60% breeding, 40% random)
+2025-11-21 23:02:47,823 - src.utils.validation - INFO - Available combinations: 1,921,762 unused, 3,729 used globally
+2025-11-21 23:02:49,141 - src.utils.validation - INFO - Population breeding: 337 bred, 30 mutated, 727 random
+2025-11-21 23:02:49,144 - src.utils.validation - INFO - After refill: 2000 bots, 1997 unique combinations (99.8% diversity)
+2025-11-21 23:02:49,144 - src.utils.validation - ERROR - ERROR: Found 3 duplicate combinations in population!
+2025-11-21 23:02:49,144 - src.utils.validation - INFO - Remaining unused combinations: 1,921,124
+2025-11-21 23:02:49,146 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:02:49,146 - src.utils.validation - INFO - Generation 1 completed in 8.158s
+2025-11-21 23:02:49,146 - src.utils.validation - INFO - 
+--- GENERATION 2 ---
+2025-11-21 23:02:49,146 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:02:49,174 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:02:49,676 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:02:49,687 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:02:49,687 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:02:49,690 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:02:49,690 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:02:49,691 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:02:49,691 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:02:49,692 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:02:49,692 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:02:49,693 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:02:53,197 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:02:53,198 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:02:53,199 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:02:53,199 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:02:53,200 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:02:53,202 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:02:53,203 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:02:53,305 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:02:53,321 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:02:53,393 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:02:55,813 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:02:55,822 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:02:55,920 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:02:55,920 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:02:55,926 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:02:55,932 - src.utils.validation - INFO - SURVIVAL FILTER: 34 negative profit, 654 failed criteria, 1312 bots passed
+2025-11-21 23:02:55,934 - src.utils.validation - INFO - Survivors: 1310 unique bots kept (no cap applied)
+2025-11-21 23:02:55,936 - src.utils.validation - INFO - SURVIVAL: 1310 survivors (from 1312 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:02:55,937 - src.utils.validation - INFO - ELIMINATED: 688 bots total
+2025-11-21 23:02:55,939 - src.utils.validation - INFO - Logging generation 2 results...
+2025-11-21 23:02:56,450 - src.utils.validation - INFO - GPU logging completed for generation 2 in 0.510s
+2025-11-21 23:02:56,456 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:02:56,490 - src.utils.validation - INFO - Survivors: 1310 total, 1310 unique combinations (100.0% diversity)
+2025-11-21 23:02:56,492 - src.utils.validation - INFO - Global tracking: 4789 combinations used across all generations
+2025-11-21 23:02:56,493 - src.utils.validation - INFO - Generating 690 new bots (60% breeding, 40% random)
+2025-11-21 23:02:56,493 - src.utils.validation - INFO - Available combinations: 1,920,793 unused, 4,789 used globally
+2025-11-21 23:02:59,077 - src.utils.validation - INFO - Population breeding: 186 bred, 27 mutated, 477 random
+2025-11-21 23:02:59,084 - src.utils.validation - INFO - After refill: 2000 bots, 1998 unique combinations (99.9% diversity)
+2025-11-21 23:02:59,084 - src.utils.validation - ERROR - ERROR: Found 2 duplicate combinations in population!
+2025-11-21 23:02:59,085 - src.utils.validation - INFO - Remaining unused combinations: 1,920,389
+2025-11-21 23:02:59,087 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:02:59,087 - src.utils.validation - INFO - Generation 2 completed in 9.941s
+2025-11-21 23:02:59,087 - src.utils.validation - INFO - 
+--- GENERATION 3 ---
+2025-11-21 23:02:59,088 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:02:59,128 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:02:59,619 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:02:59,628 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:02:59,629 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:02:59,633 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:02:59,634 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:02:59,635 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:02:59,635 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:02:59,636 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:02:59,637 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:02:59,637 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:03:03,141 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:03:03,143 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:03:03,144 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:03:03,146 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:03:03,148 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:03:03,149 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:03:03,152 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:03:03,155 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:03:03,171 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:03:03,254 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:03:05,535 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 50000, pending: 0)
+2025-11-21 23:03:05,536 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 50000)
+2025-11-21 23:03:05,958 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:03:05,959 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:03:05,965 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:03:05,971 - src.utils.validation - INFO - SURVIVAL FILTER: 23 negative profit, 429 failed criteria, 1548 bots passed
+2025-11-21 23:03:05,973 - src.utils.validation - INFO - Survivors: 1547 unique bots kept (no cap applied)
+2025-11-21 23:03:05,974 - src.utils.validation - INFO - SURVIVAL: 1547 survivors (from 1548 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:03:05,975 - src.utils.validation - INFO - ELIMINATED: 452 bots total
+2025-11-21 23:03:05,977 - src.utils.validation - INFO - Logging generation 3 results...
+2025-11-21 23:03:06,284 - src.utils.validation - INFO - GPU logging completed for generation 3 in 0.306s
+2025-11-21 23:03:06,289 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:03:06,307 - src.utils.validation - INFO - Survivors: 1547 total, 1547 unique combinations (100.0% diversity)
+2025-11-21 23:03:06,308 - src.utils.validation - INFO - Global tracking: 5457 combinations used across all generations
+2025-11-21 23:03:06,308 - src.utils.validation - INFO - Generating 453 new bots (60% breeding, 40% random)
+2025-11-21 23:03:06,310 - src.utils.validation - INFO - Available combinations: 1,920,201 unused, 5,457 used globally
+2025-11-21 23:03:06,974 - src.utils.validation - INFO - Population breeding: 123 bred, 13 mutated, 317 random
+2025-11-21 23:03:06,976 - src.utils.validation - INFO - After refill: 2000 bots, 1999 unique combinations (100.0% diversity)
+2025-11-21 23:03:06,976 - src.utils.validation - ERROR - ERROR: Found 1 duplicate combinations in population!
+2025-11-21 23:03:06,976 - src.utils.validation - INFO - Remaining unused combinations: 1,919,928
+2025-11-21 23:03:06,978 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:03:06,979 - src.utils.validation - INFO - Generation 3 completed in 7.892s
+2025-11-21 23:03:06,979 - src.utils.validation - INFO - 
+--- GENERATION 4 ---
+2025-11-21 23:03:06,980 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:03:07,008 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:03:07,508 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:03:07,519 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:03:07,519 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:03:07,521 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:03:07,521 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:03:07,522 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:03:07,522 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:03:07,523 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:03:07,523 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:03:07,523 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:03:11,027 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:03:11,028 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:03:11,028 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:03:11,029 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:03:11,029 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:03:11,030 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:03:11,030 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:03:11,131 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:03:11,148 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:03:11,209 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:03:13,476 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:03:13,479 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:03:13,500 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:03:13,500 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:03:13,505 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:03:13,512 - src.utils.validation - INFO - SURVIVAL FILTER: 9 negative profit, 295 failed criteria, 1696 bots passed
+2025-11-21 23:03:13,513 - src.utils.validation - INFO - Survivors: 1695 unique bots kept (no cap applied)
+2025-11-21 23:03:13,515 - src.utils.validation - INFO - SURVIVAL: 1695 survivors (from 1696 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:03:13,516 - src.utils.validation - INFO - ELIMINATED: 304 bots total
+2025-11-21 23:03:13,520 - src.utils.validation - INFO - Logging generation 4 results...
+2025-11-21 23:03:13,839 - src.utils.validation - INFO - GPU logging completed for generation 4 in 0.318s
+2025-11-21 23:03:13,843 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:03:13,865 - src.utils.validation - INFO - Survivors: 1695 total, 1695 unique combinations (100.0% diversity)
+2025-11-21 23:03:13,865 - src.utils.validation - INFO - Global tracking: 5895 combinations used across all generations
+2025-11-21 23:03:13,867 - src.utils.validation - INFO - Generating 305 new bots (60% breeding, 40% random)
+2025-11-21 23:03:13,867 - src.utils.validation - INFO - Available combinations: 1,919,809 unused, 5,895 used globally
+2025-11-21 23:03:14,337 - src.utils.validation - INFO - Population breeding: 82 bred, 9 mutated, 214 random
+2025-11-21 23:03:14,339 - src.utils.validation - INFO - After refill: 2000 bots, 1999 unique combinations (100.0% diversity)
+2025-11-21 23:03:14,339 - src.utils.validation - ERROR - ERROR: Found 1 duplicate combinations in population!
+2025-11-21 23:03:14,340 - src.utils.validation - INFO - Remaining unused combinations: 1,919,626
+2025-11-21 23:03:14,341 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:03:14,341 - src.utils.validation - INFO - Generation 4 completed in 7.362s
+2025-11-21 23:03:14,341 - src.utils.validation - INFO - 
+--- GENERATION 5 ---
+2025-11-21 23:03:14,341 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:03:14,369 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:03:14,870 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:03:14,880 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:03:14,881 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:03:14,884 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:03:14,885 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:03:14,886 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:03:14,886 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:03:14,887 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:03:14,888 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:03:14,888 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:03:18,393 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:03:18,393 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:03:18,394 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:03:18,394 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:03:18,395 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:03:18,395 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:03:18,395 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:03:18,396 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:03:18,408 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:03:18,497 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:03:20,622 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:03:20,625 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:03:20,717 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:03:20,717 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:03:20,721 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:03:20,726 - src.utils.validation - INFO - SURVIVAL FILTER: 5 negative profit, 196 failed criteria, 1799 bots passed
+2025-11-21 23:03:20,728 - src.utils.validation - INFO - Survivors: 1798 unique bots kept (no cap applied)
+2025-11-21 23:03:20,732 - src.utils.validation - INFO - SURVIVAL: 1798 survivors (from 1799 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:03:20,733 - src.utils.validation - INFO - ELIMINATED: 201 bots total
+2025-11-21 23:03:20,736 - src.utils.validation - INFO - Logging generation 5 results...
+2025-11-21 23:03:21,066 - src.utils.validation - INFO - GPU logging completed for generation 5 in 0.330s
+2025-11-21 23:03:21,070 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:03:21,093 - src.utils.validation - INFO - Survivors: 1798 total, 1798 unique combinations (100.0% diversity)
+2025-11-21 23:03:21,094 - src.utils.validation - INFO - Global tracking: 6191 combinations used across all generations
+2025-11-21 23:03:21,095 - src.utils.validation - INFO - Generating 202 new bots (60% breeding, 40% random)
+2025-11-21 23:03:21,095 - src.utils.validation - INFO - Available combinations: 1,919,544 unused, 6,191 used globally
+2025-11-21 23:03:21,479 - src.utils.validation - INFO - Population breeding: 40 bred, 4 mutated, 158 random
+2025-11-21 23:03:21,481 - src.utils.validation - INFO - After refill: 2000 bots, 2000 unique combinations (100.0% diversity)
+2025-11-21 23:03:21,481 - src.utils.validation - INFO - Remaining unused combinations: 1,919,410
+2025-11-21 23:03:21,483 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:03:21,484 - src.utils.validation - INFO - Generation 5 completed in 7.143s
+2025-11-21 23:03:21,484 - src.utils.validation - INFO - 
+--- GENERATION 6 ---
+2025-11-21 23:03:21,485 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:03:21,512 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:03:22,007 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:03:22,018 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:03:22,019 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:03:22,021 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:03:22,022 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:03:22,022 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:03:22,023 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:03:22,023 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:03:22,024 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:03:22,024 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:03:25,530 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:03:25,532 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:03:25,534 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:03:25,535 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:03:25,537 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:03:25,538 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:03:25,540 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:03:25,542 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:03:25,557 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:03:25,622 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:03:28,029 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 50000, pending: 0)
+2025-11-21 23:03:28,030 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 50000)
+2025-11-21 23:03:28,429 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:03:28,430 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:03:28,434 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:03:28,441 - src.utils.validation - INFO - SURVIVAL FILTER: 8 negative profit, 146 failed criteria, 1846 bots passed
+2025-11-21 23:03:28,443 - src.utils.validation - INFO - Survivors: 1846 unique bots kept (no cap applied)
+2025-11-21 23:03:28,446 - src.utils.validation - INFO - SURVIVAL: 1846 survivors (from 1846 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:03:28,447 - src.utils.validation - INFO - ELIMINATED: 154 bots total
+2025-11-21 23:03:28,452 - src.utils.validation - INFO - Logging generation 6 results...
+2025-11-21 23:03:28,786 - src.utils.validation - INFO - GPU logging completed for generation 6 in 0.333s
+2025-11-21 23:03:28,790 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:03:28,812 - src.utils.validation - INFO - Survivors: 1846 total, 1846 unique combinations (100.0% diversity)
+2025-11-21 23:03:28,812 - src.utils.validation - INFO - Global tracking: 6386 combinations used across all generations
+2025-11-21 23:03:28,813 - src.utils.validation - INFO - Generating 154 new bots (60% breeding, 40% random)
+2025-11-21 23:03:28,813 - src.utils.validation - INFO - Available combinations: 1,919,373 unused, 6,386 used globally
+2025-11-21 23:03:29,122 - src.utils.validation - INFO - Population breeding: 36 bred, 8 mutated, 110 random
+2025-11-21 23:03:29,123 - src.utils.validation - INFO - After refill: 2000 bots, 2000 unique combinations (100.0% diversity)
+2025-11-21 23:03:29,124 - src.utils.validation - INFO - Remaining unused combinations: 1,919,275
+2025-11-21 23:03:29,125 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:03:29,125 - src.utils.validation - INFO - Generation 6 completed in 7.641s
+2025-11-21 23:03:29,126 - src.utils.validation - INFO - 
+--- GENERATION 7 ---
+2025-11-21 23:03:29,126 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:03:29,161 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:03:29,679 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:03:29,691 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:03:29,692 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:03:29,694 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:03:29,695 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:03:29,695 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:03:29,696 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:03:29,696 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:03:29,696 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:03:29,697 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:03:33,201 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:03:33,203 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:03:33,204 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:03:33,205 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:03:33,206 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:03:33,207 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:03:33,208 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:03:33,211 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:03:33,228 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:03:33,303 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:03:35,490 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:03:35,495 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:03:35,609 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:03:35,609 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:03:35,614 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:03:35,621 - src.utils.validation - INFO - SURVIVAL FILTER: 2 negative profit, 101 failed criteria, 1897 bots passed
+2025-11-21 23:03:35,623 - src.utils.validation - INFO - Survivors: 1897 unique bots kept (no cap applied)
+2025-11-21 23:03:35,624 - src.utils.validation - INFO - SURVIVAL: 1897 survivors (from 1897 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:03:35,625 - src.utils.validation - INFO - ELIMINATED: 103 bots total
+2025-11-21 23:03:35,628 - src.utils.validation - INFO - Logging generation 7 results...
+2025-11-21 23:03:35,939 - src.utils.validation - INFO - GPU logging completed for generation 7 in 0.312s
+2025-11-21 23:03:35,943 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:03:35,967 - src.utils.validation - INFO - Survivors: 1897 total, 1897 unique combinations (100.0% diversity)
+2025-11-21 23:03:35,968 - src.utils.validation - INFO - Global tracking: 6533 combinations used across all generations
+2025-11-21 23:03:35,969 - src.utils.validation - INFO - Generating 103 new bots (60% breeding, 40% random)
+2025-11-21 23:03:35,969 - src.utils.validation - INFO - Available combinations: 1,919,238 unused, 6,533 used globally
+2025-11-21 23:03:36,139 - src.utils.validation - INFO - Population breeding: 28 bred, 4 mutated, 71 random
+2025-11-21 23:03:36,141 - src.utils.validation - INFO - After refill: 2000 bots, 2000 unique combinations (100.0% diversity)
+2025-11-21 23:03:36,141 - src.utils.validation - INFO - Remaining unused combinations: 1,919,178
+2025-11-21 23:03:36,142 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:03:36,143 - src.utils.validation - INFO - Generation 7 completed in 7.018s
+2025-11-21 23:03:36,143 - src.utils.validation - INFO - 
+--- GENERATION 8 ---
+2025-11-21 23:03:36,143 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:03:36,171 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:03:36,689 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:03:36,698 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:03:36,700 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:03:36,702 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:03:36,703 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:03:36,704 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:03:36,705 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:03:36,706 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:03:36,706 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:03:36,707 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:03:40,211 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:03:40,214 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:03:40,238 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:03:40,240 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:03:40,241 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:03:40,241 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:03:40,243 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:03:40,244 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:03:40,258 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:03:40,322 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:03:42,537 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:03:42,540 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:03:42,653 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:03:42,654 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:03:42,658 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:03:42,666 - src.utils.validation - INFO - SURVIVAL FILTER: 8 negative profit, 67 failed criteria, 1925 bots passed
+2025-11-21 23:03:42,668 - src.utils.validation - INFO - Survivors: 1925 unique bots kept (no cap applied)
+2025-11-21 23:03:42,669 - src.utils.validation - INFO - SURVIVAL: 1925 survivors (from 1925 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:03:42,670 - src.utils.validation - INFO - ELIMINATED: 75 bots total
+2025-11-21 23:03:42,672 - src.utils.validation - INFO - Logging generation 8 results...
+2025-11-21 23:03:42,982 - src.utils.validation - INFO - GPU logging completed for generation 8 in 0.309s
+2025-11-21 23:03:42,986 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:03:43,010 - src.utils.validation - INFO - Survivors: 1925 total, 1925 unique combinations (100.0% diversity)
+2025-11-21 23:03:43,010 - src.utils.validation - INFO - Global tracking: 6628 combinations used across all generations
+2025-11-21 23:03:43,011 - src.utils.validation - INFO - Generating 75 new bots (60% breeding, 40% random)
+2025-11-21 23:03:43,011 - src.utils.validation - INFO - Available combinations: 1,919,154 unused, 6,628 used globally
+2025-11-21 23:03:43,153 - src.utils.validation - INFO - Population breeding: 19 bred, 1 mutated, 55 random
+2025-11-21 23:03:43,155 - src.utils.validation - INFO - After refill: 2000 bots, 1999 unique combinations (100.0% diversity)
+2025-11-21 23:03:43,156 - src.utils.validation - ERROR - ERROR: Found 1 duplicate combinations in population!
+2025-11-21 23:03:43,156 - src.utils.validation - INFO - Remaining unused combinations: 1,919,111
+2025-11-21 23:03:43,157 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:03:43,158 - src.utils.validation - INFO - Generation 8 completed in 7.014s
+2025-11-21 23:03:43,158 - src.utils.validation - INFO - 
+--- GENERATION 9 ---
+2025-11-21 23:03:43,158 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:03:43,185 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:03:43,687 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:03:43,698 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:03:43,699 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:03:43,702 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:03:43,703 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:03:43,703 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:03:43,705 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:03:43,706 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:03:43,708 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:03:43,708 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:03:47,212 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:03:47,239 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:03:47,239 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:03:47,240 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:03:47,240 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:03:47,241 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:03:47,241 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:03:47,242 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:03:47,258 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:03:47,353 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:03:49,558 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:03:49,560 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:03:49,649 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:03:49,650 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:03:49,653 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:03:49,660 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 56 failed criteria, 1944 bots passed
+2025-11-21 23:03:49,661 - src.utils.validation - INFO - Survivors: 1943 unique bots kept (no cap applied)
+2025-11-21 23:03:49,664 - src.utils.validation - INFO - SURVIVAL: 1943 survivors (from 1944 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:03:49,664 - src.utils.validation - INFO - ELIMINATED: 56 bots total
+2025-11-21 23:03:49,669 - src.utils.validation - INFO - Logging generation 9 results...
+2025-11-21 23:03:49,970 - src.utils.validation - INFO - GPU logging completed for generation 9 in 0.299s
+2025-11-21 23:03:49,974 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:03:49,996 - src.utils.validation - INFO - Survivors: 1943 total, 1943 unique combinations (100.0% diversity)
+2025-11-21 23:03:49,997 - src.utils.validation - INFO - Global tracking: 6697 combinations used across all generations
+2025-11-21 23:03:49,998 - src.utils.validation - INFO - Generating 57 new bots (60% breeding, 40% random)
+2025-11-21 23:03:49,999 - src.utils.validation - INFO - Available combinations: 1,919,097 unused, 6,697 used globally
+2025-11-21 23:03:50,110 - src.utils.validation - INFO - Population breeding: 12 bred, 1 mutated, 44 random
+2025-11-21 23:03:50,111 - src.utils.validation - INFO - After refill: 2000 bots, 1999 unique combinations (100.0% diversity)
+2025-11-21 23:03:50,112 - src.utils.validation - ERROR - ERROR: Found 1 duplicate combinations in population!
+2025-11-21 23:03:50,112 - src.utils.validation - INFO - Remaining unused combinations: 1,919,060
+2025-11-21 23:03:50,113 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:03:50,113 - src.utils.validation - INFO - Generation 9 completed in 6.955s
+2025-11-21 23:03:50,113 - src.utils.validation - INFO - 
+--- GENERATION 10 ---
+2025-11-21 23:03:50,113 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:03:50,141 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:03:50,646 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:03:50,658 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:03:50,659 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:03:50,661 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:03:50,662 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:03:50,662 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:03:50,663 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:03:50,663 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:03:50,664 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:03:50,666 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:03:54,171 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:03:54,173 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:03:54,174 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:03:54,176 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:03:54,178 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:03:54,179 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:03:54,180 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:03:54,181 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:03:54,201 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:03:54,272 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:03:57,491 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 50000, pending: 0)
+2025-11-21 23:03:57,492 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 50000)
+2025-11-21 23:03:57,777 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:03:57,777 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:03:57,784 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:03:57,795 - src.utils.validation - INFO - SURVIVAL FILTER: 1 negative profit, 40 failed criteria, 1959 bots passed
+2025-11-21 23:03:57,799 - src.utils.validation - INFO - Survivors: 1958 unique bots kept (no cap applied)
+2025-11-21 23:03:57,807 - src.utils.validation - INFO - SURVIVAL: 1958 survivors (from 1959 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:03:57,808 - src.utils.validation - INFO - ELIMINATED: 41 bots total
+2025-11-21 23:03:57,813 - src.utils.validation - INFO - Logging generation 10 results...
+2025-11-21 23:03:58,444 - src.utils.validation - INFO - GPU logging completed for generation 10 in 0.630s
+2025-11-21 23:03:58,457 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:03:58,519 - src.utils.validation - INFO - Survivors: 1958 total, 1958 unique combinations (100.0% diversity)
+2025-11-21 23:03:58,521 - src.utils.validation - INFO - Global tracking: 6749 combinations used across all generations
+2025-11-21 23:03:58,523 - src.utils.validation - INFO - Generating 42 new bots (60% breeding, 40% random)
+2025-11-21 23:03:58,524 - src.utils.validation - INFO - Available combinations: 1,919,052 unused, 6,749 used globally
+2025-11-21 23:03:58,864 - src.utils.validation - INFO - Population breeding: 9 bred, 3 mutated, 30 random
+2025-11-21 23:03:58,873 - src.utils.validation - INFO - After refill: 2000 bots, 2000 unique combinations (100.0% diversity)
+2025-11-21 23:03:58,874 - src.utils.validation - INFO - Remaining unused combinations: 1,919,024
+2025-11-21 23:03:58,877 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:03:58,878 - src.utils.validation - INFO - Generation 10 completed in 8.764s
+2025-11-21 23:03:58,879 - src.utils.validation - INFO - 
+--- GENERATION 11 ---
+2025-11-21 23:03:58,881 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:03:58,957 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:03:59,470 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:03:59,484 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:03:59,485 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:03:59,487 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:03:59,488 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:03:59,489 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:03:59,490 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:03:59,490 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:03:59,491 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:03:59,492 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:04:02,996 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:04:03,003 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:04:03,004 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:04:03,005 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:04:03,006 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:04:03,007 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:04:03,007 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:04:03,109 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:04:03,127 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:04:03,212 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:04:06,007 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:04:06,011 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:04:06,030 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:04:06,031 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:04:06,036 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:04:06,045 - src.utils.validation - INFO - SURVIVAL FILTER: 1 negative profit, 28 failed criteria, 1971 bots passed
+2025-11-21 23:04:06,050 - src.utils.validation - INFO - Survivors: 1971 unique bots kept (no cap applied)
+2025-11-21 23:04:06,054 - src.utils.validation - INFO - SURVIVAL: 1971 survivors (from 1971 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:04:06,055 - src.utils.validation - INFO - ELIMINATED: 29 bots total
+2025-11-21 23:04:06,061 - src.utils.validation - INFO - Logging generation 11 results...
+2025-11-21 23:04:06,600 - src.utils.validation - INFO - GPU logging completed for generation 11 in 0.539s
+2025-11-21 23:04:06,606 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:04:06,641 - src.utils.validation - INFO - Survivors: 1971 total, 1971 unique combinations (100.0% diversity)
+2025-11-21 23:04:06,641 - src.utils.validation - INFO - Global tracking: 6789 combinations used across all generations
+2025-11-21 23:04:06,642 - src.utils.validation - INFO - Generating 29 new bots (60% breeding, 40% random)
+2025-11-21 23:04:06,643 - src.utils.validation - INFO - Available combinations: 1,919,014 unused, 6,789 used globally
+2025-11-21 23:04:06,752 - src.utils.validation - INFO - Population breeding: 6 bred, 0 mutated, 23 random
+2025-11-21 23:04:06,757 - src.utils.validation - INFO - After refill: 2000 bots, 2000 unique combinations (100.0% diversity)
+2025-11-21 23:04:06,757 - src.utils.validation - INFO - Remaining unused combinations: 1,918,993
+2025-11-21 23:04:06,759 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:04:06,759 - src.utils.validation - INFO - Generation 11 completed in 7.880s
+2025-11-21 23:04:06,759 - src.utils.validation - INFO - 
+--- GENERATION 12 ---
+2025-11-21 23:04:06,760 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:04:06,813 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:04:07,338 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:04:07,372 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:04:07,374 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:04:07,377 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:04:07,378 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:04:07,379 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:04:07,380 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:04:07,382 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:04:07,384 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:04:07,385 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:04:11,389 - src.utils.validation - INFO - [DEBUG] Kernel finished within 4.00s
+2025-11-21 23:04:11,391 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:04:11,392 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:04:11,393 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:04:11,394 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:04:11,394 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:04:11,395 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:04:11,497 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:04:11,518 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:04:11,582 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:04:13,889 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:04:13,892 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:04:13,988 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:04:13,989 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:04:13,994 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:04:14,001 - src.utils.validation - INFO - SURVIVAL FILTER: 2 negative profit, 20 failed criteria, 1978 bots passed
+2025-11-21 23:04:14,003 - src.utils.validation - INFO - Survivors: 1978 unique bots kept (no cap applied)
+2025-11-21 23:04:14,005 - src.utils.validation - INFO - SURVIVAL: 1978 survivors (from 1978 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:04:14,005 - src.utils.validation - INFO - ELIMINATED: 22 bots total
+2025-11-21 23:04:14,009 - src.utils.validation - INFO - Logging generation 12 results...
+2025-11-21 23:04:14,337 - src.utils.validation - INFO - GPU logging completed for generation 12 in 0.329s
+2025-11-21 23:04:14,342 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:04:14,365 - src.utils.validation - INFO - Survivors: 1978 total, 1978 unique combinations (100.0% diversity)
+2025-11-21 23:04:14,365 - src.utils.validation - INFO - Global tracking: 6817 combinations used across all generations
+2025-11-21 23:04:14,366 - src.utils.validation - INFO - Generating 22 new bots (60% breeding, 40% random)
+2025-11-21 23:04:14,367 - src.utils.validation - INFO - Available combinations: 1,918,988 unused, 6,817 used globally
+2025-11-21 23:04:14,420 - src.utils.validation - INFO - Population breeding: 2 bred, 1 mutated, 19 random
+2025-11-21 23:04:14,424 - src.utils.validation - INFO - After refill: 2000 bots, 2000 unique combinations (100.0% diversity)
+2025-11-21 23:04:14,424 - src.utils.validation - INFO - Remaining unused combinations: 1,918,972
+2025-11-21 23:04:14,425 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:04:14,426 - src.utils.validation - INFO - Generation 12 completed in 7.668s
+2025-11-21 23:04:14,426 - src.utils.validation - INFO - 
+--- GENERATION 13 ---
+2025-11-21 23:04:14,426 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:04:14,457 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:04:14,934 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:04:14,947 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:04:14,949 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:04:14,951 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:04:14,953 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:04:14,954 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:04:14,954 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:04:14,956 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:04:14,958 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:04:14,959 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:04:18,475 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.51s
+2025-11-21 23:04:18,476 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:04:18,478 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:04:18,480 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:04:18,482 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:04:18,484 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:04:18,486 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:04:18,588 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:04:18,608 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:04:18,678 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:04:20,920 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 0, pending: 0)
+2025-11-21 23:04:20,924 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-21 23:04:21,024 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:04:21,025 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:04:21,029 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:04:21,035 - src.utils.validation - INFO - SURVIVAL FILTER: 2 negative profit, 15 failed criteria, 1983 bots passed
+2025-11-21 23:04:21,037 - src.utils.validation - INFO - Survivors: 1983 unique bots kept (no cap applied)
+2025-11-21 23:04:21,039 - src.utils.validation - INFO - SURVIVAL: 1983 survivors (from 1983 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:04:21,040 - src.utils.validation - INFO - ELIMINATED: 17 bots total
+2025-11-21 23:04:21,043 - src.utils.validation - INFO - Logging generation 13 results...
+2025-11-21 23:04:21,363 - src.utils.validation - INFO - GPU logging completed for generation 13 in 0.319s
+2025-11-21 23:04:21,368 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:04:21,391 - src.utils.validation - INFO - Survivors: 1983 total, 1983 unique combinations (100.0% diversity)
+2025-11-21 23:04:21,391 - src.utils.validation - INFO - Global tracking: 6838 combinations used across all generations
+2025-11-21 23:04:21,391 - src.utils.validation - INFO - Generating 17 new bots (60% breeding, 40% random)
+2025-11-21 23:04:21,392 - src.utils.validation - INFO - Available combinations: 1,918,970 unused, 6,838 used globally
+2025-11-21 23:04:21,434 - src.utils.validation - INFO - Population breeding: 3 bred, 0 mutated, 14 random
+2025-11-21 23:04:21,436 - src.utils.validation - INFO - After refill: 2000 bots, 2000 unique combinations (100.0% diversity)
+2025-11-21 23:04:21,437 - src.utils.validation - INFO - Remaining unused combinations: 1,918,959
+2025-11-21 23:04:21,438 - src.utils.validation - INFO - Population refilled: 2000 bots
+2025-11-21 23:04:21,438 - src.utils.validation - INFO - Generation 13 completed in 7.012s
+2025-11-21 23:04:21,438 - src.utils.validation - INFO - 
+--- GENERATION 14 ---
+2025-11-21 23:04:21,439 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:04:21,467 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:04:21,942 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:04:21,953 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:04:21,954 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:04:21,956 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:04:21,956 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:04:21,957 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:04:21,957 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:04:21,958 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:04:21,959 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:04:21,959 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
