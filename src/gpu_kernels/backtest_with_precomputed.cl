@@ -652,11 +652,11 @@ int check_signal_quality(
         return 0;  // Filter out - insufficient data
     }
     
-    // ADX Filter: Require moderate trend strength (ADX > 20)
-    // Raised from 15 to 20 for better win rate (stronger trend confirmation)
-    // Research shows: ADX 0-15 = very weak, 15-25 = developing trend, 20+ = reliable trend, 25+ = strong
-    if (adx < 20.0f) {
-        return 0;  // Filter out - weak/ranging market
+    // ADX Filter: Require developing trend strength (ADX > 18)
+    // Lowered from 20 to 18 to allow more opportunities after RSI filter blocked all trades
+    // Research shows: ADX 0-15 = very weak, 15-20 = early developing, 18+ = developing trend, 25+ = strong
+    if (adx < 18.0f) {
+        return 0;  // Filter out - very weak/ranging market
     }
     
     // ATR Filter: Avoid extreme volatility
@@ -680,8 +680,9 @@ int check_signal_quality(
         float volume_ma = volume_sum / volume_count;
         float current_volume = ohlcv[bar].volume;
         
-        // Require current volume > 1.5x average for confirmation
-        if (current_volume < volume_ma * 1.5f) {
+        // Require current volume > 1.3x average for confirmation
+        // Lowered from 1.5x to 1.3x to allow more opportunities
+        if (current_volume < volume_ma * 1.3f) {
             return 0;  // Filter out - weak volume, no institutional interest
         }
     }
@@ -713,18 +714,19 @@ int check_signal_quality(
         }
     }
     
-    // Mean Reversion Filter: Only allow trades at extreme RSI levels
-    // Get RSI_14 (indicator index 16)
+    // Mean Reversion Filter: DISABLED (was too restrictive - blocked all trades)
+    // Previous: RSI < 15 or > 85 (too extreme, similar to ADX>25 failure)
+    // Even RSI < 20 or > 80 might be too restrictive
+    // Let other filters (ADX, volume, S/R, consensus) handle quality
+    // RSI filter commented out to allow broader strategy discovery
+    /*
     float rsi = precomputed_indicators[16 * num_bars + bar];
     if (!isnan(rsi)) {
-        // For mean reversion at extremes: Only trade when RSI is in extreme zones
-        // RSI < 15 = extreme oversold (high probability bounce)
-        // RSI > 85 = extreme overbought (high probability reversal)
-        // Block trades in the middle range (15-85) to only capture exhaustion moves
-        if (rsi >= 15.0f && rsi <= 85.0f) {
-            return 0;  // Filter out - not at extreme levels for mean reversion
+        if (rsi >= 25.0f && rsi <= 75.0f) {
+            return 0;  // Filter out - not at mean reversion levels
         }
     }
+    */
     
     return 1;  // Signal quality OK - all filters passed
 }
@@ -1165,14 +1167,14 @@ float generate_signal_consensus(
     float bullish_pct = weighted_bullish / total_weight;
     float bearish_pct = weighted_bearish / total_weight;
     
-    // Threshold: 80% consensus required for extreme win rate
-    // Raised from 70% to 80% to increase signal quality
-    // Higher agreement = stronger conviction = higher win rate
+    // Threshold: 75% consensus required for high win rate
+    // Lowered from 80% to 75% after RSI filter blocked all trades
+    // Still higher than original 70% for better quality
     // During debugging, set a much lower threshold to force trades
 #ifdef DEBUG_FORCE_LOW_CONSENSUS
     float consensus_threshold = 0.01f; // VERY LOW for debug - any signal accepted
 #else
-    float consensus_threshold = 0.8f;  // 80% consensus for high WR
+    float consensus_threshold = 0.75f;  // 75% consensus for high WR
 #endif
     
     // Determine base timeframe signal
