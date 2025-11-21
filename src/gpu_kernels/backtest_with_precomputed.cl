@@ -137,7 +137,7 @@ typedef struct {
 // CONSTANTS
 // ============================================================================
 
-#define MAX_POSITIONS 10  // Allow up to 10 concurrent positions
+#define MAX_POSITIONS 5  // Allow up to 5 concurrent positions (realistic portfolio diversification)
 #define MAKER_FEE 0.0002f      // 0.02% Kucoin maker
 #define TAKER_FEE 0.0006f      // 0.06% Kucoin taker
 #define BASE_SLIPPAGE 0.0001f  // 0.01% base slippage (low volatility, small orders)
@@ -146,7 +146,14 @@ typedef struct {
 #define MAX_CYCLES 100
 // Funding rate (perpetual futures charge every 8 hours)
 #define FUNDING_RATE_INTERVAL 480  // 8 hours = 480 minutes at 1m timeframe
-#define BASE_FUNDING_RATE 0.0001f  // 0.01% per 8 hours (typical neutral rate)
+#define BASE_FUNDING_RATE 0.0001f  // 0.01% per 8 hours (KuCoin realistic neutral rate - FIXED from 0.001)
+// Maintenance margin tiers (KuCoin standard)
+#define MAINT_MARGIN_1_5X 0.004f    // 0.4% for 1-5x leverage
+#define MAINT_MARGIN_6_20X 0.005f   // 0.5% for 6-20x leverage  
+#define MAINT_MARGIN_21_50X 0.01f   // 1.0% for 21-50x leverage
+#define MAINT_MARGIN_51_125X 0.025f // 2.5% for 51-125x leverage
+// Risk-free rate for Sharpe ratio
+#define RISK_FREE_RATE 0.02f        // 2% annual risk-free rate
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -425,17 +432,20 @@ float calculate_position_size(
         case RISK_KELLY_FULL:
             // Full Kelly criterion (risk_param: 0.01-1.0 fraction)
             // f = (bp - q) / b, simplified as balance fraction
-            position_value = balance * risk_param;
+            // FIXED: Cap at 25% to prevent over-leveraging (Code Review Fix #8)
+            position_value = balance * fmin(risk_param, 0.25f);
             break;
             
         case RISK_KELLY_HALF:
             // Half Kelly (risk_param: 0.01-1.0, applied as half)
-            position_value = balance * (risk_param * 0.5f);
+            // FIXED: Cap base Kelly before halving
+            position_value = balance * (fmin(risk_param, 0.25f) * 0.5f);
             break;
             
         case RISK_KELLY_QUARTER:
             // Quarter Kelly (risk_param: 0.01-1.0, applied as quarter)
-            position_value = balance * (risk_param * 0.25f);
+            // FIXED: Cap base Kelly before quartering
+            position_value = balance * (fmin(risk_param, 0.25f) * 0.25f);
             break;
             
         case RISK_ATR_MULTIPLIER:
@@ -973,14 +983,15 @@ float generate_signal_consensus(
     float bullish_pct = weighted_bullish / total_weight;
     float bearish_pct = weighted_bearish / total_weight;
     
-    // Threshold: 100% unanimous consensus required
-    // ALL indicators must agree for signal generation (strict quality filter)
-    float consensus_threshold = 1.0f;
+    // Threshold: 70% consensus required (FIXED from 100% unanimous)
+    // Allows realistic trading frequency while maintaining quality
+    // 100% consensus was mathematically impossible with weighted signals
+    float consensus_threshold = 0.7f;
     
     if (bullish_pct >= consensus_threshold) return 1.0f;
     if (bearish_pct >= consensus_threshold) return -1.0f;
     
-    return 0.0f;  // Mixed signals (not unanimous)
+    return 0.0f;  // Mixed signals (< 70% agreement)
 }
 
 /**
@@ -1094,13 +1105,21 @@ void open_position(
         positions[slot].tp_price = price * (1.0f + tp_multiplier);
         positions[slot].sl_price = price * (1.0f - sl_multiplier);
         
-        // KUCOIN LIQUIDATION FORMULA (CORRECTED)
+        // KUCOIN LIQUIDATION FORMULA (CORRECTED with tiered maintenance margins - Code Review Fix #3)
         // Formula: liq_price = entry * (1 - (initial_margin - maintenance) / (1 + initial_margin))
-        // This properly accounts for losses calculated on notional value, not margin
-        // At 125x leverage: initial = 0.8%, maintenance = 0.5%
-        // Buffer = (0.008 - 0.005) / 1.008 = 0.00298 = 0.298% price drop before liquidation
-        float initial_margin_rate = 1.0f / leverage;  // e.g., 125x = 0.008 (0.8%)
-        float maintenance_margin_rate = 0.005f;  // 0.5% KuCoin maintenance margin
+        // Maintenance margins vary by leverage tier:
+        // 1-5x: 0.4%, 6-20x: 0.5%, 21-50x: 1.0%, 51-125x: 2.5%
+        float initial_margin_rate = 1.0f / leverage;
+        float maintenance_margin_rate;
+        if (leverage <= 5) {
+            maintenance_margin_rate = MAINT_MARGIN_1_5X;  // 0.4%
+        } else if (leverage <= 20) {
+            maintenance_margin_rate = MAINT_MARGIN_6_20X;  // 0.5%
+        } else if (leverage <= 50) {
+            maintenance_margin_rate = MAINT_MARGIN_21_50X;  // 1.0%
+        } else {
+            maintenance_margin_rate = MAINT_MARGIN_51_125X;  // 2.5%
+        }
         float liq_buffer = (initial_margin_rate - maintenance_margin_rate) / (1.0f + initial_margin_rate);
         positions[slot].liquidation_price = price * (1.0f - liq_buffer);
     } else {
@@ -1108,11 +1127,20 @@ void open_position(
         positions[slot].tp_price = price * (1.0f - tp_multiplier);
         positions[slot].sl_price = price * (1.0f + sl_multiplier);
         
-        // KUCOIN LIQUIDATION FORMULA FOR SHORT (CORRECTED)
+        // KUCOIN LIQUIDATION FORMULA FOR SHORT (CORRECTED with tiered maintenance - Code Review Fix #3)
         // Formula: liq_price = entry * (1 + (initial_margin - maintenance) / (1 + initial_margin))
-        // At 125x leverage: liquidation at 0.298% price RISE
-        float initial_margin_rate = 1.0f / leverage;  // e.g., 125x = 0.008 (0.8%)
-        float maintenance_margin_rate = 0.005f;  // 0.5% KuCoin maintenance margin
+        // Maintenance margins vary by leverage tier
+        float initial_margin_rate = 1.0f / leverage;
+        float maintenance_margin_rate;
+        if (leverage <= 5) {
+            maintenance_margin_rate = MAINT_MARGIN_1_5X;  // 0.4%
+        } else if (leverage <= 20) {
+            maintenance_margin_rate = MAINT_MARGIN_6_20X;  // 0.5%
+        } else if (leverage <= 50) {
+            maintenance_margin_rate = MAINT_MARGIN_21_50X;  // 1.0%
+        } else {
+            maintenance_margin_rate = MAINT_MARGIN_51_125X;  // 2.5%
+        }
         float liq_buffer = (initial_margin_rate - maintenance_margin_rate) / (1.0f + initial_margin_rate);
         positions[slot].liquidation_price = price * (1.0f + liq_buffer);
     }
@@ -1160,16 +1188,17 @@ float close_position(
     float margin_reserved = notional_value / leverage;
     float position_pnl = price_diff * pos->quantity;
     
-    // CORRECTED: TP and SL are both limit orders → maker fee
-    // Only signal reversals (reason=3) are market orders → taker fee
+    // CORRECTED: TP = limit order (maker fee), SL = stop market order (taker fee)
+    // Signal reversals (reason=3) are market orders → taker fee
     // Liquidation (reason=2) loses all margin, no exit fee calculation needed
+    // FIXED: Code Review Fix #4 - SL uses TAKER_FEE not MAKER_FEE
     float exit_fee;
     if (reason == 2) {
         exit_fee = 0.0f;  // Liquidation = exchange takes everything
-    } else if (reason == 0 || reason == 1) {
-        exit_fee = notional_value * MAKER_FEE;  // TP/SL = limit orders on notional
+    } else if (reason == 0) {
+        exit_fee = notional_value * MAKER_FEE;  // TP = limit order on notional
     } else {
-        exit_fee = notional_value * TAKER_FEE;  // Signal reversal = market order on notional
+        exit_fee = notional_value * TAKER_FEE;  // SL & signal reversals = market orders on notional
     }
     
     // DYNAMIC SLIPPAGE on exit (optimized - no historical lookups)
@@ -1548,8 +1577,20 @@ void manage_positions(
             close_reason = 1;
             exit_price = pos->sl_price;
         }
-        // REMOVED: Signal reversal exits - let TP/SL do the work
-        // This prevents premature exits and improves winrate
+        // RE-ENABLED: Signal reversal exits (Code Review Fix #12)
+        // Exit when signal reverses direction to cut losses early
+        // Only exit if currently losing or flat (prevent premature profit-taking)
+        else if (signal != 0.0f && signal != pos->direction) {
+            // Signal reversed - check if we should exit
+            float unrealized = calculate_unrealized_pnl(pos, bar->close, leverage);
+            // Only exit on reversal if losing or small profit (< 1%)
+            float margin_used = (pos->entry_price * pos->quantity) / leverage;
+            if (unrealized <= margin_used * 0.01f) {  // Exit if gain < 1% of margin
+                should_close = 1;
+                close_reason = 3;  // Signal reversal
+                exit_price = bar->close;
+            }
+        }
         
         if (should_close) {
             // Close position and get return amount
@@ -1916,8 +1957,21 @@ __kernel void backtest_with_signals(
         cycle_pnl_arr[i] = 0.0f;
     }
     
+    // RISK LIMITS (Code Review Fix #13): prevent catastrophic losses
+    #define DAILY_LOSS_LIMIT 0.10f     // Stop trading after -10% cycle loss
+    #define MAX_DD_STOP 0.30f          // Stop trading if drawdown > 30%
+    int risk_stop_triggered = 0;  // Flag to stop trading across remaining cycles
+    
     // Backtest across all cycles
     for (int cycle = 0; cycle < num_cycles; cycle++) {
+        // RISK STOP: Skip remaining cycles if risk limit triggered (Code Review Fix #13)
+        if (risk_stop_triggered) {
+            cycle_trades_arr[cycle] = 0;
+            cycle_wins_arr[cycle] = 0;
+            cycle_pnl_arr[cycle] = 0.0f;
+            continue;
+        }
+        
         int start_bar = cycle_starts[cycle];
         int end_bar = cycle_ends[cycle];
         
@@ -1958,8 +2012,8 @@ __kernel void backtest_with_signals(
                 // SMA: needs exactly period bars
                 indicator_warmup = (int)period;
             } else if (idx >= 6 && idx <= 11) {
-                // EMA/DEMA/TEMA: need 3x period for 95% accuracy
-                indicator_warmup = (int)(period * 3.0f);
+                // EMA/DEMA/TEMA: need 5x period for 99% convergence (FIXED from 3x - Code Review Fix #6)
+                indicator_warmup = (int)(period * 5.0f);
             }
             // Momentum Indicators (12-19)
             else if (idx >= 12 && idx <= 14) {
@@ -1977,16 +2031,16 @@ __kernel void backtest_with_signals(
                 // ATR, NATR: need 2x period for smoothing
                 indicator_warmup = (int)(period * 2.0f);
             } else if (idx == 23 || idx == 24) {
-                // Bollinger Bands: need 3x period for stddev stability
-                indicator_warmup = (int)(period * 3.0f);
+                // Bollinger Bands: need 5x period for stable standard deviation (FIXED from 3x - Code Review Fix #6)
+                indicator_warmup = (int)(period * 5.0f);
             } else if (idx == 25) {
                 // Keltner Channel: needs period + ATR warmup
                 indicator_warmup = (int)(period * 2.5f);
             }
             // Trend Indicators (26-35)
             else if (idx == 26) {
-                // MACD: needs slow_period + signal_period
-                indicator_warmup = (int)(period2 + period3 + 10);
+                // MACD: needs slow_ema*5 + signal*3 for proper convergence (FIXED - Code Review Fix #6)
+                indicator_warmup = (int)(period2 * 5.0f + period3 * 3.0f);
             } else if (idx == 27) {
                 // ADX: needs 2x period (DI calculation + ADX smoothing)
                 indicator_warmup = (int)(period * 2.0f);
@@ -2249,6 +2303,18 @@ __kernel void backtest_with_signals(
             cycle_trades_arr[cycle] = cycle_trades_count;
             cycle_wins_arr[cycle] = cycle_wins_count;
             cycle_pnl_arr[cycle] = cycle_pnl;
+            
+            // RISK STOP CHECKS (Code Review Fix #13)
+            // Check if cycle loss exceeded daily limit
+            float cycle_loss_pct = -cycle_pnl / initial_balance;
+            if (cycle_loss_pct > DAILY_LOSS_LIMIT) {
+                risk_stop_triggered = 1;  // Stop trading in remaining cycles
+            }
+            
+            // Check if max drawdown exceeded threshold
+            if (max_drawdown > MAX_DD_STOP) {
+                risk_stop_triggered = 1;  // Stop trading in remaining cycles
+            }
         }
     }
     
@@ -2324,10 +2390,18 @@ __kernel void backtest_with_signals(
     // Standard deviation = sqrt(variance)
     float std_dev = sqrt(variance);
     
-    // Sharpe ratio = mean_return / std_dev
+    // FIXED: Sharpe ratio with annualization and risk-free rate (Code Review Fix #9)
+    // Sharpe = (mean_return - risk_free_rate) / std_dev * sqrt(periods_per_year)
+    // Estimate cycle duration from cycle_starts/cycle_ends if available
+    // Conservative estimate: assume 7-day cycles (52 cycles/year)
+    float periods_per_year = 52.0f;  // Weekly cycles
+    float annualization_factor = sqrt(periods_per_year);
+    
     // Apply minimum threshold to avoid division by very small numbers
     if (std_dev > 0.001f) {
-        result.sharpe_ratio = mean_return / std_dev;
+        // Subtract risk-free rate (2% annual = 0.00038 per week)
+        float risk_free_per_period = RISK_FREE_RATE / periods_per_year;
+        result.sharpe_ratio = ((mean_return - risk_free_per_period) / std_dev) * annualization_factor;
     } else {
         result.sharpe_ratio = 0.0f;
     }
@@ -2352,14 +2426,16 @@ __kernel void backtest_with_signals(
         trade_penalty = -10.0f * (1.0f - (float)total_trades / 30.0f);  // Light penalty
     }
     
-    // Risk-adjusted returns (Sharpe ratio contribution)
-    float sharpe_contribution = result.sharpe_ratio * 15.0f;  // Sharpe weight: high
-    sharpe_contribution = fmin(fmax(sharpe_contribution, -30.0f), 50.0f);  // Clamp
+    // Risk-adjusted returns (Sharpe ratio contribution) - FIXED: increased weight (Code Review Fix #10)
+    float sharpe_contribution = result.sharpe_ratio * 25.0f;  // Sharpe weight: very high (was 15)
+    sharpe_contribution = fmin(fmax(sharpe_contribution, -40.0f), 80.0f);  // Expanded range
     
-    // Drawdown penalty (exponential - severe drawdowns very bad)
-    float dd_penalty = -max_drawdown * 100.0f;  // Heavy penalty for drawdown
+    // Drawdown penalty (EXPONENTIAL - severe drawdowns very bad) - FIXED (Code Review Fix #10)
+    // Use exponential penalty: drawdown^2 to heavily punish large drawdowns
+    float dd_penalty = -(max_drawdown * max_drawdown) * 150.0f;  // Exponential penalty
+    // Additional super-penalty for catastrophic drawdowns
     if (max_drawdown > 0.5f) {
-        dd_penalty *= 2.0f;  // Double penalty for >50% drawdown
+        dd_penalty -= (max_drawdown - 0.5f) * 200.0f;  // Extra penalty above 50%
     }
     
     // Consistency: win rate bonus (but capped - high win rate doesn't mean good strategy)
@@ -2490,7 +2566,7 @@ __kernel void backtest_parallel_bot_cycle(
         if (idx >= 0 && idx <= 5) {
             indicator_warmup = (int)period;
         } else if (idx >= 6 && idx <= 11) {
-            indicator_warmup = (int)(period * 3.0f);
+            indicator_warmup = (int)(period * 5.0f);  // FIXED: 5x for 99% convergence
         }
         else if (idx >= 12 && idx <= 14) {
             indicator_warmup = (int)(period * 2.0f);
@@ -2501,11 +2577,11 @@ __kernel void backtest_parallel_bot_cycle(
         } else if (idx >= 20 && idx <= 22) {
             indicator_warmup = (int)(period * 2.0f);
         } else if (idx == 23 || idx == 24) {
-            indicator_warmup = (int)(period * 3.0f);
+            indicator_warmup = (int)(period * 5.0f);  // FIXED: 5x for stable stddev
         } else if (idx == 25) {
             indicator_warmup = (int)(period * 2.5f);
         } else if (idx == 26) {
-            indicator_warmup = (int)(period2 + period3 + 10);
+            indicator_warmup = (int)(period2 * 5.0f + period3 * 3.0f);  // FIXED
         } else if (idx == 27) {
             indicator_warmup = (int)(period * 2.0f);
         } else if (idx >= 28 && idx <= 35) {
