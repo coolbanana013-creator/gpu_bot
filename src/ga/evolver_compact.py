@@ -439,15 +439,20 @@ class GeneticAlgorithmEvolver:
                 continue
             
             # Check 4: Minimum win rate threshold when optimizing for win rate
-            if prefer_win_rate and result.win_rate < 55.0:  # 55% minimum win rate for 90%+ target
+            if prefer_win_rate and result.win_rate < 60.0:  # 60% minimum win rate for 90%+ target
+                eliminated_high_drawdown += 1
+                continue
+            
+            # Check 5: Require sufficient trades (at least 200 total)
+            if prefer_win_rate and result.total_trades < 200:
                 eliminated_high_drawdown += 1
                 continue
             
             # Bot passed all criteria
             # Compute a score that optionally emphasizes win rate (for selecting top bots)
             if prefer_win_rate:
-                # Use win_rate EXTREMELY heavily to favor high-win bots (100x weight for 90%+ target)
-                win_rate_weight = result.win_rate * 100.0
+                # Use win_rate ULTRA EXTREMELY heavily (200x weight for 90%+ target)
+                win_rate_weight = result.win_rate * 200.0
                 drawdown_penalty = result.max_drawdown * 100.0
                 score = avg_profit_pct + win_rate_weight - drawdown_penalty
             else:
@@ -764,7 +769,7 @@ class GeneticAlgorithmEvolver:
             mutated_count = 0
             cloned_count = 0
             if len(self.top_performers_history) >= 5:
-                log_info(f"Generating {num_new_bots} new bots (80% breeding, 15% elite clones, 5% random)")
+                log_info(f"Generating {num_new_bots} new bots (90% breeding, 8% elite clones, 2% random)")
             else:
                 log_info(f"Generating {num_new_bots} new globally unique bots (insufficient top performers for breeding)")
             
@@ -776,8 +781,8 @@ class GeneticAlgorithmEvolver:
             for i in range(num_new_bots):
                 new_bot = None
                 
-                # 15% chance to clone an elite performer with slight mutation
-                if len(self.top_performers_history) >= 5 and random.random() < 0.15:
+                # 8% chance to clone an elite performer with slight mutation
+                if len(self.top_performers_history) >= 5 and random.random() < 0.08:
                     # Clone top 5 performers
                     elite_bot, _ = self.top_performers_history[random.randint(0, min(4, len(self.top_performers_history)-1))]
                     new_bot = self.mutate_bot_parameters(elite_bot, next_bot_id + i)
@@ -787,8 +792,8 @@ class GeneticAlgorithmEvolver:
                     else:
                         new_bot = None
                 
-                # 80% chance to breed from top performers (if available)
-                if new_bot is None and len(self.top_performers_history) >= 5 and random.random() < 0.85:
+                # 92% chance to breed from top performers (if available)
+                if new_bot is None and len(self.top_performers_history) >= 5 and random.random() < 0.92:
                     new_bot = self.breed_top_performers(next_bot_id + i, batch_combinations)
                     if new_bot:
                         bred_count += 1
