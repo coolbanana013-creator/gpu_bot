@@ -569,10 +569,14 @@ class GeneticAlgorithmEvolver:
                 mutated.indicator_indices[idx_to_change] = new_indicator
         
         else:
-            # Adjust stop loss or take profit (modify risk_data)
-            if len(mutated.risk_data) >= 3:
-                # Adjust stop loss percentage (index 1 in risk_data)
-                mutated.risk_data[1] = max(0.5, min(15.0, mutated.risk_data[1] * random.uniform(0.8, 1.2)))
+            # Adjust stop loss or take profit multipliers
+            mutation_choice = random.random()
+            if mutation_choice < 0.5:
+                # Adjust stop loss multiplier (±20%)
+                mutated.sl_multiplier = max(0.5, min(5.0, mutated.sl_multiplier * random.uniform(0.8, 1.2)))
+            else:
+                # Adjust take profit multiplier (±20%)
+                mutated.tp_multiplier = max(0.5, min(5.0, mutated.tp_multiplier * random.uniform(0.8, 1.2)))
         
         return mutated
     

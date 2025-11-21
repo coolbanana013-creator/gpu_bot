@@ -8135,3 +8135,101 @@ Starting Evolution: 10 generations, 10 cycles
 2025-11-21 22:57:17,620 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
 2025-11-21 22:57:17,650 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
 2025-11-21 22:57:17,727 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:01:11,827 - src.utils.validation - INFO - Set random seed to 42
+2025-11-21 23:01:11,828 - src.utils.validation - INFO - Loading 850 data files in parallel
+2025-11-21 23:01:14,170 - src.utils.validation - INFO - Loaded total of 1224060 candles (excludes today's incomplete data)
+2025-11-21 23:01:14,171 - src.utils.validation - INFO - Validating data integrity
+2025-11-21 23:01:14,336 - src.utils.validation - INFO - Data validation passed
+2025-11-21 23:01:14,352 - src.utils.validation - INFO - Generating 10 non-overlapping cycle ranges (7 days each)
+2025-11-21 23:01:14,353 - src.utils.validation - INFO - Successfully generated 10 non-overlapping cycle ranges
+2025-11-21 23:01:14,373 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-21 23:01:14,374 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-21 23:01:14,375 - src.utils.validation - INFO -   Population: 2000 bots
+2025-11-21 23:01:14,375 - src.utils.validation - INFO -   Indicators: 2-5 per bot (50 available)
+2025-11-21 23:01:14,375 - src.utils.validation - INFO -   Risk strategies: 1-3 per bot
+2025-11-21 23:01:14,376 - src.utils.validation - INFO -   Leverage: 1-25x
+2025-11-21 23:01:14,383 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-21 23:01:14,393 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-21 23:01:14,398 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-21 23:01:14,407 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-21 23:01:14,407 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-21 23:01:14,408 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-21 23:01:14,409 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-21 23:01:14,409 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-21 23:01:14,410 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-21 23:01:14,411 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-21 23:01:14,415 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-21 23:01:14,416 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-21 23:01:14,417 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-21 23:01:14,422 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-21 23:01:14,423 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-21 23:01:14,424 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-21 23:01:14,425 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-21 23:01:14,426 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-21 23:01:14,427 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-21 23:01:14,439 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-21 23:01:14,441 - src.utils.validation - INFO -   Loading 4-indicator combinations from cache...
+2025-11-21 23:01:14,711 - src.utils.validation - INFO -     Loaded 194,580 combinations from cache
+2025-11-21 23:01:14,712 - src.utils.validation - INFO -   Loading 5-indicator combinations from cache...
+2025-11-21 23:01:20,009 - src.utils.validation - INFO -     Loaded 1,712,304 combinations from cache
+2025-11-21 23:01:20,011 - src.utils.validation - INFO -   Total combinations ready: 1,925,308
+2025-11-21 23:01:20,011 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-21 23:01:20,011 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-21 23:01:20,013 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-21 23:01:20,013 - src.utils.validation - INFO -   Pre-computed combination pools: 1,925,308 total combinations
+2025-11-21 23:01:20,014 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-21 23:01:20,015 - src.utils.validation - INFO - 
+Starting Evolution: 15 generations, 10 cycles
+2025-11-21 23:01:20,015 - src.utils.validation - INFO - Evolution profiler started
+2025-11-21 23:01:20,016 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-21 23:01:20,016 - src.utils.validation - INFO - Generating 2000 compact bots on GPU...
+2025-11-21 23:01:20,017 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-21 23:01:20,019 - src.utils.validation - INFO - Launching GPU kernel: 2048 work items, 512 per group (4 groups)
+2025-11-21 23:01:20,023 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-21 23:01:20,039 - src.utils.validation - INFO - [OK] Generated 2000 compact bots (128 bytes each)
+2025-11-21 23:01:20,040 - src.utils.validation - INFO - Distributing 2000 bots across indicator sizes 2-5
+2025-11-21 23:01:20,053 - src.utils.validation - INFO - Initial population: 2000 bots, 2000 unique (100.0% uniqueness)
+2025-11-21 23:01:20,055 - src.utils.validation - INFO - Global tracking: 2000 combinations marked as used
+2025-11-21 23:01:20,056 - src.utils.validation - INFO - Size distribution: {2: 541, 3: 483, 4: 485, 5: 491}
+2025-11-21 23:01:20,057 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-21 23:01:20,057 - src.utils.validation - INFO - Evaluating 2000 bots...
+2025-11-21 23:01:20,108 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-21 23:01:20,661 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-21 23:01:20,695 - src.utils.validation - INFO - [DEBUG] Serializing 2000 bots -> 264000 bytes (raw len=264000)
+2025-11-21 23:01:20,697 - src.utils.validation - INFO - [DEBUG] bots_buf created: 264000 bytes
+2025-11-21 23:01:20,703 - src.utils.validation - INFO - [DEBUG] ohlcv_buf created: 2880000 bytes (144000 floats)
+2025-11-21 23:01:20,705 - src.utils.validation - INFO - [DEBUG] cycle_starts_buf created: 10 entries
+2025-11-21 23:01:20,706 - src.utils.validation - INFO - [DEBUG] cycle_ends_buf created: 10 entries
+2025-11-21 23:01:20,708 - src.utils.validation - INFO - [DEBUG] results_buf created: 320000 bytes
+2025-11-21 23:01:20,708 - src.utils.validation - INFO - [DEBUG] trade_log_index_buf created: initial idx=0
+2025-11-21 23:01:20,709 - src.utils.validation - INFO - [DEBUG] close_counters_buf created: 80000 bytes (len=20000)
+2025-11-21 23:01:20,709 - src.utils.validation - INFO - [DEBUG] Invoking parallel backtest kernel: global_size=(20000,), num_bots=2000, num_cycles=10, num_bars=144000
+2025-11-21 23:01:24,215 - src.utils.validation - INFO - [DEBUG] Kernel finished within 3.50s
+2025-11-21 23:01:24,218 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-21 23:01:24,220 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=80000
+2025-11-21 23:01:24,221 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-21 23:01:24,223 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 80000)
+2025-11-21 23:01:24,224 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-21 23:01:24,225 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-21 23:01:24,327 - src.utils.validation - INFO - [DEBUG] Reading 50000 trade logs for streaming write
+2025-11-21 23:01:24,368 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-21 23:01:24,446 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-21 23:01:27,806 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 50000, written: 50000, pending: 0)
+2025-11-21 23:01:27,806 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 50000)
+2025-11-21 23:01:28,282 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 50000
+2025-11-21 23:01:28,282 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 50000)
+2025-11-21 23:01:28,287 - src.utils.validation - INFO - Selecting survivors...
+2025-11-21 23:01:28,292 - src.utils.validation - INFO - SURVIVAL FILTER: 92 negative profit, 1696 failed criteria, 212 bots passed
+2025-11-21 23:01:28,293 - src.utils.validation - INFO - Survivors: 212 unique bots kept (no cap applied)
+2025-11-21 23:01:28,293 - src.utils.validation - INFO - SURVIVAL: 212 survivors (from 212 bots with positive profit % AND all cycles profitable AND max DD < 15%)
+2025-11-21 23:01:28,294 - src.utils.validation - INFO - ELIMINATED: 1788 bots total
+2025-11-21 23:01:28,294 - src.utils.validation - INFO - Logging generation 0 results...
+2025-11-21 23:01:28,661 - src.utils.validation - INFO - GPU logging completed for generation 0 in 0.366s
+2025-11-21 23:01:28,664 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-21 23:01:28,670 - src.utils.validation - INFO - Survivors: 212 total, 212 unique combinations (100.0% diversity)
+2025-11-21 23:01:28,671 - src.utils.validation - INFO - Global tracking: 2000 combinations used across all generations
+2025-11-21 23:01:28,672 - src.utils.validation - INFO - Generating 1788 new bots (60% breeding, 40% random)
+2025-11-21 23:01:28,672 - src.utils.validation - INFO - Available combinations: 1,923,308 unused, 2,000 used globally
+2025-11-21 23:01:28,678 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 50000)
+2025-11-21 23:01:29,302 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 50000)
