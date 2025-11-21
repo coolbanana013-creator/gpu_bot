@@ -2,6 +2,12 @@
 Quick test to verify relaxed survival criteria work
 Tests the 3 survival criteria independently
 """
+import sys
+import io
+
+# Force UTF-8 encoding for stdout
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+
 print("=== SURVIVAL CRITERIA TEST ===\n")
 
 # Create mock results with different survival scenarios

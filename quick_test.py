@@ -2,7 +2,11 @@
 # This will run a minimal backtest to ensure all changes work
 
 import sys
+import io
 sys.path.insert(0, 'c:\\Users\\Standard\\Desktop\\gpu_bot')
+
+# Force UTF-8 encoding
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 print("="*60)
 print("QUICK FUNCTIONALITY TEST")
