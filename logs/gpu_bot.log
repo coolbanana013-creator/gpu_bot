@@ -55580,3 +55580,307 @@ Evolution complete!
 2025-11-22 14:22:50,562 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 4758)
 2025-11-22 14:22:50,563 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 4511)
 2025-11-22 14:22:51,305 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 5141)
+2025-11-22 14:33:27,229 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 14:33:31,034 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-22 14:33:31,050 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-22 14:33:31,473 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-22 14:33:31,473 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-22 14:33:31,473 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-22 14:33:31,474 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-22 14:33:31,474 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-22 14:33:31,474 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-22 14:33:31,474 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-22 14:33:38,732 - src.utils.validation - INFO - Set random seed to 42
+2025-11-22 14:33:38,733 - src.utils.validation - INFO - Loading 850 data files in parallel
+2025-11-22 14:33:41,037 - src.utils.validation - INFO - Loaded total of 1224060 candles (excludes today's incomplete data)
+2025-11-22 14:33:41,037 - src.utils.validation - INFO - Validating data integrity
+2025-11-22 14:33:41,176 - src.utils.validation - INFO - Data validation passed
+2025-11-22 14:33:41,189 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (7 days each)
+2025-11-22 14:33:41,190 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-22 14:33:41,224 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-22 14:33:41,225 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-22 14:33:41,225 - src.utils.validation - INFO -   Population: 200 bots
+2025-11-22 14:33:41,225 - src.utils.validation - INFO -   Indicators: 2-5 per bot (50 available)
+2025-11-22 14:33:41,225 - src.utils.validation - INFO -   Risk strategies: 1-3 per bot
+2025-11-22 14:33:41,226 - src.utils.validation - INFO -   Leverage: 1-25x
+2025-11-22 14:33:41,250 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 14:33:41,282 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-22 14:33:41,289 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-22 14:33:41,315 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-22 14:33:41,315 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-22 14:33:41,316 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-22 14:33:41,316 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-22 14:33:41,317 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-22 14:33:41,317 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-22 14:33:41,318 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-22 14:33:41,336 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-22 14:33:41,337 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-22 14:33:41,338 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-22 14:33:41,338 - src.utils.validation - INFO - DISABLE_GPU_LOGGING=1: Skipping GPU logging processor initialization
+2025-11-22 14:33:41,340 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-22 14:33:41,342 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-22 14:33:41,343 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-22 14:33:41,354 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-22 14:33:41,356 - src.utils.validation - INFO -   Loading 4-indicator combinations from cache...
+2025-11-22 14:33:41,566 - src.utils.validation - INFO -     Loaded 194,580 combinations from cache
+2025-11-22 14:33:41,567 - src.utils.validation - INFO -   Loading 5-indicator combinations from cache...
+2025-11-22 14:33:45,616 - src.utils.validation - INFO -     Loaded 1,712,304 combinations from cache
+2025-11-22 14:33:45,618 - src.utils.validation - INFO -   Total combinations ready: 1,925,308
+2025-11-22 14:33:45,618 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-22 14:33:45,619 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-22 14:33:45,619 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-22 14:33:45,620 - src.utils.validation - INFO -   Pre-computed combination pools: 1,925,308 total combinations
+2025-11-22 14:33:45,620 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-22 14:33:45,620 - src.utils.validation - INFO - 
+Starting Evolution: 3 generations, 5 cycles
+2025-11-22 14:33:45,620 - src.utils.validation - INFO - Evolution profiler started
+2025-11-22 14:33:45,620 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-22 14:33:45,621 - src.utils.validation - INFO - Generating 200 compact bots on GPU...
+2025-11-22 14:33:45,621 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 14:33:45,623 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-22 14:33:45,628 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 14:33:45,631 - src.utils.validation - INFO - [OK] Generated 200 compact bots (128 bytes each)
+2025-11-22 14:33:45,631 - src.utils.validation - INFO - Distributing 200 bots across indicator sizes 2-5
+2025-11-22 14:33:45,633 - src.utils.validation - INFO - Initial population: 200 bots, 200 unique (100.0% uniqueness)
+2025-11-22 14:33:45,633 - src.utils.validation - INFO - Global tracking: 200 combinations marked as used
+2025-11-22 14:33:45,633 - src.utils.validation - INFO - Size distribution: {2: 42, 3: 47, 4: 54, 5: 57}
+2025-11-22 14:33:45,634 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-22 14:33:45,634 - src.utils.validation - INFO - Evaluating 200 bots...
+2025-11-22 14:33:45,684 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 14:33:45,815 - src.utils.validation - INFO - [MTF] Computed 480 HTF bars from 28800 base bars (1:60)
+2025-11-22 14:33:46,439 - src.utils.validation - INFO - [MTF] Computed 483 HTF bars from 29000 base bars (1:60)
+2025-11-22 14:33:49,215 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 786, written: 786, pending: 0)
+2025-11-22 14:33:49,216 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 786)
+2025-11-22 14:33:49,704 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 786
+2025-11-22 14:33:49,704 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 786)
+2025-11-22 14:33:49,706 - src.utils.validation - INFO - Selecting survivors...
+2025-11-22 14:33:49,707 - src.utils.validation - ERROR - SURVIVAL FILTER (Gen 0, RELAXED): 0 high loss (>-20%), 200 failed criteria, 0 no cycles, 0 bots passed
+2025-11-22 14:33:49,707 - src.utils.validation - ERROR - No bots met RELAXED criteria: avg profit > -20% AND 40%+ cycles profitable AND max drawdown < 40%
+2025-11-22 14:33:49,708 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-22 14:33:49,708 - src.utils.validation - INFO - Logging generation 0 results...
+2025-11-22 14:33:49,729 - src.utils.validation - INFO - Logged 200 bots to logs\generation_0.csv
+2025-11-22 14:33:49,730 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-22 14:33:49,731 - src.utils.validation - WARNING - No survivors! Generating completely new population
+2025-11-22 14:33:49,731 - src.utils.validation - INFO - Generating 200 compact bots on GPU...
+2025-11-22 14:33:49,732 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 14:33:49,732 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-22 14:33:49,733 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 14:33:49,736 - src.utils.validation - INFO - [OK] Generated 200 compact bots (128 bytes each)
+2025-11-22 14:33:49,736 - src.utils.validation - INFO - Population refilled: 200 bots
+2025-11-22 14:33:49,737 - src.utils.validation - INFO - Generation 0 completed in 4.104s
+2025-11-22 14:33:49,737 - src.utils.validation - INFO - 
+--- GENERATION 1 ---
+2025-11-22 14:33:49,738 - src.utils.validation - INFO - Evaluating 200 bots...
+2025-11-22 14:33:49,772 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 14:33:49,875 - src.utils.validation - INFO - [MTF] Computed 480 HTF bars from 28800 base bars (1:60)
+2025-11-22 14:33:50,593 - src.utils.validation - INFO - [MTF] Computed 483 HTF bars from 29000 base bars (1:60)
+2025-11-22 14:33:53,517 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 835, written: 835, pending: 0)
+2025-11-22 14:33:53,518 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 835)
+2025-11-22 14:33:54,012 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 835
+2025-11-22 14:33:54,013 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 835)
+2025-11-22 14:33:54,016 - src.utils.validation - INFO - Selecting survivors...
+2025-11-22 14:33:54,018 - src.utils.validation - ERROR - SURVIVAL FILTER (Gen 1, RELAXED): 0 high loss (>-20%), 200 failed criteria, 0 no cycles, 0 bots passed
+2025-11-22 14:33:54,019 - src.utils.validation - ERROR - No bots met RELAXED criteria: avg profit > -20% AND 40%+ cycles profitable AND max drawdown < 40%
+2025-11-22 14:33:54,020 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-22 14:33:54,021 - src.utils.validation - INFO - Logging generation 1 results...
+2025-11-22 14:33:54,046 - src.utils.validation - INFO - Logged 200 bots to logs\generation_1.csv
+2025-11-22 14:33:54,047 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-22 14:33:54,048 - src.utils.validation - WARNING - No survivors! Generating completely new population
+2025-11-22 14:33:54,053 - src.utils.validation - INFO - Generating 200 compact bots on GPU...
+2025-11-22 14:33:54,054 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 14:33:54,056 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-22 14:33:54,058 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 14:33:54,061 - src.utils.validation - INFO - [OK] Generated 200 compact bots (128 bytes each)
+2025-11-22 14:33:54,062 - src.utils.validation - INFO - Population refilled: 200 bots
+2025-11-22 14:33:54,063 - src.utils.validation - INFO - Generation 1 completed in 4.326s
+2025-11-22 14:33:54,064 - src.utils.validation - INFO - 
+--- GENERATION 2 ---
+2025-11-22 14:33:54,064 - src.utils.validation - INFO - Evaluating 200 bots...
+2025-11-22 14:33:54,139 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 14:33:54,244 - src.utils.validation - INFO - [MTF] Computed 480 HTF bars from 28800 base bars (1:60)
+2025-11-22 14:33:54,892 - src.utils.validation - INFO - [MTF] Computed 483 HTF bars from 29000 base bars (1:60)
+2025-11-22 14:33:59,241 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 869, written: 869, pending: 0)
+2025-11-22 14:33:59,241 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 869)
+2025-11-22 14:33:59,739 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 869
+2025-11-22 14:33:59,740 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 869)
+2025-11-22 14:33:59,741 - src.utils.validation - INFO - Selecting survivors...
+2025-11-22 14:33:59,742 - src.utils.validation - ERROR - SURVIVAL FILTER (Gen 2, RELAXED): 0 high loss (>-20%), 200 failed criteria, 0 no cycles, 0 bots passed
+2025-11-22 14:33:59,742 - src.utils.validation - ERROR - No bots met RELAXED criteria: avg profit > -20% AND 40%+ cycles profitable AND max drawdown < 40%
+2025-11-22 14:33:59,742 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-22 14:33:59,743 - src.utils.validation - INFO - Logging generation 2 results...
+2025-11-22 14:33:59,751 - src.utils.validation - INFO - Logged 200 bots to logs\generation_2.csv
+2025-11-22 14:33:59,751 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-22 14:33:59,752 - src.utils.validation - WARNING - No survivors! Generating completely new population
+2025-11-22 14:33:59,752 - src.utils.validation - INFO - Generating 200 compact bots on GPU...
+2025-11-22 14:33:59,753 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 14:33:59,754 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-22 14:33:59,755 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 14:33:59,756 - src.utils.validation - INFO - [OK] Generated 200 compact bots (128 bytes each)
+2025-11-22 14:33:59,757 - src.utils.validation - INFO - Population refilled: 200 bots
+2025-11-22 14:33:59,757 - src.utils.validation - INFO - Generation 2 completed in 5.693s
+2025-11-22 14:33:59,757 - src.utils.validation - INFO - 
+--- FINAL EVALUATION ---
+2025-11-22 14:33:59,788 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 14:33:59,891 - src.utils.validation - INFO - [MTF] Computed 480 HTF bars from 28800 base bars (1:60)
+2025-11-22 14:34:00,605 - src.utils.validation - INFO - [MTF] Computed 483 HTF bars from 29000 base bars (1:60)
+2025-11-22 14:34:03,491 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 800, written: 800, pending: 0)
+2025-11-22 14:34:03,492 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 800)
+2025-11-22 14:34:03,989 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 800
+2025-11-22 14:34:03,991 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 800)
+2025-11-22 14:34:04,003 - src.utils.validation - INFO - Logged 200 bots to logs\generation_3.csv
+2025-11-22 14:34:04,006 - src.utils.validation - INFO - 
+Evolution complete!
+
+2025-11-22 14:34:04,008 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 800)
+2025-11-22 14:34:04,008 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 869)
+2025-11-22 14:34:04,008 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 835)
+2025-11-22 14:34:04,008 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 786)
+2025-11-22 14:34:04,715 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 800)
+2025-11-22 14:36:17,822 - src.utils.validation - INFO - Set random seed to 42
+2025-11-22 14:36:17,823 - src.utils.validation - INFO - Loading 850 data files in parallel
+2025-11-22 14:36:19,626 - src.utils.validation - INFO - Loaded total of 1224060 candles (excludes today's incomplete data)
+2025-11-22 14:36:19,627 - src.utils.validation - INFO - Validating data integrity
+2025-11-22 14:36:19,760 - src.utils.validation - INFO - Data validation passed
+2025-11-22 14:36:19,769 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (7 days each)
+2025-11-22 14:36:19,770 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-22 14:36:19,791 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-22 14:36:19,792 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-22 14:36:19,792 - src.utils.validation - INFO -   Population: 200 bots
+2025-11-22 14:36:19,793 - src.utils.validation - INFO -   Indicators: 2-5 per bot (50 available)
+2025-11-22 14:36:19,793 - src.utils.validation - INFO -   Risk strategies: 1-3 per bot
+2025-11-22 14:36:19,794 - src.utils.validation - INFO -   Leverage: 1-25x
+2025-11-22 14:36:19,799 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 14:36:24,217 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-22 14:36:24,223 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-22 14:36:24,228 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-22 14:36:24,229 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-22 14:36:24,229 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-22 14:36:24,230 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-22 14:36:24,230 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-22 14:36:24,231 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-22 14:36:24,232 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-22 14:36:24,240 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-22 14:36:24,240 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-22 14:36:24,241 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-22 14:36:24,241 - src.utils.validation - INFO - DISABLE_GPU_LOGGING=1: Skipping GPU logging processor initialization
+2025-11-22 14:36:24,242 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-22 14:36:24,244 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-22 14:36:24,244 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-22 14:36:24,254 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-22 14:36:24,255 - src.utils.validation - INFO -   Loading 4-indicator combinations from cache...
+2025-11-22 14:36:24,448 - src.utils.validation - INFO -     Loaded 194,580 combinations from cache
+2025-11-22 14:36:24,449 - src.utils.validation - INFO -   Loading 5-indicator combinations from cache...
+2025-11-22 14:36:28,559 - src.utils.validation - INFO -     Loaded 1,712,304 combinations from cache
+2025-11-22 14:36:28,560 - src.utils.validation - INFO -   Total combinations ready: 1,925,308
+2025-11-22 14:36:28,560 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-22 14:36:28,562 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-22 14:36:28,562 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-22 14:36:28,563 - src.utils.validation - INFO -   Pre-computed combination pools: 1,925,308 total combinations
+2025-11-22 14:36:28,563 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-22 14:36:28,563 - src.utils.validation - INFO - 
+Starting Evolution: 3 generations, 5 cycles
+2025-11-22 14:36:28,563 - src.utils.validation - INFO - Evolution profiler started
+2025-11-22 14:36:28,564 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-22 14:36:28,564 - src.utils.validation - INFO - Generating 200 compact bots on GPU...
+2025-11-22 14:36:28,564 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 14:36:28,565 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-22 14:36:28,567 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 14:36:28,569 - src.utils.validation - INFO - [OK] Generated 200 compact bots (128 bytes each)
+2025-11-22 14:36:28,569 - src.utils.validation - INFO - Distributing 200 bots across indicator sizes 2-5
+2025-11-22 14:36:28,571 - src.utils.validation - INFO - Initial population: 200 bots, 200 unique (100.0% uniqueness)
+2025-11-22 14:36:28,571 - src.utils.validation - INFO - Global tracking: 200 combinations marked as used
+2025-11-22 14:36:28,571 - src.utils.validation - INFO - Size distribution: {2: 42, 3: 49, 4: 53, 5: 56}
+2025-11-22 14:36:28,571 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-22 14:36:28,571 - src.utils.validation - INFO - Evaluating 200 bots...
+2025-11-22 14:36:28,618 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 14:36:28,729 - src.utils.validation - INFO - [MTF] Computed 480 HTF bars from 28800 base bars (1:60)
+2025-11-22 14:36:29,544 - src.utils.validation - INFO - [MTF] Computed 483 HTF bars from 29000 base bars (1:60)
+2025-11-22 14:36:32,555 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 792, written: 792, pending: 0)
+2025-11-22 14:36:32,555 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 792)
+2025-11-22 14:36:33,044 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 792
+2025-11-22 14:36:33,045 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 792)
+2025-11-22 14:36:33,047 - src.utils.validation - INFO - Selecting survivors...
+2025-11-22 14:36:33,047 - src.utils.validation - ERROR - SURVIVAL FILTER (Gen 0, RELAXED): 0 high loss (>-20%), 200 failed criteria, 0 no cycles, 0 bots passed
+2025-11-22 14:36:33,048 - src.utils.validation - ERROR - No bots met RELAXED criteria: avg profit > -20% AND 40%+ cycles profitable AND max drawdown < 40%
+2025-11-22 14:36:33,048 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-22 14:36:33,048 - src.utils.validation - INFO - Logging generation 0 results...
+2025-11-22 14:36:33,055 - src.utils.validation - INFO - Logged 200 bots to logs\generation_0.csv
+2025-11-22 14:36:33,056 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-22 14:36:33,058 - src.utils.validation - WARNING - No survivors! Generating completely new population
+2025-11-22 14:36:33,058 - src.utils.validation - INFO - Generating 200 compact bots on GPU...
+2025-11-22 14:36:33,058 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 14:36:33,059 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-22 14:36:33,060 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 14:36:33,062 - src.utils.validation - INFO - [OK] Generated 200 compact bots (128 bytes each)
+2025-11-22 14:36:33,062 - src.utils.validation - INFO - Population refilled: 200 bots
+2025-11-22 14:36:33,063 - src.utils.validation - INFO - Generation 0 completed in 4.492s
+2025-11-22 14:36:33,063 - src.utils.validation - INFO - 
+--- GENERATION 1 ---
+2025-11-22 14:36:33,064 - src.utils.validation - INFO - Evaluating 200 bots...
+2025-11-22 14:36:33,104 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 14:36:33,205 - src.utils.validation - INFO - [MTF] Computed 480 HTF bars from 28800 base bars (1:60)
+2025-11-22 14:36:33,917 - src.utils.validation - INFO - [MTF] Computed 483 HTF bars from 29000 base bars (1:60)
+2025-11-22 14:36:36,784 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 835, written: 835, pending: 0)
+2025-11-22 14:36:36,784 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 835)
+2025-11-22 14:36:37,280 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 835
+2025-11-22 14:36:37,281 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 835)
+2025-11-22 14:36:37,284 - src.utils.validation - INFO - Selecting survivors...
+2025-11-22 14:36:37,285 - src.utils.validation - ERROR - SURVIVAL FILTER (Gen 1, RELAXED): 0 high loss (>-20%), 200 failed criteria, 0 no cycles, 0 bots passed
+2025-11-22 14:36:37,286 - src.utils.validation - ERROR - No bots met RELAXED criteria: avg profit > -20% AND 40%+ cycles profitable AND max drawdown < 40%
+2025-11-22 14:36:37,287 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-22 14:36:37,287 - src.utils.validation - INFO - Logging generation 1 results...
+2025-11-22 14:36:37,308 - src.utils.validation - INFO - Logged 200 bots to logs\generation_1.csv
+2025-11-22 14:36:37,308 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-22 14:36:37,309 - src.utils.validation - WARNING - No survivors! Generating completely new population
+2025-11-22 14:36:37,309 - src.utils.validation - INFO - Generating 200 compact bots on GPU...
+2025-11-22 14:36:37,310 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 14:36:37,311 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-22 14:36:37,312 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 14:36:37,314 - src.utils.validation - INFO - [OK] Generated 200 compact bots (128 bytes each)
+2025-11-22 14:36:37,315 - src.utils.validation - INFO - Population refilled: 200 bots
+2025-11-22 14:36:37,315 - src.utils.validation - INFO - Generation 1 completed in 4.252s
+2025-11-22 14:36:37,315 - src.utils.validation - INFO - 
+--- GENERATION 2 ---
+2025-11-22 14:36:37,316 - src.utils.validation - INFO - Evaluating 200 bots...
+2025-11-22 14:36:37,369 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 14:36:37,473 - src.utils.validation - INFO - [MTF] Computed 480 HTF bars from 28800 base bars (1:60)
+2025-11-22 14:36:38,088 - src.utils.validation - INFO - [MTF] Computed 483 HTF bars from 29000 base bars (1:60)
+2025-11-22 14:36:40,997 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 869, written: 869, pending: 0)
+2025-11-22 14:36:40,997 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 869)
+2025-11-22 14:36:41,495 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 869
+2025-11-22 14:36:41,495 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 869)
+2025-11-22 14:36:41,497 - src.utils.validation - INFO - Selecting survivors...
+2025-11-22 14:36:41,498 - src.utils.validation - ERROR - SURVIVAL FILTER (Gen 2, RELAXED): 0 high loss (>-20%), 200 failed criteria, 0 no cycles, 0 bots passed
+2025-11-22 14:36:41,498 - src.utils.validation - ERROR - No bots met RELAXED criteria: avg profit > -20% AND 40%+ cycles profitable AND max drawdown < 40%
+2025-11-22 14:36:41,498 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-22 14:36:41,498 - src.utils.validation - INFO - Logging generation 2 results...
+2025-11-22 14:36:41,506 - src.utils.validation - INFO - Logged 200 bots to logs\generation_2.csv
+2025-11-22 14:36:41,507 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-22 14:36:41,507 - src.utils.validation - WARNING - No survivors! Generating completely new population
+2025-11-22 14:36:41,508 - src.utils.validation - INFO - Generating 200 compact bots on GPU...
+2025-11-22 14:36:41,508 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 14:36:41,509 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-22 14:36:41,510 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 14:36:41,511 - src.utils.validation - INFO - [OK] Generated 200 compact bots (128 bytes each)
+2025-11-22 14:36:41,513 - src.utils.validation - INFO - Population refilled: 200 bots
+2025-11-22 14:36:41,514 - src.utils.validation - INFO - Generation 2 completed in 4.199s
+2025-11-22 14:36:41,514 - src.utils.validation - INFO - 
+--- FINAL EVALUATION ---
+2025-11-22 14:36:41,543 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 14:36:41,645 - src.utils.validation - INFO - [MTF] Computed 480 HTF bars from 28800 base bars (1:60)
+2025-11-22 14:36:42,361 - src.utils.validation - INFO - [MTF] Computed 483 HTF bars from 29000 base bars (1:60)
+2025-11-22 14:36:45,230 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 800, written: 800, pending: 0)
+2025-11-22 14:36:45,231 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 800)
+2025-11-22 14:36:45,731 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 800
+2025-11-22 14:36:45,731 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 800)
+2025-11-22 14:36:45,743 - src.utils.validation - INFO - Logged 200 bots to logs\generation_3.csv
+2025-11-22 14:36:45,744 - src.utils.validation - INFO - 
+Evolution complete!
+
+2025-11-22 14:36:45,745 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 800)
+2025-11-22 14:36:45,745 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 869)
+2025-11-22 14:36:45,745 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 835)
+2025-11-22 14:36:45,745 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 792)
+2025-11-22 14:36:46,486 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 800)

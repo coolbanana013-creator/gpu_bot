@@ -2524,6 +2524,12 @@ __kernel void backtest_with_signals(
     
     // Backtest across all cycles
     for (int cycle = 0; cycle < num_cycles; cycle++) {
+        // CODE REVIEW FIX #23: Allow risk stop reset after recovery
+        // If balance has recovered above 90% of initial, allow trading to resume
+        if (risk_stop_triggered && balance >= initial_balance * 0.90f) {
+            risk_stop_triggered = 0;  // Reset risk stop flag
+        }
+        
         // RISK STOP: Skip remaining cycles if risk limit triggered (Code Review Fix #13)
         if (risk_stop_triggered) {
             cycle_trades_arr[cycle] = 0;
@@ -2582,9 +2588,13 @@ __kernel void backtest_with_signals(
             else if (idx >= 12 && idx <= 14) {
                 // RSI: needs 2x period for stability
                 indicator_warmup = (int)(period * 2.0f);
-            } else if (idx == 15 || idx == 16) {
-                // Stochastic, StochRSI: need 2x period
-                indicator_warmup = (int)(period * 2.0f);
+            } else if (idx == 15) {
+                // CODE REVIEW FIX #21: Stochastic needs period + smooth_k (e.g., 14 + 3 = 17)
+                // period2 contains smooth_k parameter
+                indicator_warmup = (int)(period + period2);
+            } else if (idx == 16) {
+                // CODE REVIEW FIX #21: StochRSI = RSI(2x period) + Stochastic(period) = 3x period
+                indicator_warmup = (int)(period * 3.0f);
             } else if (idx >= 17 && idx <= 19) {
                 // Momentum, ROC, Williams: need period + buffer
                 indicator_warmup = (int)period + 10;
