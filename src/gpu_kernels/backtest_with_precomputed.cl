@@ -811,6 +811,11 @@ int check_signal_quality(
 ) {
     // Debug mode: bypass filters to allow trades for testing/tracing
     if (debug_disable_filters) return 1;
+    // HIGH PRIORITY FIX: Bounds checking to prevent GPU crash
+    if (bar < 0 || bar >= num_bars) {
+        return 0;  // Invalid bar index, reject signal
+    }
+    
     // Prefer HTF (higher timeframe) ADX/ATR if available (more meaningful than base 1m ADX)
     float adx = precomputed_indicators[27 * num_bars + bar];
     float atr = precomputed_indicators[20 * num_bars + bar];

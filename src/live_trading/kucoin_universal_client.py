@@ -180,6 +180,29 @@ class KucoinUniversalClient:
         Returns:
             Order info dict or None if failed
         """
+        # CRITICAL FIX: Input validation to prevent financial loss
+        import re
+        
+        # Validate symbol format (KuCoin futures format: XXXUSDTMor XXXUSDM)
+        if not isinstance(symbol, str) or not re.match(r'^[A-Z0-9]+USDT?M$', symbol):
+            raise ValueError(f"Invalid symbol format: {symbol}. Expected format: XXXUSDTM or XXXUSDM")
+        
+        # Validate side
+        if side not in ['buy', 'sell']:
+            raise ValueError(f"Side must be 'buy' or 'sell', got: {side}")
+        
+        # Validate size
+        if not isinstance(size, (int, float)) or size <= 0:
+            raise ValueError(f"Size must be positive number, got: {size}")
+        
+        # Validate leverage
+        if not isinstance(leverage, int) or not (1 <= leverage <= 125):
+            raise ValueError(f"Leverage must be integer between 1-125, got: {leverage}")
+        
+        # Validate margin mode
+        if margin_mode not in ['ISOLATED', 'CROSS']:
+            raise ValueError(f"Margin mode must be 'ISOLATED' or 'CROSS', got: {margin_mode}")
+        
         try:
             # Pre-order risk check (comprehensive validation)
             current_position = self.get_position(symbol)
@@ -265,6 +288,33 @@ class KucoinUniversalClient:
         Returns:
             Order info dict or None if failed
         """
+        # CRITICAL FIX: Input validation
+        import re
+        
+        # Validate symbol format
+        if not isinstance(symbol, str) or not re.match(r'^[A-Z0-9]+USDT?M$', symbol):
+            raise ValueError(f"Invalid symbol format: {symbol}")
+        
+        # Validate side
+        if side not in ['buy', 'sell']:
+            raise ValueError(f"Side must be 'buy' or 'sell', got: {side}")
+        
+        # Validate price
+        if not isinstance(price, (int, float)) or price <= 0:
+            raise ValueError(f"Price must be positive number, got: {price}")
+        
+        # Validate size
+        if not isinstance(size, (int, float)) or size <= 0:
+            raise ValueError(f"Size must be positive number, got: {size}")
+        
+        # Validate leverage
+        if not isinstance(leverage, int) or not (1 <= leverage <= 125):
+            raise ValueError(f"Leverage must be integer between 1-125, got: {leverage}")
+        
+        # Validate time_in_force
+        if time_in_force not in ['GTC', 'IOC', 'FOK']:
+            raise ValueError(f"Time in force must be GTC/IOC/FOK, got: {time_in_force}")
+        
         try:
             # Round price to 0.1 (Kucoin requirement)
             price = round(price, 1)

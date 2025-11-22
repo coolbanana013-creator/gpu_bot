@@ -346,6 +346,29 @@ class CompactBacktester:
         self.debug_bypass_volume = int(os.getenv('DEBUG_BYPASS_VOLUME', '0') == '1')
         self.debug_force_signals = int(os.getenv('DEBUG_FORCE_SIGNALS', '0') == '1')
 
+    def cleanup(self):
+        """HIGH PRIORITY FIX: Explicitly release GPU resources to prevent memory leaks."""
+        with self._buffer_lock:
+            for buf in self._active_buffers:
+                try:
+                    buf.release()
+                except:
+                    pass  # Already released
+            self._active_buffers.clear()
+        
+        # Clear memory tracking
+        with self._memory_lock:
+            self.memory_usage.clear()
+        
+        log_info("CompactBacktester: GPU resources cleaned up")
+    
+    def __del__(self):
+        """HIGH PRIORITY FIX: Release GPU resources when object destroyed."""
+        try:
+            self.cleanup()
+        except:
+            pass  # Cleanup already done or failed
+    
     def _maybe_debug_log(self, message: str) -> None:
         if not self.disable_debug_logging:
             log_info(message)
@@ -1891,6 +1914,13 @@ class CompactBacktester:
                 except TypeError:
                     # Fallback (some pyopencl versions accept named param differently)
                     cl.enqueue_copy(self.queue, idx_host, trade_log_index_buf, True)
+                
+                # MEDIUM PRIORITY FIX: Trade log overflow detection
+                trades_attempted = idx_host[0]
+                if trades_attempted >= self.trade_log_max:
+                    log_warning(f"⚠️ Trade log OVERFLOW: {trades_attempted} trades attempted but limit is {self.trade_log_max}")
+                    log_warning(f"   Some trade data was lost. Consider increasing TRADE_LOG_MAX env var.")
+                
                 # Use timeout finish here in case GPU copy blocks
                 self._maybe_debug_log("[DEBUG] Waiting for trade log index copy to finish (with timeout)")
                 import time as _time, threading as _threading

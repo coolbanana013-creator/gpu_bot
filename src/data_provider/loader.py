@@ -141,11 +141,26 @@ class DataLoader:
         
         log_info("Validating data integrity")
         
-        # Check for NaN values
+        # MEDIUM PRIORITY FIX: Check for NaN/Inf values with graceful handling
         nan_counts = self.data[OHLCV_COLUMNS].isna().sum()
         if nan_counts.any():
-            log_error(f"Found NaN values: {nan_counts[nan_counts > 0].to_dict()}")
-            raise RuntimeError("Data contains NaN values")
+            log_warning(f"Found NaN values: {nan_counts[nan_counts > 0].to_dict()}")
+            log_warning("Filling NaN values with forward fill method")
+            self.data[OHLCV_COLUMNS] = self.data[OHLCV_COLUMNS].fillna(method='ffill')
+            # If still NaN at start, fill with backward fill
+            self.data[OHLCV_COLUMNS] = self.data[OHLCV_COLUMNS].fillna(method='bfill')
+            # Final check
+            remaining_nans = self.data[OHLCV_COLUMNS].isna().sum()
+            if remaining_nans.any():
+                log_error(f"Could not fill all NaN values: {remaining_nans[remaining_nans > 0].to_dict()}")
+                raise RuntimeError("Data contains unfillable NaN values")
+        
+        # Check for Inf values
+        inf_mask = np.isinf(self.data[OHLCV_COLUMNS].values).any(axis=1)
+        if inf_mask.any():
+            inf_count = inf_mask.sum()
+            log_error(f"Found {inf_count} rows with Inf values")
+            raise RuntimeError(f"Data contains {inf_count} Inf values - cannot process")
         
         # Check for duplicate timestamps
         duplicates = self.data['timestamp'].duplicated().sum()
