@@ -116,6 +116,7 @@ if __name__ == '__main__':
     else:
         ohlcv_no_ts = ohlcv
     num_bars = len(ohlcv_no_ts)
+    print(f"Sample ohlcv row at {min(540, num_bars-1)}: {ohlcv_no_ts[min(540, num_bars-1)].tolist()}")
 
     # Precompute indicators
     indicators_buf = backtester._precompute_indicators(ohlcv_no_ts)

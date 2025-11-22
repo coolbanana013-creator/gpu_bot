@@ -12,6 +12,7 @@ parser = argparse.ArgumentParser(description='Run full GA (compact) with GPU acc
 parser.add_argument('--population', type=int, default=1000, help='Population size (e.g., 1000)')
 parser.add_argument('--generations', type=int, default=2, help='Number of generations to run')
 parser.add_argument('--cycles', type=int, default=5, help='Cycles per generation')
+parser.add_argument('--chunk-days', type=int, default=20, help='Data chunk days to reduce GPU memory per chunk (default 20)')
 parser.add_argument('--timeframe', type=str, default='1m')
 parser.add_argument('--pair', type=str, default='BTC_USDT')
 parser.add_argument('--data-dir', type=str, default='data')
@@ -41,7 +42,7 @@ print('Cycles', cycles)
 
 # Create bot generator and backtester
 bot_gen = CompactBotGenerator(gpu_context=ctx, gpu_queue=queue, population_size=args.population, min_indicators=2, max_indicators=5, min_risk_strategies=1, max_risk_strategies=3, min_leverage=1, max_leverage=25)
-backtester = CompactBacktester(gpu_context=ctx, gpu_queue=queue, initial_balance=10.0)
+backtester = CompactBacktester(gpu_context=ctx, gpu_queue=queue, initial_balance=10.0, data_chunk_days=args.chunk_days)
 
 evolver = GeneticAlgorithmEvolver(bot_generator=bot_gen, backtester=backtester, pair=args.pair, timeframe=args.timeframe, gpu_context=ctx, gpu_queue=queue)
 

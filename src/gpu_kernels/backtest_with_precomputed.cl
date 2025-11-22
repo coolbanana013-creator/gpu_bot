@@ -131,6 +131,7 @@ typedef struct {
     float sl_price;
     int entry_bar;
     float liquidation_price;
+    float trailing_sl_price;  // FIXED: Trailing stop loss (Code Review Fix #19)
 } Position;
 
 // ============================================================================
@@ -147,6 +148,9 @@ typedef struct {
 // Funding rate (perpetual futures charge every 8 hours)
 #define FUNDING_RATE_INTERVAL 480  // 8 hours = 480 minutes at 1m timeframe
 #define BASE_FUNDING_RATE 0.0001f  // 0.01% per 8 hours (KuCoin realistic neutral rate - FIXED from 0.001)
+// FIXED: Maximum position duration (Code Review Fix #4)
+// Prevents unrealistic multi-day holds in high-frequency 1m timeframe
+#define MAX_POSITION_DURATION_BARS 1440  // 1 day = 1440 minutes at 1m timeframe
 // Maintenance margin tiers (KuCoin standard)
 #define MAINT_MARGIN_1_5X 0.004f    // 0.4% for 1-5x leverage
 #define MAINT_MARGIN_6_20X 0.005f   // 0.5% for 6-20x leverage  
@@ -188,16 +192,28 @@ float calculate_dynamic_slippage(
     // Base slippage (ideal conditions)
     float slippage = BASE_SLIPPAGE;
     
-    // 1. Volume impact: QUADRATIC market impact (realistic exchange behavior)
-    // Real market impact is non-linear - larger orders have disproportionate impact
+    // FIXED: Piecewise slippage model (Code Review Fix #12)
+    // More realistic than single quadratic - matches real exchange behavior
     float volume_impact = 0.0f;
     if (current_volume > 0.0f) {
         float position_pct = position_value / (current_volume * current_price);
-        // Quadratic scaling: sqrt(position_pct^3) = position_pct^1.5 (optimized for GPU)
-        // Avoids pow() which is slow on Intel integrated GPUs
-        float pct_clamped = fmax(position_pct, 0.0f);
-        volume_impact = sqrt(pct_clamped * pct_clamped * pct_clamped) * 0.05f;
-        volume_impact = fmin(volume_impact, 0.01f);  // Cap at 1.0% additional
+        
+        // Piecewise slippage based on order size relative to volume
+        if (position_pct < 0.01f) {
+            // < 1% of volume: minimal impact (linear)
+            volume_impact = position_pct * 0.01f;  // 0-0.01% slippage
+        } else if (position_pct < 0.05f) {
+            // 1-5% of volume: linear scaling
+            volume_impact = 0.0001f + (position_pct - 0.01f) * 0.01f;
+        } else if (position_pct < 0.10f) {
+            // 5-10% of volume: quadratic (steeper)
+            float excess = position_pct - 0.05f;
+            volume_impact = 0.0005f + (excess * excess * 100.0f);
+        } else {
+            // > 10% of volume: exponential impact (severe)
+            volume_impact = 0.005f + (position_pct * position_pct * 0.5f);
+            volume_impact = fmin(volume_impact, 0.05f);  // Cap at 5% for catastrophic liquidity
+        }
     }
     
     // 2. Volatility multiplier: use current bar's high-low range
@@ -221,9 +237,9 @@ float calculate_dynamic_slippage(
     // Combine all factors
     float total_slippage = (slippage + volume_impact) * volatility_multiplier * leverage_multiplier;
     
-    // Final bounds: min 0.005% (ideal conditions), max 0.5% (terrible conditions)
-    // Reduced max to prevent excessive costs
-    total_slippage = fmin(fmax(total_slippage, 0.00005f), 0.005f);
+    // FIXED: Increased max to 5% for realistic large order costs (Code Review Fix #12)
+    // Min 0.005% (ideal), Max 5.0% (large orders in volatile markets)
+    total_slippage = fmin(fmax(total_slippage, 0.00005f), 0.05f);
     
     return total_slippage;
 }
@@ -418,6 +434,83 @@ void calculate_dynamic_tp_sl(
     if (*tp_multiplier < *sl_multiplier * 1.5f) {
         *tp_multiplier = *sl_multiplier * 2.5f;
     }
+}
+
+/**
+ * FIXED: Calculate volatility-adjusted leverage (Code Review Fix #14)
+ * Reduces leverage during high volatility and drawdown periods
+ * 
+ * @param base_leverage: Bot's configured leverage (1-125)
+ * @param precomputed_indicators: Flat array of precomputed indicators
+ * @param bar: Current bar index
+ * @param num_bars: Total number of bars
+ * @param current_drawdown: Current drawdown as fraction (0.0-1.0)
+ * @param max_drawdown: Maximum drawdown reached (0.0-1.0)
+ * @return Adjusted leverage (will be <= base_leverage)
+ */
+float calculate_adjusted_leverage(
+    float base_leverage,
+    __global float *precomputed_indicators,
+    int bar,
+    int num_bars,
+    float current_drawdown,
+    float max_drawdown
+) {
+    // Need at least 20 bars for ATR average calculation
+    if (bar < 20) {
+        return base_leverage;
+    }
+    
+    // Get current ATR(14) - indicator #20
+    float current_atr = precomputed_indicators[20 * num_bars + bar];
+    
+    // Handle NaN or invalid ATR
+    if (isnan(current_atr) || current_atr <= 0.0f) {
+        return base_leverage;
+    }
+    
+    // Calculate 20-bar average ATR for comparison
+    float atr_sum = 0.0f;
+    int valid_bars = 0;
+    for (int i = 0; i < 20; i++) {
+        float past_atr = precomputed_indicators[20 * num_bars + (bar - i)];
+        if (!isnan(past_atr) && past_atr > 0.0f) {
+            atr_sum += past_atr;
+            valid_bars++;
+        }
+    }
+    
+    if (valid_bars == 0) {
+        return base_leverage;
+    }
+    
+    float avg_atr = atr_sum / (float)valid_bars;
+    float atr_ratio = current_atr / avg_atr;
+    
+    // Start with base leverage
+    float adjusted = base_leverage;
+    
+    // VOLATILITY ADJUSTMENT: Reduce leverage during high volatility
+    if (atr_ratio > 2.0f) {
+        // ATR > 2× average: reduce by 75%
+        adjusted *= 0.25f;
+    } else if (atr_ratio > 1.5f) {
+        // ATR > 1.5× average: reduce by 50%
+        adjusted *= 0.5f;
+    }
+    // No adjustment for normal/low volatility (atr_ratio <= 1.5)
+    
+    // DRAWDOWN ADJUSTMENT: Reduce leverage during significant drawdowns
+    // Use max_drawdown to prevent overreacting to temporary drawdowns
+    if (max_drawdown > 0.50f) {
+        // Max drawdown > 50%: reduce leverage by additional 50%
+        adjusted *= 0.5f;
+    }
+    
+    // Ensure leverage stays within valid range (1-125)
+    adjusted = fmax(1.0f, fmin(adjusted, base_leverage));
+    
+    return adjusted;
 }
 
 /**
@@ -616,11 +709,12 @@ int detect_htf_trend(
         return 0;  // Neutral
     }
     
-    // Detect trend with 0.01% threshold (very sensitive to HTF direction)
-    // Even small movements on HTF represent significant base TF trends
-    if (htf_current > htf_previous * 1.0001f) {
+    // FIXED: Increased to 0.1% threshold (Code Review Fix #22)
+    // 0.01% was too sensitive ($3 on $30k BTC), caused noise
+    // 0.1% = $30 move on $30k BTC = clearer trend detection
+    if (htf_current > htf_previous * 1.001f) {
         return 1;  // Bullish HTF trend
-    } else if (htf_current < htf_previous * 0.9999f) {
+    } else if (htf_current < htf_previous * 0.999f) {
         return -1;  // Bearish HTF trend
     }
     
@@ -638,25 +732,43 @@ int detect_htf_trend(
 int check_signal_quality(
     __global float *precomputed_indicators,
     __global OHLCVBar *ohlcv,
+    CompactBotConfig *bot,
     int bar,
-    int num_bars
+    int num_bars,
+    __global float *htf_indicators,
+    int num_htf_bars,
+    int htf_multiplier,
+    int enable_mtf,
+    int bars_per_day
 ) {
-    // Get ADX_14 (indicator index 27)
+    // Prefer HTF (higher timeframe) ADX/ATR if available (more meaningful than base 1m ADX)
     float adx = precomputed_indicators[27 * num_bars + bar];
-    
-    // Get ATR_14 (indicator index 20)
     float atr = precomputed_indicators[20 * num_bars + bar];
+    if (enable_mtf && num_htf_bars > 0 && htf_multiplier > 0 && htf_indicators != 0) {
+        int htf_bar = bar / htf_multiplier;  // map to higher timeframe bar
+        if (htf_bar >= 0 && htf_bar < num_htf_bars) {
+            float htf_adx = htf_indicators[27 * num_htf_bars + htf_bar];
+            float htf_atr = htf_indicators[20 * num_htf_bars + htf_bar];
+            // Prefer higher timeframe values if present
+            if (!isnan(htf_adx)) adx = htf_adx;
+            if (!isnan(htf_atr)) atr = htf_atr;
+        }
+    }
     
     // Skip if NaN
     if (isnan(adx) || isnan(atr)) {
         return 0;  // Filter out - insufficient data
     }
     
-    // ADX Filter: Require developing trend strength (ADX > 18)
-    // Lowered from 20 to 18 to allow more opportunities after RSI filter blocked all trades
-    // Research shows: ADX 0-15 = very weak, 15-20 = early developing, 18+ = developing trend, 25+ = strong
-    if (adx < 18.0f) {
-        return 0;  // Filter out - very weak/ranging market
+    // FIXED: ADX Filter (Code Review Fix #10)
+    // Threshold raised to 22 for better trend detection
+    // Research: ADX 0-20 = weak/ranging, 20-25 = developing, 25-40 = strong, 40+ = very strong/late
+    if (adx < 22.0f) {
+        return 0;  // Filter out - weak trend or ranging market
+    }
+    // Block late-stage trends (ADX > 50 often precedes reversals)
+    if (adx > 50.0f) {
+        return 0;  // Filter out - overextended trend, reversal risk
     }
     
     // ATR Filter: Avoid extreme volatility
@@ -667,10 +779,15 @@ int check_signal_quality(
     }
     
     // Volume Filter: Require above-average volume (institutional participation)
-    // Calculate 20-period volume MA
+    // Scale volume lookback based on timeframe (bars_per_day): use ~20 day average by default
+    int volume_lookback = 20;
+    if (bars_per_day > 0) {
+        int scaled = (int)(20.0f * (float)bars_per_day / 1440.0f); // 20 days by default
+        if (scaled > volume_lookback) volume_lookback = scaled;
+    }
     float volume_sum = 0.0f;
     int volume_count = 0;
-    for (int i = bar - 19; i <= bar; i++) {
+    for (int i = bar - volume_lookback; i <= bar; i++) {
         if (i >= 0 && i < num_bars) {
             volume_sum += ohlcv[i].volume;
             volume_count++;
@@ -680,25 +797,34 @@ int check_signal_quality(
         float volume_ma = volume_sum / volume_count;
         float current_volume = ohlcv[bar].volume;
         
-        // Require current volume > 1.3x average for confirmation
-        // Lowered from 1.5x to 1.3x to allow more opportunities
-        if (current_volume < volume_ma * 1.3f) {
-            return 0;  // Filter out - weak volume, no institutional interest
+        // FIXED: Lowered to 1.1x baseline (Code Review Fix #8)
+        // 1.3x was too restrictive, blocked 80-90% of valid signals
+        // Use 1.1x for normal trades, 1.3x for reversals would be ideal
+        if (current_volume < volume_ma * 1.1f) {
+            return 0;  // Filter out - below average volume
         }
     }
     
     // Support/Resistance Filter: Avoid trades near recent swing points
-    // Check last 50 bars for swing highs/lows
+    // Scale S/R lookback based on timeframe (bars_per_day): prefer ~50 days equivalent
+    int sr_lookback = 50;
+    if (bars_per_day > 0) {
+        sr_lookback = (int)(50.0f * (float)bars_per_day / 1440.0f);
+        if (sr_lookback < 50) sr_lookback = 50;
+    }
+    // Check last sr_lookback bars for swing highs/lows
     float current_price = ohlcv[bar].close;
-    for (int i = bar - 50; i < bar; i++) {
+    for (int i = bar - sr_lookback; i < bar; i++) {
         if (i < 0 || i >= num_bars) continue;
         
         // Check if this was a swing high (higher than neighbors)
         if (i > 0 && i < num_bars - 1) {
             if (ohlcv[i].high > ohlcv[i-1].high && ohlcv[i].high > ohlcv[i+1].high) {
                 float swing_high = ohlcv[i].high;
-                // Block if within 0.5% of swing high
-                if (fabs(current_price - swing_high) / swing_high < 0.005f) {
+                // FIXED: Use ATR-based buffer instead of percentage (Code Review Fix #9)
+                // Adaptive to volatility: ATR × 0.5 = half ATR distance
+                float buffer = atr * 0.5f;
+                if (fabs(current_price - swing_high) < buffer) {
                     return 0;  // Filter out - too close to resistance
                 }
             }
@@ -706,20 +832,30 @@ int check_signal_quality(
             // Check if this was a swing low (lower than neighbors)
             if (ohlcv[i].low < ohlcv[i-1].low && ohlcv[i].low < ohlcv[i+1].low) {
                 float swing_low = ohlcv[i].low;
-                // Block if within 0.5% of swing low
-                if (fabs(current_price - swing_low) / swing_low < 0.005f) {
+                // FIXED: Use ATR-based buffer (Code Review Fix #9)
+                float buffer = atr * 0.5f;
+                if (fabs(current_price - swing_low) < buffer) {
                     return 0;  // Filter out - too close to support
                 }
             }
         }
     }
     
-    // Mean Reversion Filter: DISABLED (was too restrictive - blocked all trades)
-    // Previous: RSI < 15 or > 85 (too extreme, similar to ADX>25 failure)
-    // Even RSI < 20 or > 80 might be too restrictive
-    // Let other filters (ADX, volume, S/R, consensus) handle quality
-    // RSI filter commented out to allow broader strategy discovery
-    /*
+    // FIXED: RSI Filter with correct logic (Code Review Fix #11)
+    // Block moderate extremes (likely to reverse)
+    // Allow strong momentum (< 15 or > 85) and neutral range (30-70)
+    float rsi = precomputed_indicators[16 * num_bars + bar];
+    if (!isnan(rsi)) {
+        // Block moderate overbought/oversold (70-85 and 15-30)
+        // These levels often indicate upcoming reversal
+        if ((rsi >= 70.0f && rsi <= 85.0f) || (rsi >= 15.0f && rsi <= 30.0f)) {
+            return 0;  // Filter out - moderate extreme, reversal likely
+        }
+        // Allow: RSI < 15 (strong momentum), RSI > 85 (strong momentum)
+        // Allow: RSI 30-70 (neutral range, trend-following valid)
+    }
+    
+    /* OLD DISABLED CODE:
     float rsi = precomputed_indicators[16 * num_bars + bar];
     if (!isnan(rsi)) {
         if (rsi >= 25.0f && rsi <= 75.0f) {
@@ -748,14 +884,17 @@ float generate_signal_consensus(
     int num_htf_bars,
     int htf_multiplier,
     int enable_mtf,
-    __global OHLCVBar *ohlcv
+    __global OHLCVBar *ohlcv,
+    int bars_per_day
 ) {
     if (bot->num_indicators == 0) return 0.0f;
     
     // SIGNAL QUALITY CHECK: Filter out low-quality setups
-    if (!check_signal_quality(precomputed_indicators, ohlcv, bar, num_bars)) {
+#ifndef DEBUG_BYPASS_QUALITY_FILTERS
+    if (!check_signal_quality(precomputed_indicators, ohlcv, bot, bar, num_bars, htf_indicators, num_htf_bars, htf_multiplier, enable_mtf, bars_per_day)) {
         return 0.0f;  // No trade in weak trends or high volatility
     }
+#endif
     
     float weighted_bullish = 0.0f;
     float weighted_bearish = 0.0f;
@@ -1121,23 +1260,11 @@ float generate_signal_consensus(
             else if (ind_value < -10.0f) signal = -1;  // Strong volume decrease = bearish
         }
         
-        // Weight each indicator's signal based on its risk strategy
-        // More aggressive strategies (Kelly, Martingale) get higher weight
-        // Conservative strategies (Fixed %, Williams) get lower weight
-        unsigned char strategy = bot->indicator_risk_strategies[i];
-        float weight = 1.0f;  // Default weight
-        
-        // Assign weights based on risk strategy aggressiveness
-        if (strategy == RISK_KELLY_FULL || strategy == RISK_MARTINGALE) {
-            weight = 2.0f;  // Aggressive strategies: 2x weight
-        } else if (strategy == RISK_KELLY_HALF || strategy == RISK_ANTI_MARTINGALE || strategy == RISK_OPTIMAL_F) {
-            weight = 1.5f;  // Moderate-aggressive: 1.5x weight
-        } else if (strategy == RISK_KELLY_QUARTER || strategy == RISK_ATR_MULTIPLIER || strategy == RISK_VOLATILITY_PCT || strategy == RISK_PERCENT_VOLATILITY) {
-            weight = 1.2f;  // Adaptive strategies: 1.2x weight
-        } else if (strategy == RISK_FIXED_PCT || strategy == RISK_WILLIAMS_FIXED) {
-            weight = 0.8f;  // Conservative strategies: 0.8x weight
-        }
-        // Others (FIXED_RISK_REWARD, EQUITY_CURVE, FIXED_RATIO) remain at 1.0x
+        // FIXED: Use equal weighting for all indicators (Code Review Fix #17)
+        // Strategy-based weighting (2.0× for Kelly, 0.8× for Fixed %) was arbitrary
+        // Risk strategy affects position sizing, not signal quality
+        // Future: Could implement indicator-type weights (e.g., trend vs momentum)
+        float weight = 1.0f;  // Equal weight for all indicators
         
         if (signal == 1) {
             weighted_bullish += weight;
@@ -1167,14 +1294,14 @@ float generate_signal_consensus(
     float bullish_pct = weighted_bullish / total_weight;
     float bearish_pct = weighted_bearish / total_weight;
     
-    // Threshold: 75% consensus required for high win rate
-    // Lowered from 80% to 75% after RSI filter blocked all trades
-    // Still higher than original 70% for better quality
+    // FIXED: Lowered to 60% consensus (Code Review Fix #3)
+    // 75% was too restrictive, blocked 95% of trades
+    // 60% allows realistic multi-indicator agreement while maintaining quality
     // During debugging, set a much lower threshold to force trades
 #ifdef DEBUG_FORCE_LOW_CONSENSUS
     float consensus_threshold = 0.01f; // VERY LOW for debug - any signal accepted
 #else
-    float consensus_threshold = 0.75f;  // 75% consensus for high WR
+    float consensus_threshold = 0.60f;  // 60% consensus for realistic agreement
 #endif
     
     // Determine base timeframe signal
@@ -1374,6 +1501,18 @@ void open_position(
 ) {
     if (*num_positions >= MAX_POSITIONS) return;
     
+    // FIXED: Correlation check (Code Review Fix #15)
+    // Limit max 2 positions in same direction to prevent 5× correlated risk
+    int same_direction_count = 0;
+    for (int i = 0; i < MAX_POSITIONS; i++) {
+        if (positions[i].is_active && positions[i].direction == direction) {
+            same_direction_count++;
+        }
+    }
+    if (same_direction_count >= 2) {
+        return;  // Block - already have 2 positions in this direction
+    }
+    
     // Find empty slot
     int slot = -1;
     for (int i = 0; i < MAX_POSITIONS; i++) {
@@ -1457,6 +1596,7 @@ void open_position(
         // Long
         positions[slot].tp_price = price * (1.0f + tp_multiplier);
         positions[slot].sl_price = price * (1.0f - sl_multiplier);
+        positions[slot].trailing_sl_price = 0.0f;  // FIXED: Initialize trailing SL (inactive until profit > 2%)
         
         // KUCOIN LIQUIDATION FORMULA (CORRECTED with tiered maintenance margins - Code Review Fix #3)
         // Formula: liq_price = entry * (1 - (initial_margin - maintenance) / (1 + initial_margin))
@@ -1479,6 +1619,7 @@ void open_position(
         // Short
         positions[slot].tp_price = price * (1.0f - tp_multiplier);
         positions[slot].sl_price = price * (1.0f + sl_multiplier);
+        positions[slot].trailing_sl_price = 0.0f;  // FIXED: Initialize trailing SL (inactive until profit > 2%)
         
         // KUCOIN LIQUIDATION FORMULA FOR SHORT (CORRECTED with tiered maintenance - Code Review Fix #3)
         // Formula: liq_price = entry * (1 + (initial_margin - maintenance) / (1 + initial_margin))
@@ -1899,7 +2040,7 @@ void manage_positions(
         }
     }
     
-    // THIRD: Check existing positions for TP/SL/Signal Reversal
+    // THIRD: Check existing positions for TP/SL/Duration/Signal Reversal
     for (int i = 0; i < MAX_POSITIONS; i++) {
         if (!positions[i].is_active) continue;
         
@@ -1908,18 +2049,76 @@ void manage_positions(
         int close_reason = 3;
         float exit_price = bar->close;
         
-        // Check TP (highest priority after liquidation)
-        if (pos->direction == 1 && bar->high >= pos->tp_price) {
+        // FIXED: Check maximum position duration (Code Review Fix #4)
+        // Force close positions after 1 day to prevent unrealistic multi-day holds
+        int bars_held = current_bar_idx - pos->entry_bar;
+        if (bars_held >= MAX_POSITION_DURATION_BARS) {
+            should_close = 1;
+            close_reason = 4;  // Max duration exit
+            exit_price = bar->close;
+        }
+        
+        // FIXED: Update trailing stop loss (Code Review Fix #19)
+        // Activate trailing SL after 2% profit, maintain 1% trailing distance
+        float current_price = bar->close;
+        float profit_pct = 0.0f;
+        
+        if (pos->direction == 1) {
+            // Long position
+            profit_pct = (current_price - pos->entry_price) / pos->entry_price;
+            
+            if (profit_pct >= 0.02f) {
+                // Profit >= 2%, activate/update trailing SL
+                // Trailing SL = current_price - 1% (locks in 1% minimum profit)
+                float new_trailing_sl = current_price * 0.99f;
+                
+                // Only move trailing SL up, never down
+                if (pos->trailing_sl_price == 0.0f || new_trailing_sl > pos->trailing_sl_price) {
+                    pos->trailing_sl_price = new_trailing_sl;
+                }
+            }
+        } else {
+            // Short position
+            profit_pct = (pos->entry_price - current_price) / pos->entry_price;
+            
+            if (profit_pct >= 0.02f) {
+                // Profit >= 2%, activate/update trailing SL
+                // Trailing SL = current_price + 1% (locks in 1% minimum profit)
+                float new_trailing_sl = current_price * 1.01f;
+                
+                // Only move trailing SL down, never up
+                if (pos->trailing_sl_price == 0.0f || new_trailing_sl < pos->trailing_sl_price) {
+                    pos->trailing_sl_price = new_trailing_sl;
+                }
+            }
+        }
+        
+        // Check TP (highest priority after liquidation and duration)
+        if (!should_close && pos->direction == 1 && bar->high >= pos->tp_price) {
             should_close = 1;
             close_reason = 0;
             exit_price = pos->tp_price;
         }
-        else if (pos->direction == -1 && bar->low <= pos->tp_price) {
+        else if (!should_close && pos->direction == -1 && bar->low <= pos->tp_price) {
             should_close = 1;
             close_reason = 0;
             exit_price = pos->tp_price;
         }
-        // Check SL (second priority)
+        // Check trailing SL (second priority, before regular SL)
+        // FIXED: Trailing stop loss check (Code Review Fix #19)
+        else if (pos->trailing_sl_price > 0.0f) {
+            if (pos->direction == 1 && bar->low <= pos->trailing_sl_price) {
+                should_close = 1;
+                close_reason = 5;  // Trailing SL hit
+                exit_price = pos->trailing_sl_price;
+            }
+            else if (pos->direction == -1 && bar->high >= pos->trailing_sl_price) {
+                should_close = 1;
+                close_reason = 5;  // Trailing SL hit
+                exit_price = pos->trailing_sl_price;
+            }
+        }
+        // Check regular SL (third priority)
         else if (pos->direction == 1 && bar->low <= pos->sl_price) {
             should_close = 1;
             close_reason = 1;
@@ -1930,15 +2129,14 @@ void manage_positions(
             close_reason = 1;
             exit_price = pos->sl_price;
         }
-        // RE-ENABLED: Signal reversal exits (Code Review Fix #12)
-        // Exit when signal reverses direction to cut losses early
-        // Only exit if currently losing or flat (prevent premature profit-taking)
+        // FIXED: Signal reversal exits (Code Review Fix #2)
+        // Exit when signal strongly reverses direction (>50% consensus opposite)
+        // This prevents holding through adverse market conditions
         else if (signal != 0.0f && signal != pos->direction) {
-            // Signal reversed - check if we should exit
-            float unrealized = calculate_unrealized_pnl(pos, bar->close, leverage);
-            // Only exit on reversal if losing or small profit (< 1%)
-            float margin_used = (pos->entry_price * pos->quantity) / leverage;
-            if (unrealized <= margin_used * 0.01f) {  // Exit if gain < 1% of margin
+            // Signal reversed - exit if reversal is strong (absolute value > 0.5)
+            // signal ranges from -1.0 to 1.0, so >0.5 means strong consensus
+            float signal_strength = fabs(signal);
+            if (signal_strength > 0.5f) {
                 should_close = 1;
                 close_reason = 3;  // Signal reversal
                 exit_price = bar->close;
@@ -2049,6 +2247,7 @@ __kernel void backtest_with_signals(
     , const int num_htf_bars
     , const int htf_multiplier
     , const int enable_mtf
+    , const int bars_per_day
 ) {
     int bot_idx = get_global_id(0);
     
@@ -2061,7 +2260,9 @@ __kernel void backtest_with_signals(
     
     // Validate bot configuration
     if (bot.leverage < 1 || bot.leverage > 125) {
+#ifdef DEBUG_KERNEL_PRINTF
         if (bot_idx == 0) printf("[KERNEL] Bot %d: Invalid leverage %d\n", bot_idx, bot.leverage);
+#endif
         results[bot_idx].bot_id = -9999;
         results[bot_idx].fitness_score = -999999.0f;
         return;
@@ -2069,8 +2270,10 @@ __kernel void backtest_with_signals(
     
     // DEBUG: Print bot config for first bot
     if (bot_idx == 0) {
+#ifdef DEBUG_KERNEL_PRINTF
         printf("[KERNEL] Bot %d: leverage=%d, num_indicators=%d, initial_balance=%.2f\n",
                bot_idx, bot.leverage, bot.num_indicators, initial_balance);
+#endif
     }
     
     if (bot.num_indicators == 0 || bot.num_indicators > 8) {
@@ -2334,8 +2537,11 @@ __kernel void backtest_with_signals(
         
         // DEBUG: Print cycle entry for first bot
         if (bot_idx == 0 && cycle == 0) {
+            /* Replay logs for debugging purposes. Guarded by DEBUG_KERNEL_PRINTF. */
+#ifdef DEBUG_KERNEL_PRINTF
             printf("[KERNEL] Bot %d Cycle %d: start_bar=%d, end_bar=%d, num_bars=%d\n",
                    bot_idx, cycle, start_bar, end_bar, num_bars);
+#endif
         }
         
         // Reset for new cycle - CRITICAL: Start fresh each cycle
@@ -2438,16 +2644,17 @@ __kernel void backtest_with_signals(
         
         // DEBUG: Print bar loop entry for bot 0 cycle 0
         if (bot_idx == 0 && cycle == 0) {
+            /* Debug: entering bar loop; guard with compile flag to avoid heavy kernel printf usage. */
+#ifdef DEBUG_KERNEL_PRINTF
             printf("[KERNEL] Bot %d Cycle %d: Entering bar loop, actual_start_bar=%d, end_bar=%d, total_bars=%d\n", 
                    bot_idx, cycle, actual_start_bar, end_bar, (end_bar - actual_start_bar + 1));
+#endif
         }
         
         // Iterate through bars in cycle (after warmup period)
         for (int bar = actual_start_bar; bar <= end_bar; bar++) {
             // DEBUG: Print first few bars for bot 0 cycle 0
-            if (bot_idx == 0 && cycle == 0 && bar < actual_start_bar + 3) {
-                printf("[KERNEL] Bot %d Cycle %d Bar %d: Processing...\n", bot_idx, cycle, bar);
-            }
+            // Bar processing (debug disabled for performance)
             
             // Generate signal from precomputed indicators
             float signal = generate_signal_consensus(
@@ -2461,6 +2668,7 @@ __kernel void backtest_with_signals(
                 htf_multiplier,
                 enable_mtf,
                 ohlcv
+                , bars_per_day
             );
             
             // Manage existing positions
@@ -2528,13 +2736,23 @@ __kernel void backtest_with_signals(
             // Open new positions if signal and balance allows
             if (signal != 0.0f && balance > 0.0f) {
                 if (num_positions < MAX_POSITIONS) {
+                    // FIXED: Apply volatility-adjusted leverage (Code Review Fix #14)
+                    float adjusted_leverage = calculate_adjusted_leverage(
+                        (float)bot.leverage,
+                        precomputed_indicators,
+                        bar,
+                        num_bars,
+                        current_dd,
+                        max_drawdown
+                    );
+                    
                     // Check free margin before attempting to open position
                     float free_margin = calculate_free_margin(
                         balance, 
                         positions, 
                         MAX_POSITIONS, 
                         ohlcv[bar].close, 
-                        (float)bot.leverage
+                        adjusted_leverage  // FIXED: Use adjusted leverage for margin calc
                     );
                     
                     // Only open if we have free margin available
@@ -2545,13 +2763,14 @@ __kernel void backtest_with_signals(
                         continue;
                     }
                     
-                    // UPDATED: calculate_position_size uses first indicator's strategy
+                    // FIXED: Use free_margin instead of balance (Code Review Fix #18)
+                    // Position sizing should only use available capital after accounting for existing positions
                     float desired_position_value = calculate_position_size(
-                        balance,
+                        free_margin,         // FIXED: Use free_margin, not balance
                         ohlcv[bar].close,
                         bot.indicator_risk_strategies[0],
                         bot.risk_param,
-                        (float)bot.leverage
+                        adjusted_leverage  // FIXED: Use adjusted leverage
                     );
                     
                     int direction = (signal > 0.0f) ? 1 : -1;
@@ -2566,7 +2785,7 @@ __kernel void backtest_with_signals(
                         &bot,                // CHANGED: pass bot for per-indicator strategies
                         0,                   // First indicator triggered (simplified for now)
                         bar,
-                        (float)bot.leverage,
+                        adjusted_leverage,   // FIXED: Use adjusted leverage
                         &balance,
                         ohlcv[bar].volume,  // NEW: for dynamic slippage
                         ohlcv[bar].high,    // NEW: for dynamic slippage
@@ -2875,6 +3094,7 @@ __kernel void backtest_parallel_bot_cycle(
     , const int num_htf_bars
     , const int htf_multiplier
     , const int enable_mtf
+    , const int bars_per_day
 ) {
     // Decode bot and cycle indices from work item ID
     int global_id = get_global_id(0);
@@ -2989,6 +3209,7 @@ __kernel void backtest_parallel_bot_cycle(
             htf_multiplier,
             enable_mtf,
             ohlcv
+            , bars_per_day
         );
         
         // Track signals generated

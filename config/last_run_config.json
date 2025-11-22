@@ -9,7 +9,7 @@
   "min_leverage": 20,
   "max_leverage": 50,
   "min_indicators": 1,
-  "max_indicators": 3,
+  "max_indicators": 5,
   "min_risk_strategies": 1,
   "max_risk_strategies": 1,
   "data_chunk_days": 200,

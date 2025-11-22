@@ -124,23 +124,27 @@ __kernel void debug_signal_generation(
             else if (bullish_pct <= 0.0f) final_signal = -1.0f;
         }
         
-        // Store debug record
+        // Store debug record (explicit initialization to avoid uninitialized memory)
         int record_idx = bot_id * num_samples + sample;
-        debug_records[record_idx].bot_id = bot_id;
-        debug_records[record_idx].cycle = cycle_to_debug;
-        debug_records[record_idx].bar = bar;
-        debug_records[record_idx].num_indicators = num_indicators;
-        debug_records[record_idx].valid_indicators = valid_count;
-        debug_records[record_idx].bullish_signals = bullish_count;
-        debug_records[record_idx].bearish_signals = bearish_count;
-        debug_records[record_idx].neutral_signals = neutral_count;
-        debug_records[record_idx].directional_signals = directional_signals;
-        debug_records[record_idx].final_signal = final_signal;
+        SignalDebugRecord rec;
+        rec.bot_id = bot_id;
+        rec.cycle = cycle_to_debug;
+        rec.bar = bar;
+        rec.num_indicators = num_indicators;
+        rec.valid_indicators = valid_count;
+        rec.bullish_signals = bullish_count;
+        rec.bearish_signals = bearish_count;
+        rec.neutral_signals = neutral_count;
+        rec.directional_signals = directional_signals;
+        rec.final_signal = final_signal;
         
         // Copy indicator values and signals
         for (int i = 0; i < 8; i++) {
-            debug_records[record_idx].indicator_values[i] = ind_vals[i];
-            debug_records[record_idx].indicator_signals[i] = ind_sigs[i];
+            rec.indicator_values[i] = ind_vals[i];
+            rec.indicator_signals[i] = ind_sigs[i];
         }
+        
+        // Write initialized struct to global memory
+        debug_records[record_idx] = rec;
     }
 }

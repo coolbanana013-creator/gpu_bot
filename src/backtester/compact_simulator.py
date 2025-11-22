@@ -320,6 +320,13 @@ class CompactBacktester:
         log_info(f"  - Compute Units: {self.compute_units}")
         if self.enable_mtf:
             log_info(f"  - MTF Enabled: HTF multiplier = {self.htf_multiplier}x (higher timeframe filtering)")
+        # Allow disabling many verbose debug logs to reduce output and memory
+        import os
+        self.disable_debug_logging = os.getenv('DISABLE_GPU_LOGGING', '0') == '1'
+
+    def _maybe_debug_log(self, message: str) -> None:
+        if not self.disable_debug_logging:
+            log_info(message)
     
     def __del__(self):
         """Cleanup OpenCL resources."""
@@ -374,6 +381,9 @@ class CompactBacktester:
         if os.getenv('DEBUG_ACCEPT_NEUTRAL', '0') == '1':
             log_info('[DEBUG] DEBUG_ACCEPT_NEUTRAL set - compiling kernel to accept neutral signals as directional for debug')
             backtest_src = '#define DEBUG_ACCEPT_NEUTRAL_AS_SIGNAL\n' + backtest_src
+        if os.getenv('DEBUG_BYPASS_QUALITY_FILTERS', '0') == '1':
+            log_info('[DEBUG] DEBUG_BYPASS_QUALITY_FILTERS set - compiling kernel with bypass for quality filters')
+            backtest_src = '#define DEBUG_BYPASS_QUALITY_FILTERS\n' + backtest_src
         
         try:
             self.backtest_program = cl.Program(self.ctx, backtest_src).build()
@@ -427,8 +437,9 @@ class CompactBacktester:
         debug_record_struct_size = 128  # Rough estimate (depends on kernel struct)
         total_records = num_bots_to_sample * num_samples
 
-        # Allocate buffer for records
-        debug_records_buf = cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY, size=total_records * debug_record_struct_size)
+        # Allocate and zero-initialize buffer for records to avoid reading uninitialized memory
+        debug_records_host = np.zeros(total_records * debug_record_struct_size, dtype=np.uint8)
+        debug_records_buf = cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY | cl.mem_flags.COPY_HOST_PTR, hostbuf=debug_records_host)
 
         # Create cycle ranges buffer for this single cycle
         cycle_ranges_array = np.array([cycle_start, cycle_end], dtype=np.int32)
@@ -624,9 +635,8 @@ class CompactBacktester:
                         pbar.update(1)
                 
                 # Explicit cleanup after chunk loop to release accumulated memory
-                import gc
-                gc.collect()
-                
+                    import gc
+                    gc.collect()
                 # Success! Break out of retry loop
                 break
                 
@@ -688,6 +698,7 @@ class CompactBacktester:
                     flat_bot_ids.append(bot_id)
                     flat_cycle_ids.append(cycle_idx)
                     flat_trades.append(trades)
+            
                     flat_wins.append(wins)
                     flat_pnls.append(pnl)
                     flat_signals.append(signals)  # NEW
@@ -1204,7 +1215,7 @@ class CompactBacktester:
 
         # === PHASE 1: PRELOAD ALL CHUNKS INTO MEMORY ===
         log_info("Preloading all data chunks into memory for parallel processing...")
-        log_info(f"[DEBUG] About to preload {len(data_chunks)} chunks")
+        self._maybe_debug_log(f"[DEBUG] About to preload {len(data_chunks)} chunks")
         preloaded_chunks = []
 
         for chunk in data_chunks:
@@ -1212,12 +1223,12 @@ class CompactBacktester:
             chunk_data = chunk['data']
             chunk_cycles = chunk['cycles']
             
-            log_info(f"[DEBUG] Preloading chunk {chunk_id}: {len(chunk_data)} bars, {len(chunk_cycles)} cycles")
+            self._maybe_debug_log(f"[DEBUG] Preloading chunk {chunk_id}: {len(chunk_data)} bars, {len(chunk_cycles)} cycles")
 
             # Precompute indicators for this chunk (done once upfront)
-            log_info(f"[DEBUG] Starting indicator precomputation for chunk {chunk_id}...")
+            self._maybe_debug_log(f"[DEBUG] Starting indicator precomputation for chunk {chunk_id}...")
             indicators_buffer = self._precompute_indicators(chunk_data)
-            log_info(f"[DEBUG] ✓ Indicators precomputed for chunk {chunk_id}")
+            self._maybe_debug_log(f"[DEBUG] ✓ Indicators precomputed for chunk {chunk_id}")
 
             preloaded_chunks.append({
                 'id': chunk_id,
@@ -1324,13 +1335,13 @@ class CompactBacktester:
         """
         batch_results = []
         
-        log_info(f"[DEBUG] About to process {len(batch_chunks)} chunks")
+        self._maybe_debug_log(f"[DEBUG] About to process {len(batch_chunks)} chunks")
         
         # Process chunks sequentially with progress tracking
         with tqdm(total=len(batch_chunks), desc="Processing chunks", unit="chunk") as pbar:
-            log_info(f"[DEBUG] Entered tqdm context, starting loop over {len(batch_chunks)} chunks")
+            self._maybe_debug_log(f"[DEBUG] Entered tqdm context, starting loop over {len(batch_chunks)} chunks")
             for chunk in batch_chunks:
-                log_info(f"[DEBUG] Loop iteration started for chunk {chunk.get('id', '?')}")
+                self._maybe_debug_log(f"[DEBUG] Loop iteration started for chunk {chunk.get('id', '?')}")
                 chunk_id = chunk['id']
                 chunk_data = chunk['data']
                 chunk_cycles = chunk['cycles']
@@ -1390,16 +1401,16 @@ class CompactBacktester:
         
         Optimized for data chunking approach where we process all bots against one chunk.
         """
-        log_info(f"[DEBUG] === _run_backtest_kernel_direct ENTERED ===")
+        self._maybe_debug_log(f"[DEBUG] === _run_backtest_kernel_direct ENTERED ===")
         num_bots = len(bots)
         num_bars = len(ohlcv_data)
         num_cycles = len(cycles)
-        log_info(f"[DEBUG] Params: {num_bots} bots, {num_bars} bars, {num_cycles} cycles")
+        self._maybe_debug_log(f"[DEBUG] Params: {num_bots} bots, {num_bars} bars, {num_cycles} cycles")
         
         # Serialize bot configs
-        log_info(f"[DEBUG] Serializing bots...")
+        self._maybe_debug_log(f"[DEBUG] Serializing bots...")
         bot_configs_raw = self._serialize_bots(bots)
-        log_info(f"[DEBUG] ✓ Bots serialized ({bot_configs_raw.nbytes} bytes)")
+        self._maybe_debug_log(f"[DEBUG] ✓ Bots serialized ({bot_configs_raw.nbytes} bytes)")
         
         bots_buf = cl.Buffer(
             self.ctx,
@@ -1463,7 +1474,10 @@ class CompactBacktester:
         close_counters_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
         close_counters_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=close_counters_host)
         
-        log_info(f"[DEBUG] close_counters[0] BEFORE kernel: {close_counters_host[0]}")
+        # Respect env var to disable verbose GPU debug logging (reduces memory and logs)
+        disable_gpu_logs = os.getenv("DISABLE_GPU_LOGGING", "0") == "1"
+        if not disable_gpu_logs:
+            self._maybe_debug_log(f"[DEBUG] close_counters[0] BEFORE kernel: {close_counters_host[0]}")
         
         # Execute backtest kernel for all bots
         kernel = self._backtest_kernel
@@ -1471,7 +1485,7 @@ class CompactBacktester:
         local_size = None  # Let OpenCL choose optimal work group size
         
         # DEBUG: Print kernel invocation parameters
-        log_info(f"[DEBUG] Launching backtest kernel:")
+        self._maybe_debug_log(f"[DEBUG] Launching backtest kernel:")
         log_info(f"  - num_bots: {num_bots}")
         log_info(f"  - num_bars: {num_bars}")
         log_info(f"  - num_cycles: {num_cycles}")
@@ -1480,7 +1494,7 @@ class CompactBacktester:
         log_info(f"  - initial_balance: {self.initial_balance}")
         log_info(f"  - chunk_global_start: {chunk_global_start}")
         log_info(f"  - chunk_global_end: {chunk_global_end if chunk_global_end else num_bars}")
-        log_info(f"[DEBUG] Kernel enqueued, waiting for execution...")
+        self._maybe_debug_log(f"[DEBUG] Kernel enqueued, waiting for execution...")
         
         import time
         start_time = time.time()
@@ -1509,7 +1523,7 @@ class CompactBacktester:
                 , close_counters_buf
             )
             
-            log_info(f"[DEBUG] Kernel enqueued successfully, waiting up to 60s...")
+            self._maybe_debug_log(f"[DEBUG] Kernel enqueued successfully, waiting up to 60s...")
             
             # Simple timeout approach - wait with timeout
             import threading
@@ -1533,26 +1547,30 @@ class CompactBacktester:
             for i in range(timeout_seconds):
                 time.sleep(1)
                 if finish_success[0]:
-                    log_info(f"[DEBUG] ✓ Kernel completed after {time.time() - start_time:.1f}s")
+                    if not disable_gpu_logs:
+                        self._maybe_debug_log(f"[DEBUG] ✓ Kernel completed after {time.time() - start_time:.1f}s")
                     break
                 if finish_error[0]:
-                    log_error(f"[DEBUG] ✗ Kernel error: {finish_error[0]}")
+                    if not disable_gpu_logs:
+                        self._maybe_debug_log(f"[DEBUG] ✗ Kernel error: {finish_error[0]}")
                     raise finish_error[0]
                 
                 # Check if kernel started by reading close_counters
                 if i == 2 or i == 5:
                     check_counters = np.zeros(num_bots * num_cycles, dtype=np.int32)
                     cl.enqueue_copy(self.queue, check_counters, close_counters_buf, is_blocking=True)
-                    log_info(f"[DEBUG] At {i}s: close_counters[0] = {check_counters[0]} (should be 99999 if kernel entered)")
+                    if not disable_gpu_logs:
+                        self._maybe_debug_log(f"[DEBUG] At {i}s: close_counters[0] = {check_counters[0]} (should be 99999 if kernel entered)")
                 
                 if i % 5 == 0:
-                    log_info(f"[DEBUG] Still waiting... {i}s elapsed (Check GPU usage in Task Manager)")
+                    if not disable_gpu_logs:
+                        self._maybe_debug_log(f"[DEBUG] Still waiting... {i}s elapsed (Check GPU usage in Task Manager)")
             else:
                 # Timeout reached
-                log_error(f"[DEBUG] ✗ TIMEOUT after {timeout_seconds}s - kernel hung!")
-                log_error(f"[DEBUG] The kernel was enqueued but never completed")
-                log_error(f"[DEBUG] GPU usage should be 60-100% but is likely 1-10%")
-                log_error(f"[DEBUG] This indicates kernel infinite loop or invalid memory access")
+                self._maybe_debug_log(f"[DEBUG] ✗ TIMEOUT after {timeout_seconds}s - kernel hung!")
+                self._maybe_debug_log(f"[DEBUG] The kernel was enqueued but never completed")
+                self._maybe_debug_log(f"[DEBUG] GPU usage should be 60-100% but is likely 1-10%")
+                self._maybe_debug_log(f"[DEBUG] This indicates kernel infinite loop or invalid memory access")
                 raise RuntimeError(f"Kernel execution timeout after {timeout_seconds}s")
             
         except cl.RuntimeError as e:
@@ -1640,14 +1658,12 @@ class CompactBacktester:
         
         # Serialize bot configs
         bot_configs_raw = self._serialize_bots(bots)
-        log_info(f"[DEBUG] Serializing {num_bots} bots -> {bot_configs_raw.nbytes} bytes (raw len={len(bot_configs_raw)})")
-        
+        # Serialization and buffer creation (debug logs disabled for performance)
         bots_buf = cl.Buffer(
             self.ctx,
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=bot_configs_raw
         )
-        log_info(f"[DEBUG] bots_buf created: {bot_configs_raw.nbytes} bytes")
         
         # OHLCV buffer
         ohlcv_flat = ohlcv_data.astype(np.float32)
@@ -1656,7 +1672,6 @@ class CompactBacktester:
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=ohlcv_flat
         )
-        log_info(f"[DEBUG] ohlcv_buf created: {ohlcv_flat.nbytes} bytes ({len(ohlcv_flat)} floats)")
         
         # Cycles buffers
         cycle_starts = np.array([c[0] for c in cycles], dtype=np.int32)
@@ -1667,14 +1682,12 @@ class CompactBacktester:
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=cycle_starts
         )
-        log_info(f"[DEBUG] cycle_starts_buf created: {len(cycle_starts)} entries")
         
         cycle_ends_buf = cl.Buffer(
             self.ctx,
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
             hostbuf=cycle_ends
         )
-        log_info(f"[DEBUG] cycle_ends_buf created: {len(cycle_ends)} entries")
 
         # Map local cycle index -> global cycle index for correct logging
         cycle_global_idx = np.array(cycle_indices, dtype=np.int32)
@@ -1691,7 +1704,6 @@ class CompactBacktester:
             cl.mem_flags.WRITE_ONLY,
             size=results_size * 4  # 4 bytes per float
         )
-        log_info(f"[DEBUG] results_buf created: {results_size * 4} bytes")
         # Optional GPU trade logging buffers
         trade_logs_buf = None
         trade_log_index_buf = None
@@ -1708,22 +1720,18 @@ class CompactBacktester:
                 cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR,
                 hostbuf=trade_log_index_host
             )
-            log_info(f"[DEBUG] trade_log_index_buf created: initial idx={int(trade_log_index_host[0])}")
-        else:
-            # Debug fallback: disable trade logging path if enabled (to isolate hangs)
-            log_info("[DEBUG] trade_log_enabled is False - skipping trade logs handling")
-            log_info(f"[DEBUG] trade_log_index_buf created")
         # Close counters buffer for kernel-level close diagnostics
         close_counters_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
         close_counters_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=close_counters_host)
-        log_info(f"[DEBUG] close_counters_buf created: {close_counters_host.nbytes} bytes (len={len(close_counters_host)})")
         
         # Execute kernel for all bot-cycle pairs in parallel
         global_size = (num_bots * num_cycles,)
+        # Determine bars per day based on timeframe - default 1m = 1440
+        bars_per_day = 1440
         
         try:
             kernel = self._backtest_parallel_kernel
-            log_info(f"[DEBUG] Invoking parallel backtest kernel: global_size={global_size}, num_bots={num_bots}, num_cycles={num_cycles}, num_bars={num_bars}")
+            # Kernel invocation (debug logs disabled for performance)
             kernel(
                 self.queue,
                 global_size,
@@ -1749,6 +1757,7 @@ class CompactBacktester:
                 , np.int32(num_htf_bars)
                 , np.int32(self.htf_multiplier)
                 , np.int32(1 if self.enable_mtf else 0)
+                , np.int32(bars_per_day)
             )
             
             # Use a timeout-enabled finish to avoid hanging the process
@@ -1770,37 +1779,37 @@ class CompactBacktester:
             start_t = _time.time()
             while _time.time() - start_t < timeout_seconds:
                 if finish_success[0]:
-                    log_info(f"[DEBUG] Kernel finished within {(_time.time()-start_t):.2f}s")
+                    self._maybe_debug_log(f"[DEBUG] Kernel finished within {(_time.time()-start_t):.2f}s")
                     break
                 if finish_error[0]:
-                    log_error(f"[DEBUG] Kernel finish error: {finish_error[0]}")
+                    self._maybe_debug_log(f"[DEBUG] Kernel finish error: {finish_error[0]}")
                     raise finish_error[0]
                 _time.sleep(poll_interval)
             else:
                 # Timeout reached - try to fetch current GPU usage and record
-                log_error(f"[DEBUG] Kernel finish timed out after {timeout_seconds}s. Kernel might be hung.")
+                self._maybe_debug_log(f"[DEBUG] Kernel finish timed out after {timeout_seconds}s. Kernel might be hung.")
                 # Read close counters buffer as a diagnostic attempt (non-blocking may also fail)
                 try:
                     cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf)
-                    log_info(f"[DEBUG] close_counters_sample: {close_counters_host[:min(10, len(close_counters_host))]}")
+                    self._maybe_debug_log(f"[DEBUG] close_counters_sample: {close_counters_host[:min(10, len(close_counters_host))]}")
                 except Exception as _e:
-                    log_error(f"[DEBUG] Failed to read close_counters during timeout handling: {_e}")
+                    self._maybe_debug_log(f"[DEBUG] Failed to read close_counters during timeout handling: {_e}")
                 # Attempt to cancel or raise error
                 raise RuntimeError(f"Kernel timeout after {timeout_seconds}s - likely hang")
             
-            log_info("[DEBUG] Kernel finished, reading results...")
+            self._maybe_debug_log("[DEBUG] Kernel finished, reading results...")
             # Read results
-            log_info(f"[DEBUG] Preparing to read results: results_size={results_size}")
+            self._maybe_debug_log(f"[DEBUG] Preparing to read results: results_size={results_size}")
             results_flat = np.empty(results_size, dtype=np.float32)
-            log_info("[DEBUG] Enqueuing copy to read results buffer...")
+            self._maybe_debug_log("[DEBUG] Enqueuing copy to read results buffer...")
             cl.enqueue_copy(self.queue, results_flat, results_buf)
-            log_info("[DEBUG] Results copy enqueued (results_flat size %d)" % results_flat.size)
+            self._maybe_debug_log("[DEBUG] Results copy enqueued (results_flat size %d)" % results_flat.size)
             # Optional: read trade logs if logging enabled
             trade_logs = None
             if self.trade_log_enabled:
                 # Get count
                 idx_host = np.empty(1, dtype=np.int32)
-                log_info("[DEBUG] Enqueuing copy to read trade_log_index_buf")
+                self._maybe_debug_log("[DEBUG] Enqueuing copy to read trade_log_index_buf")
                 # Try a blocking copy to force immediate result transfer; this may avoid hanging queue.finish
                 try:
                     cl.enqueue_copy(self.queue, idx_host, trade_log_index_buf, is_blocking=True)
@@ -1808,7 +1817,7 @@ class CompactBacktester:
                     # Fallback (some pyopencl versions accept named param differently)
                     cl.enqueue_copy(self.queue, idx_host, trade_log_index_buf, True)
                 # Use timeout finish here in case GPU copy blocks
-                log_info("[DEBUG] Waiting for trade log index copy to finish (with timeout)")
+                self._maybe_debug_log("[DEBUG] Waiting for trade log index copy to finish (with timeout)")
                 import time as _time, threading as _threading
                 finish_success = [False]
                 finish_error = [None]
@@ -1827,24 +1836,24 @@ class CompactBacktester:
                     if finish_success[0]:
                         break
                     if finish_error[0]:
-                        log_error(f"[DEBUG] Trade log index copy finish error: {finish_error[0]}")
+                        self._maybe_debug_log(f"[DEBUG] Trade log index copy finish error: {finish_error[0]}")
                         raise finish_error[0]
                     _time.sleep(0.1)
                 else:
-                    log_error(f"[DEBUG] Trade log index copy finish timed out after {_timeout}s")
+                    self._maybe_debug_log(f"[DEBUG] Trade log index copy finish timed out after {_timeout}s")
                     # Attempt to read close_counters buffer for diagnostics
                     try:
                         tmp = np.empty_like(close_counters_host)
                         cl.enqueue_copy(self.queue, tmp, close_counters_buf)
-                        log_info(f"[DEBUG] close_counters_sample (on timeout): {tmp[:min(10, len(tmp))]}")
+                        self._maybe_debug_log(f"[DEBUG] close_counters_sample (on timeout): {tmp[:min(10, len(tmp))]}")
                     except Exception as _e:
-                        log_error(f"[DEBUG] Failed reading close counters during trade_log_index timeout: {_e}")
+                        self._maybe_debug_log(f"[DEBUG] Failed reading close counters during trade_log_index timeout: {_e}")
                     raise RuntimeError("Trade log index copy finish timeout")
                 count = int(idx_host[0])
                 if count > 0:
                     count = min(count, self.trade_log_max)
                     trade_logs = np.empty(self.trade_log_max, dtype=TRADE_LOG_DTYPE)
-                    log_info(f"[DEBUG] Reading {count} trade logs for streaming write")
+                    self._maybe_debug_log(f"[DEBUG] Reading {count} trade logs for streaming write")
                     cl.enqueue_copy(self.queue, trade_logs, trade_logs_buf)
                     self.queue.finish()
                     trade_logs = trade_logs[:count]
@@ -1858,14 +1867,14 @@ class CompactBacktester:
                         log_warning("Trade log writer not initialized, logs will be dropped")
 
             # Read close counters for diagnostics
-            log_info("[DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)")
+            self._maybe_debug_log("[DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)")
             # Attempt blocking copy for diagnostics (should be fast)
             try:
                 cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf, is_blocking=True)
             except TypeError:
                 cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf, True)
             # Timeout-safe finish to avoid hanging
-            log_info("[DEBUG] Waiting for close counters copy to finish (with timeout)")
+            self._maybe_debug_log("[DEBUG] Waiting for close counters copy to finish (with timeout)")
             import time as _time, threading as _threading
             finish_success2 = [False]
             finish_error2 = [None]
@@ -1884,11 +1893,11 @@ class CompactBacktester:
                 if finish_success2[0]:
                     break
                 if finish_error2[0]:
-                    log_error(f"[DEBUG] Close counters copy finish error: {finish_error2[0]}")
+                    self._maybe_debug_log(f"[DEBUG] Close counters copy finish error: {finish_error2[0]}")
                     raise finish_error2[0]
                 _time.sleep(0.1)
             else:
-                log_error(f"[DEBUG] Close counters copy finish timed out after {_timeout2}s")
+                self._maybe_debug_log(f"[DEBUG] Close counters copy finish timed out after {_timeout2}s")
                 raise RuntimeError("Close counters copy finish timed out")
             # Write close counters to CSV for later debug (append)
             cc_path = Path('logs') / 'close_counters.csv'

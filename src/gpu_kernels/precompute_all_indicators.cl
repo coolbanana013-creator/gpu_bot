@@ -436,8 +436,11 @@ void compute_adx(__global OHLCVBar *ohlcv, int num_bars, int period, __global fl
     }
     
     for (int bar = 0; bar < num_bars; bar++) {
-        if (bar < period) {
-            out[bar] = 0.0f;
+        // FIXED: ADX needs 2× period for full warmup (Code Review Fix #7)
+        // First period: compute +DI/-DI smoothing
+        // Second period: compute ADX smoothing
+        if (bar < period * 2) {
+            out[bar] = NAN;  // Mark as invalid instead of 0.0
             continue;
         }
         
@@ -809,12 +812,13 @@ void compute_pivot_points(__global OHLCVBar *ohlcv, int num_bars, __global float
 }
 
 // Fractal High (1 indicator: 42)
+// FIXED: Return NaN when no fractal (Code Review Fix #16)
 void compute_fractal_high(__global OHLCVBar *ohlcv, int num_bars, int period, __global float *out) {
     int mid = period / 2;
     
     for (int bar = 0; bar < num_bars; bar++) {
         if (bar < period - 1) {
-            out[bar] = 0.0f;
+            out[bar] = NAN;  // FIXED: NaN instead of 0.0f
             continue;
         }
         
@@ -829,17 +833,20 @@ void compute_fractal_high(__global OHLCVBar *ohlcv, int num_bars, int period, __
             }
         }
         
-        out[bar] = is_fractal ? center_high : 0.0f;
+        // FIXED: Return NaN when no fractal found (95% of bars)
+        // This distinguishes 'no signal' from 'price at zero'
+        out[bar] = is_fractal ? center_high : NAN;
     }
 }
 
 // Fractal Low (1 indicator: 43)
+// FIXED: Return NaN when no fractal (Code Review Fix #16)
 void compute_fractal_low(__global OHLCVBar *ohlcv, int num_bars, int period, __global float *out) {
     int mid = period / 2;
     
     for (int bar = 0; bar < num_bars; bar++) {
         if (bar < period - 1) {
-            out[bar] = 0.0f;
+            out[bar] = NAN;  // FIXED: NaN instead of 0.0f
             continue;
         }
         
@@ -854,7 +861,9 @@ void compute_fractal_low(__global OHLCVBar *ohlcv, int num_bars, int period, __g
             }
         }
         
-        out[bar] = is_fractal ? center_low : 0.0f;
+        // FIXED: Return NaN when no fractal found (95% of bars)
+        // This distinguishes 'no signal' from 'price at zero'
+        out[bar] = is_fractal ? center_low : NAN;
     }
 }
 

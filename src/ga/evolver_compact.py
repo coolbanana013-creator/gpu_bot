@@ -161,17 +161,21 @@ class GeneticAlgorithmEvolver:
         else:
             raise RuntimeError("GPU context not provided - GPU acceleration required")
         
-        # GPU logging acceleration
+        # GPU logging acceleration: allow disabling via environment variable
+        import os
         self.gpu_logger = None
-        if gpu_context is not None and gpu_queue is not None:
-            try:
-                self.gpu_logger = GPULoggingProcessor(gpu_context, gpu_queue)
-                log_info("GPU logging acceleration enabled")
-            except Exception as e:
-                log_error(f"Failed to initialize GPU logging processor: {e}")
-                raise RuntimeError("GPU logging processor initialization failed - cannot continue without GPU acceleration")
+        if os.getenv("DISABLE_GPU_LOGGING", "0") == "1":
+            log_info("DISABLE_GPU_LOGGING=1: Skipping GPU logging processor initialization")
         else:
-            raise RuntimeError("GPU context not provided - GPU acceleration required")
+            if gpu_context is not None and gpu_queue is not None:
+                try:
+                    self.gpu_logger = GPULoggingProcessor(gpu_context, gpu_queue)
+                    log_info("GPU logging acceleration enabled")
+                except Exception as e:
+                    log_error(f"Failed to initialize GPU logging processor: {e}")
+                    raise RuntimeError("GPU logging processor initialization failed - cannot continue without GPU acceleration")
+            else:
+                raise RuntimeError("GPU context not provided - GPU acceleration required")
         
         self.current_generation = 0
         self.population: List[CompactBotConfig] = []
@@ -392,20 +396,30 @@ class GeneticAlgorithmEvolver:
         Args:
             population: Current population
             results: Backtest results
-            survival_rate: Fraction of population to keep (target survivor count)
+            generation: Current generation number (used for relaxed criteria in early generations)
+            prefer_win_rate: Whether to prioritize win rate over profit
             
         Returns:
             Tuple of (surviving_bots, surviving_results) with 100% unique indicator combinations
         """
         # Step 1: Filter bots where BOTH criteria are met:
-        # a) Positive average profit percentage (> 0%)
-        # b) Max drawdown < 30% (< 0.30)
+        # Use relaxed criteria for early generations (0-2) to preserve diversity
+        # Gradually tighten criteria in later generations
+        if generation <= 2:
+            # Early generations: very relaxed criteria to preserve diversity
+            min_profit_pct = -20.0  # Allow 20% loss
+            min_profitable_cycles_pct = 0.40  # Only 40% cycles need to be profitable
+            max_drawdown_threshold = 0.40  # Allow 40% drawdown
+        else:
+            # Later generations: strict criteria for convergence
+            min_profit_pct = -10.0  # Allow 10% loss
+            min_profitable_cycles_pct = 0.70  # 70% cycles profitable
+            max_drawdown_threshold = 0.30  # 30% max drawdown
+        
         profitable_pairs = []
         eliminated_negative_profit = 0
         eliminated_high_drawdown = 0
         eliminated_no_cycles = 0
-        
-        MAX_DRAWDOWN_THRESHOLD = 0.15  # 15% maximum drawdown allowed
         
         for bot, result in zip(population, results):
             # Calculate average profit percentage across all cycles
@@ -416,25 +430,22 @@ class GeneticAlgorithmEvolver:
             # Use average per-cycle profit percent rather than cumulative across cycles.
             avg_profit_pct = ((sum(result.per_cycle_pnl) / num_cycles) / self.initial_balance) * 100
             
-            # Check 1: Average profit > -10% (allow small losses for trend-followers)
-            if avg_profit_pct < -10.0:
+            # Check 1: Average profit threshold (generation-aware)
+            if avg_profit_pct < min_profit_pct:
                 eliminated_negative_profit += 1
                 continue
             
-            # Check 2: At least 70% of cycles profitable (FIXED from 100%)
-            # Requiring ALL cycles profitable is mathematically impossible with 125x leverage
-            # Even pro traders have 20-30% losing periods
+            # Check 2: Profitable cycles percentage (generation-aware)
             profitable_cycles = sum(
                 1 for pnl in result.per_cycle_pnl if pnl > 0.0
             )
             profitable_pct = profitable_cycles / num_cycles if num_cycles > 0 else 0
-            if profitable_pct < 0.70:  # 70% threshold
+            if profitable_pct < min_profitable_cycles_pct:
                 eliminated_high_drawdown += 1  # Reuse counter for simplicity
                 continue
             
-            # Check 3: Max drawdown < 30% (FIXED from 15%)
-            # 125x leverage makes 15% DD threshold unrealistic
-            if result.max_drawdown >= 0.30:  # 30% threshold
+            # Check 3: Max drawdown threshold (generation-aware)
+            if result.max_drawdown >= max_drawdown_threshold:
                 eliminated_high_drawdown += 1
                 continue
             
@@ -465,8 +476,12 @@ class GeneticAlgorithmEvolver:
         
         # Check if any bots passed
         if not profitable_pairs:
-            log_error(f"SURVIVAL FILTER: {eliminated_negative_profit} high loss (>-10%), {eliminated_high_drawdown} failed criteria, {eliminated_no_cycles} no cycles, 0 bots passed")
-            log_error("No bots met criteria: avg profit > -10% AND 70%+ cycles profitable AND max drawdown < 30%")
+            if generation <= 2:
+                log_error(f"SURVIVAL FILTER (Gen {generation}, RELAXED): {eliminated_negative_profit} high loss (>{min_profit_pct:.0f}%), {eliminated_high_drawdown} failed criteria, {eliminated_no_cycles} no cycles, 0 bots passed")
+                log_error(f"No bots met RELAXED criteria: avg profit > {min_profit_pct:.0f}% AND {min_profitable_cycles_pct*100:.0f}%+ cycles profitable AND max drawdown < {max_drawdown_threshold*100:.0f}%")
+            else:
+                log_error(f"SURVIVAL FILTER (Gen {generation}): {eliminated_negative_profit} high loss (>{min_profit_pct:.0f}%), {eliminated_high_drawdown} failed criteria, {eliminated_no_cycles} no cycles, 0 bots passed")
+                log_error(f"No bots met criteria: avg profit > {min_profit_pct:.0f}% AND {min_profitable_cycles_pct*100:.0f}%+ cycles profitable AND max drawdown < {max_drawdown_threshold*100:.0f}%")
             log_error("Generating completely new population for next generation")
             # Return empty survivors - refill_population will generate all new bots
             return [], []
