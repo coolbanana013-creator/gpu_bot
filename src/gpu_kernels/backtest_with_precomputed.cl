@@ -192,16 +192,16 @@ typedef struct {
 
 // Configurable filter thresholds - can be overridden at compile-time via -D flags
 #ifndef ADX_MIN_THRESHOLD
-#define ADX_MIN_THRESHOLD 14.0f
+#define ADX_MIN_THRESHOLD 20.0f  // EXPERIMENT: Stricter ADX for stronger trends (was 14.0)
 #endif
 #ifndef ADX_MAX_THRESHOLD
-#define ADX_MAX_THRESHOLD 50.0f
+#define ADX_MAX_THRESHOLD 45.0f  // EXPERIMENT: Avoid overextended trends earlier (was 50.0)
 #endif
 #ifndef ATR_SPIKE_FACTOR
-#define ATR_SPIKE_FACTOR 4.0f
+#define ATR_SPIKE_FACTOR 3.0f  // EXPERIMENT: Stricter volatility filter (was 4.0)
 #endif
 #ifndef VOLUME_MULTIPLIER_THRESHOLD
-#define VOLUME_MULTIPLIER_THRESHOLD 1.0f
+#define VOLUME_MULTIPLIER_THRESHOLD 1.2f  // EXPERIMENT: Require above-average volume (was 1.0)
 #endif
 
 // ============================================================================
@@ -380,12 +380,12 @@ void calculate_dynamic_tp_sl(
     float bar_range = (current_high - current_low) / current_price;
     float atr_proxy = fmax(bar_range, 0.001f);  // Minimum 0.1% to avoid division by zero
     
-    // VOLATILITY-AWARE PROFIT TARGETS
-    // In strong trends (filtered by ADX), use wider profit targets
-    // This function is called after signal quality check, so we're in a trend
-    // Assumption: If we reach here, ADX > 25 (strong trend confirmed)
-    // Use 1.5x wider profit targets in trending markets
-    float trend_multiplier = 1.5f;
+    // EXPERIMENTAL: Wid profit targets for high winrate (2.0x instead of 1.5x)
+    // Better risk/reward ratios = higher average win size = can tolerate slightly lower winrate
+    // Combined with stricter entry filters = fewer trades but bigger wins
+    // This function is called after signal quality check, so we're in a confirmed trend
+    // Assumption: If we reach here, ADX > 20 (strong trend confirmed)
+    float trend_multiplier = 2.0f;  // EXPERIMENT: 2.0x wider TPs (was 1.5x)
     
     switch(risk_strategy) {
         case RISK_ATR_MULTIPLIER:
@@ -937,14 +937,14 @@ int check_signal_quality(
         }
     }
     
-    // FIXED: RSI Filter with correct logic (Code Review Fix #11)
-    // Block moderate extremes (likely to reverse)
-    // Allow strong momentum (< 15 or > 85) and neutral range (30-70)
+    // EXPERIMENTAL: Stricter RSI filter for high winrate - block all overbought/oversold
+    // Avoid entering when RSI shows potential exhaustion or imminent reversal
+    // Only allow RSI in 35-65 range (neutral momentum, not overextended)
     float rsi = precomputed_indicators[16 * num_bars + bar];
     if (!isnan(rsi)) {
-        // Block moderate overbought/oversold (70-85 and 15-30)
-        // These levels often indicate upcoming reversal
-            if ((rsi >= 70.0f && rsi <= 85.0f) || (rsi >= 15.0f && rsi <= 30.0f)) {
+        // EXPERIMENT: Block any overbought/oversold (>65 or <35)
+        // Only trade in neutral RSI zone to avoid reversals
+            if (rsi < 35.0f || rsi > 65.0f) {
             if (filter_debug_buf != 0) {
                 filter_debug_buf[debug_filter_index] |= FILTER_BIT_RSI;
 #ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
@@ -1414,14 +1414,13 @@ float generate_signal_consensus(
     float bullish_pct = weighted_bullish / total_weight;
     float bearish_pct = weighted_bearish / total_weight;
     
-    // FIXED: Lowered to 60% consensus (Code Review Fix #3)
-    // 75% was too restrictive, blocked 95% of trades
-    // 60% allows realistic multi-indicator agreement while maintaining quality
-    // During debugging, set a much lower threshold to force trades
+    // EXPERIMENTAL: High winrate optimization - 80% consensus for premium signals
+    // Higher consensus = more indicators agreeing = higher probability trades
+    // Trade frequency will decrease but win rate should increase dramatically
     #ifdef DEBUG_FORCE_LOW_CONSENSUS
     float consensus_threshold = 0.01f; // VERY LOW for debug - any signal accepted
     #else
-    float consensus_threshold = 0.60f;  // 60% consensus for realistic agreement
+    float consensus_threshold = 0.80f;  // 80% consensus for high-quality signals (EXPERIMENT)
     #endif
     // Runtime debug override: accept any signal if debug_disable_filters true
     if (debug_disable_filters) consensus_threshold = 0.01f;
