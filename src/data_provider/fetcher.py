@@ -13,6 +13,7 @@ from pathlib import Path
 import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 import threading
+import msvcrt  # Windows file locking
 
 from ..utils.validation import (
     validate_pair, validate_timeframe, validate_int,
@@ -265,15 +266,40 @@ class DataFetcher:
     
     def _save_data(self, df: pd.DataFrame, file_path: Path) -> None:
         """
-        Save DataFrame to Parquet file.
+        Save DataFrame to Parquet file with file locking to prevent race conditions.
         
         Args:
             df: DataFrame to save
             file_path: Path to save to
         """
         try:
-            df.to_parquet(file_path, index=False, compression='snappy')
-            log_debug(f"Saved data to {file_path.name}")
+            # Use a lock file to prevent concurrent writes
+            lock_file = file_path.with_suffix('.lock')
+            
+            # Open lock file in exclusive mode
+            with open(lock_file, 'w') as lock_handle:
+                # Acquire exclusive lock (Windows)
+                msvcrt.locking(lock_handle.fileno(), msvcrt.LK_LOCK, 1)
+                
+                try:
+                    # Check if file was created by another process while waiting for lock
+                    if file_path.exists():
+                        log_debug(f"File {file_path.name} already exists (created by another process)")
+                        return
+                    
+                    # Save the data
+                    df.to_parquet(file_path, index=False, compression='snappy')
+                    log_debug(f"Saved data to {file_path.name}")
+                finally:
+                    # Release lock
+                    msvcrt.locking(lock_handle.fileno(), msvcrt.LK_UNLCK, 1)
+            
+            # Remove lock file
+            try:
+                lock_file.unlink()
+            except:
+                pass  # Ignore errors removing lock file
+                
         except Exception as e:
             log_error(f"Failed to save data to {file_path.name}: {e}")
             raise
