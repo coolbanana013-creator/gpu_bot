@@ -405,21 +405,22 @@ class GeneticAlgorithmEvolver:
         # Step 1: Filter bots where BOTH criteria are met:
         # Use relaxed criteria for early generations (0-2) to preserve diversity
         # Gradually tighten criteria in later generations
+        # Enforce the following survival criteria across generations:
+        # - Average profit per cycle > 0% (avg_profit_pct > 0)
+        # - Max drawdown across cycles <= 15% (<= 0.15)
+        # Use slightly relaxed cycle profitability threshold for early generations
+        min_profit_pct = 0.0  # Require avg profit > 0%
         if generation <= 2:
-            # Early generations: very relaxed criteria to preserve diversity
-            min_profit_pct = -20.0  # Allow 20% loss
-            min_profitable_cycles_pct = 0.40  # Only 40% cycles need to be profitable
-            max_drawdown_threshold = 0.40  # Allow 40% drawdown
+            min_profitable_cycles_pct = 0.40  # Early generations: 40% cycles profitable
         else:
-            # Later generations: strict criteria for convergence
-            min_profit_pct = -10.0  # Allow 10% loss
-            min_profitable_cycles_pct = 0.70  # 70% cycles profitable
-            max_drawdown_threshold = 0.30  # 30% max drawdown
+            min_profitable_cycles_pct = 0.70  # Later generations: 70% cycles profitable
+        max_drawdown_threshold = 0.15  # 15% max drawdown across cycles
         
         profitable_pairs = []
         eliminated_negative_profit = 0
         eliminated_high_drawdown = 0
         eliminated_no_cycles = 0
+        eliminated_no_trades = 0
         
         for bot, result in zip(population, results):
             # Calculate average profit percentage across all cycles
@@ -444,10 +445,15 @@ class GeneticAlgorithmEvolver:
                 eliminated_high_drawdown += 1  # Reuse counter for simplicity
                 continue
             
-            # Check 3: Max drawdown threshold (generation-aware)
+            # Check 3: Max drawdown threshold (global across cycles)
             if result.max_drawdown >= max_drawdown_threshold:
                 eliminated_high_drawdown += 1
                 continue
+
+            # Check for trades in each cycle; log but do not eliminate by default
+            all_cycles_have_trades = all(t > 0 for t in result.per_cycle_trades) if result.per_cycle_trades else False
+            if not all_cycles_have_trades:
+                eliminated_no_trades += 1
             
             # Check 4: Minimum win rate threshold when optimizing for win rate
             if prefer_win_rate and result.win_rate < 60.0:  # 60% minimum win rate for 90%+ target
@@ -461,14 +467,23 @@ class GeneticAlgorithmEvolver:
             
             # Bot passed all criteria
             # Compute a score that optionally emphasizes win rate (for selecting top bots)
+            # Compute bonuses
+            all_cycles_positive = all(pnl > 0.0 for pnl in result.per_cycle_pnl) if result.per_cycle_pnl else False
+            winrate_bonus = max(0.0, result.win_rate - 50.0) * 0.5  # scaled bonus for >50% win rate
+            all_positive_bonus = 25.0 if all_cycles_positive else 0.0  # significant reward for consistency
+
             if prefer_win_rate:
                 # Use win_rate ULTRA EXTREMELY heavily (200x weight for 90%+ target)
                 win_rate_weight = result.win_rate * 200.0
                 drawdown_penalty = result.max_drawdown * 100.0
                 score = avg_profit_pct + win_rate_weight - drawdown_penalty
+                # Apply bonuses
+                score += winrate_bonus + all_positive_bonus
             else:
                 # Default scoring primarily by profit and penalize drawdown moderately
                 score = avg_profit_pct - (result.max_drawdown * 100.0 * 0.5)
+                # Apply bonuses
+                score += winrate_bonus + all_positive_bonus
 
             # Store combo so we can enforce unique combinations later
             combo = frozenset(bot.indicator_indices[:bot.num_indicators])
@@ -486,7 +501,7 @@ class GeneticAlgorithmEvolver:
             # Return empty survivors - refill_population will generate all new bots
             return [], []
         
-        log_info(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} failed criteria, {len(profitable_pairs)} bots passed")
+        log_info(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} failed criteria, {eliminated_no_trades} missing trades cycles, {len(profitable_pairs)} bots passed")
         
         # Step 2: Sort by either the provided scoring function or fitness score
         if prefer_win_rate:
@@ -552,7 +567,8 @@ class GeneticAlgorithmEvolver:
         total_passed_filters = len(profitable_pairs)
         unique_count = len(surviving_pairs)
         eliminated_total = len(population) - len(profitable_pairs)
-        log_info(f"SURVIVAL: {unique_count} survivors (from {total_passed_filters} bots with positive profit % AND all cycles profitable AND max DD < 15%)")
+        # Use clearer messaging: we rely on average profit and per-cycle positive threshold, not strict 'all cycles profitable'
+        log_info(f"SURVIVAL: {unique_count} survivors (from {total_passed_filters} bots: avg profit and per-cycle thresholds passed; max DD < 15%)")
         log_info(f"ELIMINATED: {eliminated_total} bots total")
         
         return survivor_bots, survivor_results
@@ -976,31 +992,27 @@ class GeneticAlgorithmEvolver:
         if not results:
             print(f"Gen {gen}: 0 survivors")
             return
-        
-        # Results are already filtered to survivors only
+
         # Calculate averages across all survivors
-        # Compute per-cycle average PnL (average of per-cycle PnLs) to avoid
-        # exaggerating profits across multiple independent cycles.
-        # If cycles are isolated (balance resets each cycle), total_pnl
-        # is the sum of per-cycle PnLs and dividing by initial_balance
-        # yields a cumulative percent across cycles. We prefer average
-        # per-cycle percentage for summary clarity.
         avg_pnl_per_cycle = np.mean([
             (sum(r.per_cycle_pnl) / len(r.per_cycle_pnl)) if len(r.per_cycle_pnl) > 0 else 0.0
             for r in results
         ])
         avg_pnl_pct = (avg_pnl_per_cycle / initial_balance) * 100
+        median_pnl_pct = np.median([((sum(r.per_cycle_pnl) / len(r.per_cycle_pnl)) if len(r.per_cycle_pnl) > 0 else 0.0) / initial_balance * 100 for r in results])
         avg_winrate = np.mean([r.win_rate for r in results])  # Already stored as percentage (0-100)
         avg_trades = np.mean([r.total_trades for r in results])
         avg_sharpe = np.mean([r.sharpe_ratio for r in results])
         avg_drawdown = np.mean([r.max_drawdown for r in results]) * 100  # Convert to percentage
         max_pnl = max([r.total_pnl for r in results])
-        
-        # Print compact summary showing survivors
-        print(f"Gen {gen}: {survivor_count} survivors | "
-              f"Avg: {avg_pnl_pct:+.1f}% profit, {avg_winrate:.1f}% WR, {avg_drawdown:.1f}% DD, "
-              f"{avg_trades:.0f} trades, {avg_sharpe:.2f} Sharpe | "
-              f"Best: ${max_pnl:.2f}")
+
+        # Print compact summary showing survivors (shows mean and median to reduce outlier skew)
+        print(
+            f"Gen {gen}: {survivor_count} survivors | "
+            f"Avg(mean/median): {avg_pnl_pct:+.1f}% / {median_pnl_pct:+.1f}% profit, "
+            f"{avg_winrate:.1f}% WR, {avg_drawdown:.1f}% DD, "
+            f"{avg_trades:.0f} trades, {avg_sharpe:.2f} Sharpe | Best: ${max_pnl:.2f}"
+        )
     
     def log_generation_bots(self, gen: int, bots: List[CompactBotConfig], results: List[BacktestResult], initial_balance: float = 100.0, num_cycles: int = 10):
         """Log individual bot performance for this generation to a CSV file."""
@@ -1037,12 +1049,13 @@ class GeneticAlgorithmEvolver:
         with open(csv_file, 'w', newline='') as f:
             writer = csv.writer(f, delimiter=';')  # Use semicolon as delimiter
             
-            # Write header (include per-cycle columns)
+            # Write header (include averages, totals and per-cycle columns)
             header = [
                 'Generation', 'BotID', 
                 'FitnessScore', 'SharpeRatio', 'MaxDrawdown', 'SurvivedGenerations',
                 'NumIndicators', 'Leverage', 'NumCycles', 'IndicatorsUsed',
-                'AllCyclesHaveTrades', 'AllCyclesProfitable'
+                'AllCyclesHaveTrades', 'AllCyclesProfitable',
+                'TotalProfitPct', 'AvgProfitPctPerCycle', 'TotalTrades', 'AvgTradesPerCycle', 'AvgWinRate'
             ]
             # Add dynamic per-cycle columns
             for i in range(num_cycles):
@@ -1069,6 +1082,13 @@ class GeneticAlgorithmEvolver:
                     for i in range(num_cycles)
                 )
                 
+                # Calculate totals/averages for this bot
+                total_profit_pct = (result.total_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0
+                avg_profit_pct_per_cycle = (sum(result.per_cycle_pnl) / num_cycles) / initial_balance * 100 if num_cycles > 0 and initial_balance != 0 else 0.0
+                total_trades = sum(result.per_cycle_trades) if result.per_cycle_trades else 0
+                avg_trades_per_cycle = float(total_trades) / num_cycles if num_cycles > 0 else 0.0
+                avg_winrate = (sum((result.per_cycle_wins[i] / result.per_cycle_trades[i] * 100.0) for i in range(num_cycles) if result.per_cycle_trades[i] > 0) / num_cycles) if num_cycles > 0 else 0.0
+
                 row = [
                     gen,
                     bot.bot_id,
@@ -1083,6 +1103,14 @@ class GeneticAlgorithmEvolver:
                     'TRUE' if all_cycles_have_trades else 'FALSE',
                     'TRUE' if all_cycles_profitable else 'FALSE'
                 ]
+                # Add new aggregated fields
+                row.extend([
+                    round(total_profit_pct, 2),
+                    round(avg_profit_pct_per_cycle, 2),
+                    int(total_trades),
+                    round(avg_trades_per_cycle, 2),
+                    round(avg_winrate, 2)
+                ])
 
                 # Append per-cycle stats (trades, profit% relative to initial balance, winrate)
                 for i in range(num_cycles):

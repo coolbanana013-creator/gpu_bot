@@ -134,6 +134,14 @@ typedef struct {
     float trailing_sl_price;  // FIXED: Trailing stop loss (Code Review Fix #19)
 } Position;
 
+// Debug filter masks (for per-cycle aggregate reason bitmap)
+#define FILTER_BIT_ADX        (1 << 0)
+#define FILTER_BIT_ATR        (1 << 1)
+#define FILTER_BIT_VOLUME     (1 << 2)
+#define FILTER_BIT_SR         (1 << 3)
+#define FILTER_BIT_RSI        (1 << 4)
+#define FILTER_BIT_NAN        (1 << 5)
+
 // ============================================================================
 // CONSTANTS
 // ============================================================================
@@ -163,6 +171,10 @@ typedef struct {
 // Risk-free rate for Sharpe ratio
 #define RISK_FREE_RATE 0.02f        // 2% annual risk-free rate
 
+// Performance tuning
+#define MAX_SR_LOOKBACK 256
+#define MAX_VOLUME_LOOKBACK 1024
+
 // ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
@@ -177,6 +189,20 @@ unsigned int xorshift32(unsigned int *state) {
     x ^= x << 5;
     *state = x;
     return x;
+}
+
+// Cap indicator period proportional to timeframe to avoid unrealistic large lookbacks
+inline int cap_period_to_tf(int period, int bars_per_day) {
+    // If bars_per_day >= 1440 (1m base), allow shorter historical backtest - 30 day cap
+    int max_days = 30;
+    if (bars_per_day >= 1440) max_days = 30;        // 1m: 30 days
+    else if (bars_per_day >= 60) max_days = 180;    // 1h: 180 days (~6 months)
+    else max_days = 365;                            // 1d: 365 days (~1 year)
+
+    int max_bars = max_days * bars_per_day;
+    if (period <= 0) return period;
+    if (period > max_bars) return max_bars;
+    return period;
 }
 
 /**
@@ -743,8 +769,16 @@ int check_signal_quality(
     int num_htf_bars,
     int htf_multiplier,
     int enable_mtf,
-    int bars_per_day
+    int bars_per_day,
+    int debug_disable_filters,
+    int debug_bypass_sr,
+    int debug_bypass_volume
+    , int debug_force_signals
+    , __global int *filter_debug_buf
+    , int debug_filter_index
 ) {
+    // Debug mode: bypass filters to allow trades for testing/tracing
+    if (debug_disable_filters) return 1;
     // Prefer HTF (higher timeframe) ADX/ATR if available (more meaningful than base 1m ADX)
     float adx = precomputed_indicators[27 * num_bars + bar];
     float atr = precomputed_indicators[20 * num_bars + bar];
@@ -761,93 +795,72 @@ int check_signal_quality(
     
     // Skip if NaN
     if (isnan(adx) || isnan(atr)) {
+        // Mark NaN-related filter
+        if (filter_debug_buf != 0) {
+            filter_debug_buf[debug_filter_index] |= FILTER_BIT_NAN;
+        }
         return 0;  // Filter out - insufficient data
     }
     
-    // FIXED: ADX Filter (Code Review Fix #10)
-    // Threshold raised to 22 for better trend detection
+    // FIXED: ADX Filter (Code Review Fix #10 + Filter Debug Analysis)
+    // Further loosened ADX threshold to 14 based on filter debug analysis showing ADX blocks 100% of cases
+    // 1m timeframe requires lower thresholds: ADX 0-14 = weak/ranging, 14-20 = developing, 20-40 = strong
     // Research: ADX 0-20 = weak/ranging, 20-25 = developing, 25-40 = strong, 40+ = very strong/late
-    if (adx < 22.0f) {
+    if (adx < 14.0f) {
+        if (filter_debug_buf != 0) {
+            filter_debug_buf[debug_filter_index] |= FILTER_BIT_ADX;
+        }
         return 0;  // Filter out - weak trend or ranging market
     }
     // Block late-stage trends (ADX > 50 often precedes reversals)
     if (adx > 50.0f) {
+        if (filter_debug_buf != 0) {
+            filter_debug_buf[debug_filter_index] |= FILTER_BIT_ADX;
+        }
         return 0;  // Filter out - overextended trend, reversal risk
     }
     
     // ATR Filter: Avoid extreme volatility
     // Get ATR_20 for comparison (indicator index 21)
+    // Further loosened from 3.0x to 4.0x based on filter debug showing ATR blocks 100% of cases
     float atr_20 = precomputed_indicators[21 * num_bars + bar];
-    if (!isnan(atr_20) && atr > atr_20 * 2.0f) {
+    if (!isnan(atr_20) && atr > atr_20 * 4.0f) {
+        if (filter_debug_buf != 0) {
+            filter_debug_buf[debug_filter_index] |= FILTER_BIT_ATR;
+        }
         return 0;  // Filter out - volatility spike, unpredictable
     }
     
-    // Volume Filter: Require above-average volume (institutional participation)
+    // Volume Filter: Use precomputed Volume SMA indicator for O(1) access
     // Scale volume lookback based on timeframe (bars_per_day): use ~20 day average by default
-    // CODE REVIEW FIX #27: Known performance bottleneck (O(n) per bar = O(n²) overall)
-    // TODO: Optimize with rolling sum (O(1) updates) or precompute Volume_SMA indicator
-    // Current implementation: acceptable for 20-bar lookback, consider using precomputed Volume_SMA(20)
-    int volume_lookback = 20;
-    if (bars_per_day > 0) {
-        int scaled = (int)(20.0f * (float)bars_per_day / 1440.0f); // 20 days by default
-        if (scaled > volume_lookback) volume_lookback = scaled;
-    }
-    float volume_sum = 0.0f;
-    int volume_count = 0;
-    for (int i = bar - volume_lookback; i <= bar; i++) {
-        if (i >= 0 && i < num_bars) {
-            volume_sum += ohlcv[i].volume;
-            volume_count++;
-        }
-    }
-    if (volume_count > 0) {
-        float volume_ma = volume_sum / volume_count;
-        float current_volume = ohlcv[bar].volume;
+    float current_volume = ohlcv[bar].volume;
+    float volume_ma = precomputed_indicators[40 * num_bars + bar]; // Volume SMA(20)
         
-        // FIXED: Lowered to 1.1x baseline (Code Review Fix #8)
-        // 1.3x was too restrictive, blocked 80-90% of valid signals
-        // Use 1.1x for normal trades, 1.3x for reversals would be ideal
-        if (current_volume < volume_ma * 1.1f) {
+    // FIXED: Lowered baseline for volume to 1.0x to be less aggressive and avoid starving low-volume bars
+    if (!debug_bypass_volume && !isnan(volume_ma)) {
+        if (current_volume < volume_ma * 1.0f) {
+            if (filter_debug_buf != 0) {
+                filter_debug_buf[debug_filter_index] |= FILTER_BIT_VOLUME;
+            }
             return 0;  // Filter out - below average volume
         }
     }
     
-    // Support/Resistance Filter: Avoid trades near recent swing points
+    // Support/Resistance Filter: Avoid trades near recent swing points using precomputed indicator 44
     // Scale S/R lookback based on timeframe (bars_per_day): prefer ~50 days equivalent
     // CODE REVIEW FIX #26: Known performance bottleneck (O(n²) = 1.2M × 50 = 60M iterations)
     // TODO: Optimize by precomputing swing points in separate kernel pass
     // Current implementation: acceptable for < 50 lookback, consider optimization for larger windows
-    int sr_lookback = 50;
-    if (bars_per_day > 0) {
-        sr_lookback = (int)(50.0f * (float)bars_per_day / 1440.0f);
-        if (sr_lookback < 50) sr_lookback = 50;
-    }
-    // Check last sr_lookback bars for swing highs/lows
+    // Use precomputed support/resistance mid-level (indicator 44); compare proximity with ATR-based buffer
+    float sr_mid = precomputed_indicators[44 * num_bars + bar];
     float current_price = ohlcv[bar].close;
-    for (int i = bar - sr_lookback; i < bar; i++) {
-        if (i < 0 || i >= num_bars) continue;
-        
-        // Check if this was a swing high (higher than neighbors)
-        if (i > 0 && i < num_bars - 1) {
-            if (ohlcv[i].high > ohlcv[i-1].high && ohlcv[i].high > ohlcv[i+1].high) {
-                float swing_high = ohlcv[i].high;
-                // FIXED: Use ATR-based buffer instead of percentage (Code Review Fix #9)
-                // Adaptive to volatility: ATR × 0.5 = half ATR distance
-                float buffer = atr * 0.5f;
-                if (fabs(current_price - swing_high) < buffer) {
-                    return 0;  // Filter out - too close to resistance
-                }
+    if (!debug_bypass_sr && !isnan(sr_mid)) {
+        float buffer = atr * 0.5f;
+        if (fabs(current_price - sr_mid) < buffer) {
+            if (filter_debug_buf != 0) {
+                filter_debug_buf[debug_filter_index] |= FILTER_BIT_SR;
             }
-            
-            // Check if this was a swing low (lower than neighbors)
-            if (ohlcv[i].low < ohlcv[i-1].low && ohlcv[i].low < ohlcv[i+1].low) {
-                float swing_low = ohlcv[i].low;
-                // FIXED: Use ATR-based buffer (Code Review Fix #9)
-                float buffer = atr * 0.5f;
-                if (fabs(current_price - swing_low) < buffer) {
-                    return 0;  // Filter out - too close to support
-                }
-            }
+            return 0; // Filter out - too close to support/resistance midpoint
         }
     }
     
@@ -859,6 +872,9 @@ int check_signal_quality(
         // Block moderate overbought/oversold (70-85 and 15-30)
         // These levels often indicate upcoming reversal
         if ((rsi >= 70.0f && rsi <= 85.0f) || (rsi >= 15.0f && rsi <= 30.0f)) {
+            if (filter_debug_buf != 0) {
+                filter_debug_buf[debug_filter_index] |= FILTER_BIT_RSI;
+            }
             return 0;  // Filter out - moderate extreme, reversal likely
         }
         // Allow: RSI < 15 (strong momentum), RSI > 85 (strong momentum)
@@ -895,16 +911,19 @@ float generate_signal_consensus(
     int htf_multiplier,
     int enable_mtf,
     __global OHLCVBar *ohlcv,
-    int bars_per_day
+    int bars_per_day,
+    int debug_disable_filters,
+    int debug_bypass_sr,
+    int debug_bypass_volume,
+    int debug_force_signals,
+    __global int *filter_debug_buf,
+    int debug_filter_index
 ) {
     if (bot->num_indicators == 0) return 0.0f;
     
-    // SIGNAL QUALITY CHECK: Filter out low-quality setups
-#ifndef DEBUG_BYPASS_QUALITY_FILTERS
-    if (!check_signal_quality(precomputed_indicators, ohlcv, bot, bar, num_bars, htf_indicators, num_htf_bars, htf_multiplier, enable_mtf, bars_per_day)) {
-        return 0.0f;  // No trade in weak trends or high volatility
-    }
-#endif
+    // NOTE: We now compute consensus first and only apply signal quality filters
+    // to directional signals. This ensures that neutral indicators (no direction)
+    // do not cause preemptive filtering and are not counted towards consensus.
     
     float weighted_bullish = 0.0f;
     float weighted_bearish = 0.0f;
@@ -1288,13 +1307,23 @@ float generate_signal_consensus(
             neutral_indicators++; // an indicator produced neutral signal; do not count
         }
     }
+
+    // DEBUG: If no directional indicators produced a signal, optionally force a signal
+    if (debug_force_signals && weighted_bullish == 0.0f && weighted_bearish == 0.0f) {
+        float price_now = ohlcv[bar].close;
+        float price_prev = (bar > 0) ? ohlcv[bar - 1].close : price_now;
+        if (price_now >= price_prev) return 1.0f; else return -1.0f;
+    }
     
         // Need at least one directional indicator
         if (valid_indicators == 0 || total_weight == 0.0f) {
-        // If debugging is enabled, we might accept neutral consensus as a signal
+        // If debugging is enabled, accept neutral consensus as a weak signal (use price direction)
     #ifdef DEBUG_ACCEPT_NEUTRAL_AS_SIGNAL
-        // Return neutral as 0.0f (no signal), but for debug we return 0.0f explicitly
-        return 0.0f;
+        // Force a directional signal based on current price vs previous bar
+        float price_now = ohlcv[bar].close;
+        float price_prev = (bar > 0) ? ohlcv[bar - 1].close : price_now;
+        if (price_now >= price_prev) return 0.1f;  // Weak bullish
+        else return -0.1f;  // Weak bearish
     #else
         return 0.0f;
     #endif
@@ -1308,11 +1337,21 @@ float generate_signal_consensus(
     // 75% was too restrictive, blocked 95% of trades
     // 60% allows realistic multi-indicator agreement while maintaining quality
     // During debugging, set a much lower threshold to force trades
-#ifdef DEBUG_FORCE_LOW_CONSENSUS
+    #ifdef DEBUG_FORCE_LOW_CONSENSUS
     float consensus_threshold = 0.01f; // VERY LOW for debug - any signal accepted
-#else
+    #else
     float consensus_threshold = 0.60f;  // 60% consensus for realistic agreement
-#endif
+    #endif
+    // Runtime debug override: accept any signal if debug_disable_filters true
+    if (debug_disable_filters) consensus_threshold = 0.01f;
+    
+    // Apply quality filters only for directional consensus (non-zero)
+    // This avoids preemptively blocking bars that are neutral by nature.
+    if (!debug_disable_filters && (weighted_bullish > 0.0f || weighted_bearish > 0.0f)) {
+        if (!check_signal_quality(precomputed_indicators, ohlcv, bot, bar, num_bars, htf_indicators, num_htf_bars, htf_multiplier, enable_mtf, bars_per_day, debug_disable_filters, debug_bypass_sr, debug_bypass_volume, debug_force_signals, filter_debug_buf, debug_filter_index)) {
+            return 0.0f;  // No trade - low quality signal
+        }
+    }
     
     // Determine base timeframe signal
     float base_signal = 0.0f;
@@ -2258,6 +2297,11 @@ __kernel void backtest_with_signals(
     , const int htf_multiplier
     , const int enable_mtf
     , const int bars_per_day
+    , const int debug_disable_filters  /* 0 = normal, 1 = disable filters for debugging */
+    , const int debug_bypass_sr       /* 1 = bypass S/R checks */
+    , const int debug_bypass_volume   /* 1 = bypass volume checks */
+    , const int debug_force_signals   /* 1 = force signals for debug (create a trade when none present) */
+    , __global int *filter_debug_buf     /* per-bot per-cycle filter debug bitmap (optional) */
 ) {
     int bot_idx = get_global_id(0);
     
@@ -2583,63 +2627,66 @@ __kernel void backtest_with_signals(
             float period = bot.indicator_params[i][0];
             float period2 = bot.indicator_params[i][1];
             float period3 = bot.indicator_params[i][2];
+            int p = cap_period_to_tf((int)period, bars_per_day);
+            int p2 = cap_period_to_tf((int)period2, bars_per_day);
+            int p3 = cap_period_to_tf((int)period3, bars_per_day);
             
             int indicator_warmup = 0;
             
             // Moving Averages (0-11)
             if (idx >= 0 && idx <= 5) {
                 // SMA: needs exactly period bars
-                indicator_warmup = (int)period;
+                indicator_warmup = p;
             } else if (idx >= 6 && idx <= 11) {
                 // EMA/DEMA/TEMA: need 5x period for 99% convergence (FIXED from 3x - Code Review Fix #6)
-                indicator_warmup = (int)(period * 5.0f);
+                indicator_warmup = p * 5;
             }
             // Momentum Indicators (12-19)
             else if (idx >= 12 && idx <= 14) {
                 // RSI: needs 2x period for stability
-                indicator_warmup = (int)(period * 2.0f);
+                indicator_warmup = p * 2;
             } else if (idx == 15) {
                 // CODE REVIEW FIX #21: Stochastic needs period + smooth_k (e.g., 14 + 3 = 17)
                 // period2 contains smooth_k parameter
-                indicator_warmup = (int)(period + period2);
+                indicator_warmup = p + p2;
             } else if (idx == 16) {
                 // CODE REVIEW FIX #21: StochRSI = RSI(2x period) + Stochastic(period) = 3x period
-                indicator_warmup = (int)(period * 3.0f);
+                indicator_warmup = p * 3;
             } else if (idx >= 17 && idx <= 19) {
                 // Momentum, ROC, Williams: need period + buffer
-                indicator_warmup = (int)period + 10;
+                indicator_warmup = p + 10;
             }
             // Volatility Indicators (20-25)
             else if (idx >= 20 && idx <= 22) {
                 // ATR, NATR: need 2x period for smoothing
-                indicator_warmup = (int)(period * 2.0f);
+                indicator_warmup = p * 2;
             } else if (idx == 23 || idx == 24) {
                 // Bollinger Bands: need 5x period for stable standard deviation (FIXED from 3x - Code Review Fix #6)
-                indicator_warmup = (int)(period * 5.0f);
+                indicator_warmup = p * 5;
             } else if (idx == 25) {
                 // Keltner Channel: needs period + ATR warmup
-                indicator_warmup = (int)(period * 2.5f);
+                indicator_warmup = (int)(p * 2.5f);
             }
             // Trend Indicators (26-35)
             else if (idx == 26) {
                 // MACD: needs slow_ema*5 + signal*3 for proper convergence (FIXED - Code Review Fix #6)
-                indicator_warmup = (int)(period2 * 5.0f + period3 * 3.0f);
+                indicator_warmup = p2 * 5 + p3 * 3;
             } else if (idx == 27) {
                 // ADX: needs 2x period (DI calculation + ADX smoothing)
-                indicator_warmup = (int)(period * 2.0f);
+                indicator_warmup = p * 2;
             } else if (idx >= 28 && idx <= 35) {
                 // Aroon, CCI, DPO, SAR, SuperTrend, Trend Strength
-                indicator_warmup = (int)(period * 1.5f);
+                indicator_warmup = (int)(p * 1.5f);
             }
             // Volume Indicators (36-40)
             else if (idx >= 36 && idx <= 40) {
                 // OBV, VWAP, MFI, A/D, Volume SMA
-                indicator_warmup = (int)period + 20;
+                indicator_warmup = p + 20;
             }
             // Pattern Indicators (41-45)
             else if (idx >= 41 && idx <= 45) {
                 // Pivot Points, Fractals, S/R, Price Channel
-                indicator_warmup = (int)period + 10;
+                indicator_warmup = p + 10;
             }
             // Simple Indicators (46-49)
             else if (idx >= 46 && idx <= 49) {
@@ -2671,6 +2718,8 @@ __kernel void backtest_with_signals(
 #endif
         }
         
+        // Precompute debug index for this bot-cycle
+        int debug_filter_index = bot_idx * num_cycles + cycle;
         // Iterate through bars in cycle (after warmup period)
         for (int bar = actual_start_bar; bar <= end_bar; bar++) {
             // DEBUG: Print first few bars for bot 0 cycle 0
@@ -2689,6 +2738,12 @@ __kernel void backtest_with_signals(
                 enable_mtf,
                 ohlcv
                 , bars_per_day
+                , debug_disable_filters
+                , debug_bypass_sr
+                , debug_bypass_volume
+                , debug_force_signals
+                , filter_debug_buf
+                , debug_filter_index
             );
             
             // Manage existing positions
@@ -3115,11 +3170,17 @@ __kernel void backtest_parallel_bot_cycle(
     , const int htf_multiplier
     , const int enable_mtf
     , const int bars_per_day
+    , const int debug_disable_filters  /* 0 = normal, 1 = disable filters for debugging */
+    , const int debug_bypass_sr       /* 1 = bypass S/R checks */
+    , const int debug_bypass_volume   /* 1 = bypass volume checks */
+    , const int debug_force_signals   /* 1 = force signals for debug (create a trade when none present) */
+    , __global int *filter_debug_buf     /* per-bot per-cycle filter debug bitmap (optional) */
 ) {
     // Decode bot and cycle indices from work item ID
     int global_id = get_global_id(0);
     int bot_idx = global_id / num_cycles;
     int cycle_idx = global_id % num_cycles;
+    int debug_filter_index = bot_idx * num_cycles + cycle_idx;
     
     // Bounds check
     if (bot_idx >= num_bots || cycle_idx >= num_cycles) {
@@ -3230,6 +3291,12 @@ __kernel void backtest_parallel_bot_cycle(
             enable_mtf,
             ohlcv
             , bars_per_day
+            , debug_disable_filters
+            , debug_bypass_sr
+            , debug_bypass_volume
+            , debug_force_signals
+            , filter_debug_buf
+            , debug_filter_index
         );
         
         // Track signals generated

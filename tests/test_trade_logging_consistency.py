@@ -47,7 +47,7 @@ def run_backtest_for_bot(bot_id: int):
     )
 
     # Load data and run backtester
-    ctx = cl.create_some_context()
+    ctx = cl.create_some_context(interactive=False)
     queue = cl.CommandQueue(ctx)
     file_paths = sorted(Path('data') / 'BTC_USDT' / '1m' .glob('*.parquet')) if False else sorted((Path('data')/'BTC_USDT'/'1m').glob('*.parquet'))
     loader = DataLoader(file_paths=file_paths, timeframe='1m', random_seed=42, gpu_context=ctx, gpu_queue=queue, use_gpu_processing=False)

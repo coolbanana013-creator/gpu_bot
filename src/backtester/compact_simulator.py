@@ -18,6 +18,7 @@ import numpy as np
 import os
 import pyopencl as cl
 from typing import List, Tuple, Dict
+import math
 from dataclasses import dataclass
 from pathlib import Path
 import time
@@ -83,7 +84,7 @@ class TradeLogStreamWriter:
         try:
             # Open CSV file once
             csv_file = open(self.csv_path, 'a', newline='')
-            csv_writer = csv.writer(csv_file)
+            csv_writer = csv.writer(csv_file, delimiter=';')
             
             while not self.shutdown_event.is_set() or not self.write_queue.empty():
                 try:
@@ -128,6 +129,14 @@ class TradeLogStreamWriter:
             return
         
         rows = []
+        def safe_int(v, default=0):
+            try:
+                if isinstance(v, float) and not math.isfinite(v):
+                    return default
+                return int(v)
+            except Exception:
+                return default
+
         for log_entry in buffer:
             # Handle both numpy structured array and tuple formats
             if isinstance(log_entry, tuple):
@@ -135,21 +144,29 @@ class TradeLogStreamWriter:
                 bot_id, cycle, entry_price, exit_price, entry_bar, exit_bar, leverage, pnl, direction, chunk_id, out_of_cycle = log_entry
             else:
                 # Numpy structured array format
-                bot_id = int(log_entry['bot_id'])
-                cycle = int(log_entry['cycle'])
+                bot_id = safe_int(log_entry['bot_id'])
+                cycle = safe_int(log_entry['cycle'])
                 entry_price = float(log_entry['entry_price'])
                 exit_price = float(log_entry['exit_price'])
-                entry_bar = int(log_entry['entry_bar'])
-                exit_bar = int(log_entry['exit_bar'])
+                entry_bar = safe_int(log_entry['entry_bar'])
+                exit_bar = safe_int(log_entry['exit_bar'])
                 leverage = float(log_entry['leverage'])
                 pnl = float(log_entry['pnl'])
-                direction = int(log_entry['direction'])
-                chunk_id = int(log_entry['chunk_id'])
-                out_of_cycle = int(log_entry['out_of_cycle'])
+                direction = safe_int(log_entry['direction'], default=0)
+                chunk_id = safe_int(log_entry['chunk_id'])
+                out_of_cycle = safe_int(log_entry['out_of_cycle'])
             
             # Compute signature for deduplication
-            direction_str = 'LONG' if direction == 1 else 'SHORT'
-            pnl_cents = int(round(pnl * 100))
+            # Ensure we guard against NaN/Inf values which would break int conversions
+            direction_str = 'LONG' if direction == 1 else ('SHORT' if direction == -1 else 'UNKNOWN')
+            if not isinstance(pnl, float) or not math.isfinite(pnl):
+                pnl_cents = 'nan'
+            else:
+                try:
+                    pnl_cents = int(round(pnl * 100))
+                except OverflowError:
+                    pnl_cents = 'inf'
+
             signature = f"{entry_bar}:{exit_bar}:{direction_str}:{pnl_cents}"
             
             rows.append([
@@ -323,6 +340,11 @@ class CompactBacktester:
         # Allow disabling many verbose debug logs to reduce output and memory
         import os
         self.disable_debug_logging = os.getenv('DISABLE_GPU_LOGGING', '0') == '1'
+        # Debug bypass / filters toggles at runtime
+        self.debug_disable_filters = int(os.getenv('DEBUG_DISABLE_FILTERS', '0') == '1')
+        self.debug_bypass_sr = int(os.getenv('DEBUG_BYPASS_SR', '0') == '1')
+        self.debug_bypass_volume = int(os.getenv('DEBUG_BYPASS_VOLUME', '0') == '1')
+        self.debug_force_signals = int(os.getenv('DEBUG_FORCE_SIGNALS', '0') == '1')
 
     def _maybe_debug_log(self, message: str) -> None:
         if not self.disable_debug_logging:
@@ -1473,6 +1495,9 @@ class CompactBacktester:
         # CRITICAL: Check if bot 0 writes 99999 to [0] - proves kernel entered
         close_counters_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
         close_counters_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=close_counters_host)
+        # Allocate per-bot per-cycle filter debug buffer (bitmask of failing filters)
+        filter_debug_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
+        filter_debug_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=filter_debug_host)
         
         # Respect env var to disable verbose GPU debug logging (reduces memory and logs)
         disable_gpu_logs = os.getenv("DISABLE_GPU_LOGGING", "0") == "1"
@@ -1495,6 +1520,10 @@ class CompactBacktester:
         log_info(f"  - chunk_global_start: {chunk_global_start}")
         log_info(f"  - chunk_global_end: {chunk_global_end if chunk_global_end else num_bars}")
         self._maybe_debug_log(f"[DEBUG] Kernel enqueued, waiting for execution...")
+        # Local-style fallback (kept for backward compatibility), main values come from self.debug_*
+        debug_disable_filters = self.debug_disable_filters
+        debug_bypass_sr = self.debug_bypass_sr
+        debug_bypass_volume = self.debug_bypass_volume
         
         import time
         start_time = time.time()
@@ -1521,6 +1550,11 @@ class CompactBacktester:
                 , np.int32(chunk_global_start)
                 , np.int32(chunk_global_end if chunk_global_end else num_bars)
                 , close_counters_buf
+                , np.int32(self.debug_disable_filters)
+                , np.int32(self.debug_bypass_sr)
+                , np.int32(self.debug_bypass_volume)
+                , np.int32(self.debug_force_signals)
+                , filter_debug_buf
             )
             
             self._maybe_debug_log(f"[DEBUG] Kernel enqueued successfully, waiting up to 60s...")
@@ -1602,7 +1636,9 @@ class CompactBacktester:
                 self._write_trade_logs_csv(trade_logs)
 
         # Read close counters for diagnostics and write CSV
-        cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf)
+            cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf)
+            # Read back per-filter debug bitmap
+            cl.enqueue_copy(self.queue, filter_debug_host, filter_debug_buf)
         self.queue.finish()
         cc_path = Path('logs') / 'close_counters.csv'
         write_header = not cc_path.exists()
@@ -1723,6 +1759,9 @@ class CompactBacktester:
         # Close counters buffer for kernel-level close diagnostics
         close_counters_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
         close_counters_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=close_counters_host)
+        # filter debug buffer for per-bot per-cycle filter bits
+        filter_debug_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
+        filter_debug_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=filter_debug_host)
         
         # Execute kernel for all bot-cycle pairs in parallel
         global_size = (num_bots * num_cycles,)
@@ -1731,6 +1770,9 @@ class CompactBacktester:
         
         try:
             kernel = self._backtest_parallel_kernel
+            debug_disable_filters = self.debug_disable_filters
+            debug_bypass_sr = self.debug_bypass_sr
+            debug_bypass_volume = self.debug_bypass_volume
             # Kernel invocation (debug logs disabled for performance)
             kernel(
                 self.queue,
@@ -1758,6 +1800,11 @@ class CompactBacktester:
                 , np.int32(self.htf_multiplier)
                 , np.int32(1 if self.enable_mtf else 0)
                 , np.int32(bars_per_day)
+                , np.int32(self.debug_disable_filters)
+                , np.int32(self.debug_bypass_sr)
+                , np.int32(self.debug_bypass_volume)
+                , np.int32(self.debug_force_signals)
+                , filter_debug_buf
             )
             
             # Use a timeout-enabled finish to avoid hanging the process
@@ -1873,6 +1920,11 @@ class CompactBacktester:
                 cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf, is_blocking=True)
             except TypeError:
                 cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf, True)
+            # Read per-filter debug bits from GPU
+            try:
+                cl.enqueue_copy(self.queue, filter_debug_host, filter_debug_buf, is_blocking=True)
+            except TypeError:
+                cl.enqueue_copy(self.queue, filter_debug_host, filter_debug_buf, True)
             # Timeout-safe finish to avoid hanging
             self._maybe_debug_log("[DEBUG] Waiting for close counters copy to finish (with timeout)")
             import time as _time, threading as _threading
@@ -1913,6 +1965,19 @@ class CompactBacktester:
                             # Use global cycle index for CSV
                             global_cycle = cycle_global_idx[c_idx]
                             writer.writerow([bots[b_idx].bot_id, global_cycle, kc])
+                # Append filter debug summary CSV for each bot-cycle
+            fb_path = Path('logs') / 'filter_debug.csv'
+            write_header2 = not fb_path.exists()
+            with open(fb_path, 'a', newline='') as f:
+                writer2 = csv.writer(f, delimiter=';')
+                if write_header2:
+                    writer2.writerow(['BotID', 'Cycle', 'FilterDebugBits'])
+                for b_idx in range(num_bots):
+                    for c_idx in range(num_cycles):
+                        bits = int(filter_debug_host[b_idx * num_cycles + c_idx])
+                        if bits != 0:
+                            global_cycle = cycle_global_idx[c_idx]
+                            writer2.writerow([bots[b_idx].bot_id, global_cycle, bits])
             
         except cl.RuntimeError as e:
             log_error(f"GPU kernel execution failed: {e}")
@@ -1938,12 +2003,15 @@ class CompactBacktester:
                     close_counter = int(close_counters_host[bot_idx * num_cycles + cycle_idx])
                     print(f"  [DEBUG] Bot {bots[bot_idx].bot_id} Cycle {cycle_idx}: kernel reports {trades_val} trades, close_counter={close_counter}")
                 
+                filter_bits = int(filter_debug_host[bot_idx * num_cycles + cycle_idx])
                 results[bot_idx][cycle_idx] = {
                     'trades': trades_val,
                     'wins': wins_val,
                     'pnl': pnl_val,
                     'signals': signals_val
                 }
+                if filter_bits != 0:
+                    results[bot_idx][cycle_idx]['filter_debug_bits'] = filter_bits
         
         # Cleanup
         bots_buf.release()
@@ -2871,10 +2939,51 @@ class CompactBacktester:
         
         for i, bot in enumerate(bots):
             structured[i]['bot_id'] = bot.bot_id
-            structured[i]['num_indicators'] = bot.num_indicators
-            structured[i]['indicator_indices'] = bot.indicator_indices
-            structured[i]['indicator_params'] = bot.indicator_params
-            structured[i]['indicator_risk_strategies'] = bot.indicator_risk_strategies
+            # Ensure num_indicators is consistent with the indicator_indices provided
+            num_inds = int(bot.num_indicators)
+            if num_inds > 8:
+                log_warning(f"Bot {bot.bot_id} num_indicators={num_inds} > 8; truncating to 8")
+                num_inds = 8
+            structured[i]['num_indicators'] = num_inds
+            # Ensure indicator arrays match expected shapes (8, ) and (8,3)
+            try:
+                inds = np.array(bot.indicator_indices, dtype=np.uint8).flatten()
+            except Exception:
+                inds = np.zeros(8, dtype=np.uint8)
+            if inds.size > 8:
+                log_warning(f"Bot {bot.bot_id} has {inds.size} indicator_indices; truncating to 8")
+                inds = inds[:8]
+            elif inds.size < 8:
+                # Pad
+                inds = np.concatenate([inds, np.zeros(8 - inds.size, dtype=np.uint8)])
+            structured[i]['indicator_indices'] = inds
+
+            try:
+                ipar = np.asarray(bot.indicator_params, dtype=np.float32)
+                # Flatten rows if necessary
+                if ipar.ndim == 1:
+                    # e.g., serialized as flat list of 24 floats
+                    ipar = ipar.reshape((-1, 3)) if ipar.size >= 3 else np.zeros((0, 3), dtype=np.float32)
+            except Exception:
+                ipar = np.zeros((0, 3), dtype=np.float32)
+            if ipar.shape[0] > 8:
+                log_warning(f"Bot {bot.bot_id} has {ipar.shape[0]} indicator_params; truncating to 8")
+                ipar = ipar[:8, :]
+            elif ipar.shape[0] < 8:
+                # pad to 8 rows
+                pad_rows = np.zeros((8 - ipar.shape[0], 3), dtype=np.float32)
+                ipar = np.vstack([ipar, pad_rows]) if ipar.size else pad_rows
+            structured[i]['indicator_params'] = ipar
+
+            try:
+                irs = np.array(bot.indicator_risk_strategies, dtype=np.uint8).flatten()
+            except Exception:
+                irs = np.zeros(8, dtype=np.uint8)
+            if irs.size > 8:
+                irs = irs[:8]
+            elif irs.size < 8:
+                irs = np.concatenate([irs, np.zeros(8 - irs.size, dtype=np.uint8)])
+            structured[i]['indicator_risk_strategies'] = irs
             structured[i]['risk_param'] = bot.risk_param
             structured[i]['tp_multiplier'] = bot.tp_multiplier
             structured[i]['sl_multiplier'] = bot.sl_multiplier

@@ -419,6 +419,14 @@ def get_mode1_parameters() -> dict:
     )
     params['interactive_mode'] = (interactive and interactive.lower() in ['y', 'yes'])
     
+    # Filter control - disable all signal quality filters for testing
+    disable_filters = get_user_input(
+        "Disable all signal quality filters (ADX/ATR/Volume/SR/RSI)? (y/n)",
+        last_defaults.get('disable_filters', "n"),
+        lambda x: x.lower() if x.lower() in ['y', 'n', 'yes', 'no'] else (_ for _ in ()).throw(ValueError("Must be 'y' or 'n'"))
+    )
+    params['disable_filters'] = (disable_filters and disable_filters.lower() in ['y', 'yes'])
+    
     return params
 
 
@@ -446,6 +454,15 @@ def run_mode1(params: dict, gpu_context, gpu_queue, gpu_info: dict) -> None:
         log_info(f"Configuration saved to {config_path}")
     except Exception as e:
         log_warning(f"Failed to save configuration: {e}")
+    
+    # Set filter control environment variable
+    if params.get('disable_filters', False):
+        os.environ['DEBUG_DISABLE_FILTERS'] = '1'
+        log_info("Signal quality filters DISABLED (DEBUG_DISABLE_FILTERS=1)")
+    else:
+        if 'DEBUG_DISABLE_FILTERS' in os.environ:
+            del os.environ['DEBUG_DISABLE_FILTERS']
+        log_info("Signal quality filters ENABLED")
     
     # Start data loading profiling
     data_loading_start = time.time()

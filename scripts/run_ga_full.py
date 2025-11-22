@@ -26,7 +26,7 @@ if args.trade_logs:
     os.environ['TRADE_LOG_MAX'] = str(args.trade_log_max)
 
 # Create GPU context
-ctx = cl.create_some_context()
+ctx = cl.create_some_context(interactive=False)
 queue = cl.CommandQueue(ctx)
 
 # Build file list

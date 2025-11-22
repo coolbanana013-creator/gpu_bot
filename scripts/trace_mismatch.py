@@ -84,7 +84,7 @@ except Exception as e:
 print('Trace bot:', bot.bot_id, 'ind count', bot.num_indicators, 'leverage', bot.leverage)
 
 # Prepare data
-ctx = cl.create_some_context()
+ctx = cl.create_some_context(interactive=False)
 queue = cl.CommandQueue(ctx)
 data_dir = Path('data')/args.pair/args.timeframe
 file_paths = sorted(data_dir.glob('*.parquet'))

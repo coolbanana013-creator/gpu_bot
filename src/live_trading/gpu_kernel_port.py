@@ -997,7 +997,8 @@ def generate_signal_consensus(
     indicator_params: Dict[int, List[float]],
     indicator_history: Dict[int, List[float]],
     bar_index: int,
-    price: float = 0.0
+    price: float = 0.0,
+    force_signals: bool = False
 ) -> Tuple[float, Dict]:
     """
     Generate signal from indicators using 100% consensus (ignoring neutrals).
@@ -1058,6 +1059,14 @@ def generate_signal_consensus(
     
     # Need at least one valid indicator
     if valid_indicators == 0:
+        # If force_signals enabled, return a weak bullish signal to ensure a trade is created for debug runs
+        if force_signals:
+            return (1.0, {
+                'bullish_count': 0,
+                'bearish_count': 0,
+                'neutral_count': 0,
+                'signals': {}
+            })
         return (0.0, {
             'bullish_count': 0,
             'bearish_count': 0,

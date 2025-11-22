@@ -78,6 +78,9 @@ class RealTimeTradingEngine:
         self.start_time = time.time()
         self.current_price = 0.0
         self.current_volume = 0.0
+        # Force signals in debug mode
+        import os
+        self.force_signals = os.getenv('DEBUG_FORCE_SIGNALS', '0') == '1'
         self.current_high = 0.0
         self.current_low = 0.0
         self.last_signal = 0.0
@@ -175,6 +178,7 @@ class RealTimeTradingEngine:
             self.indicator_history,
             self.candles_processed,
             close
+            , self.force_signals
         )
         
         self.last_signal = signal

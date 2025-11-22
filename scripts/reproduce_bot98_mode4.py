@@ -55,7 +55,7 @@ print('Bot loaded', bot.bot_id, 'ind_count', bot.num_indicators, 'leverage', bot
 
 # Load local parquet files
 file_paths = sorted(Path(p) for p in glob.glob(str(Path('data')/'BTC_USDT'/'1m'/'*.parquet')))
-ctx = cl.create_some_context()
+ctx = cl.create_some_context(interactive=False)
 queue = cl.CommandQueue(ctx)
 loader = DataLoader(file_paths=file_paths, timeframe='1m', random_seed=42, gpu_context=ctx, gpu_queue=queue, use_gpu_processing=False)
 

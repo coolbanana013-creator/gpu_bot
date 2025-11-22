@@ -1,7 +1,7 @@
 import pyopencl as cl
 from pathlib import Path
 import traceback
-ctx = cl.create_some_context()
+ctx = cl.create_some_context(interactive=False)
 queue = cl.CommandQueue(ctx)
 print('Context created')
 

@@ -121,7 +121,7 @@ file_paths = all_file_paths[-total_days_needed:] if len(all_file_paths) > total_
 
 print(f"\nUsing {len(file_paths)} most recent data files (approx {total_days_needed} days)")
 
-ctx = cl.create_some_context()
+ctx = cl.create_some_context(interactive=False)
 queue = cl.CommandQueue(ctx)
 loader = DataLoader(
     file_paths=file_paths,
