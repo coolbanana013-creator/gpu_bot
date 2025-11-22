@@ -396,6 +396,23 @@ class CompactBacktester:
             raise FileNotFoundError(f"Kernel not found: {backtest_path}")
         
         backtest_src = backtest_path.read_text()
+        # Inject compile-time filter threshold macros from configuration
+        from ..utils.config import (
+            DEFAULT_ADX_MIN, DEFAULT_ADX_MAX, DEFAULT_ATR_SPIKE_FACTOR, DEFAULT_VOLUME_MULTIPLIER,
+            ENABLE_FILTER_DEBUG_INSTRUMENTATION
+        )
+        backtest_src = f"#define ADX_MIN_THRESHOLD {DEFAULT_ADX_MIN}f\n" + backtest_src
+        backtest_src = f"#define ADX_MAX_THRESHOLD {DEFAULT_ADX_MAX}f\n" + backtest_src
+        backtest_src = f"#define ATR_SPIKE_FACTOR {DEFAULT_ATR_SPIKE_FACTOR}f\n" + backtest_src
+        backtest_src = f"#define VOLUME_MULTIPLIER_THRESHOLD {DEFAULT_VOLUME_MULTIPLIER}f\n" + backtest_src
+        
+        # Conditionally enable filter debug instrumentation
+        if ENABLE_FILTER_DEBUG_INSTRUMENTATION:
+            backtest_src = f"#define ENABLE_FILTER_DEBUG_INSTRUMENTATION\n" + backtest_src
+            log_info('[DEBUG] Filter debug instrumentation ENABLED (atomic counters active)')
+        else:
+            log_info('[DEBUG] Filter debug instrumentation DISABLED (no atomic counter overhead)')
+        
         # Allow optional debug compile-time flags via environment variables
         if os.getenv('DEBUG_LOW_CONSENSUS', '0') == '1':
             log_info('[DEBUG] DEBUG_LOW_CONSENSUS set - compiling kernel with low consensus threshold')
@@ -1498,6 +1515,10 @@ class CompactBacktester:
         # Allocate per-bot per-cycle filter debug buffer (bitmask of failing filters)
         filter_debug_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
         filter_debug_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=filter_debug_host)
+        # Allocate per-bot per-filter counters (atomic counts for each filter triggered across all cycles)
+        NUM_FILTERS = 6  # ADX, ATR, VOLUME, SR, RSI, NAN
+        filter_count_host = np.zeros(num_bots * NUM_FILTERS, dtype=np.int32)
+        filter_count_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=filter_count_host)
         
         # Respect env var to disable verbose GPU debug logging (reduces memory and logs)
         disable_gpu_logs = os.getenv("DISABLE_GPU_LOGGING", "0") == "1"
@@ -1555,6 +1576,7 @@ class CompactBacktester:
                 , np.int32(self.debug_bypass_volume)
                 , np.int32(self.debug_force_signals)
                 , filter_debug_buf
+                , filter_count_buf
             )
             
             self._maybe_debug_log(f"[DEBUG] Kernel enqueued successfully, waiting up to 60s...")
@@ -1637,8 +1659,9 @@ class CompactBacktester:
 
         # Read close counters for diagnostics and write CSV
             cl.enqueue_copy(self.queue, close_counters_host, close_counters_buf)
-            # Read back per-filter debug bitmap
+            # Read back per-filter debug bitmap and per-filter counters
             cl.enqueue_copy(self.queue, filter_debug_host, filter_debug_buf)
+            cl.enqueue_copy(self.queue, filter_count_host, filter_count_buf)
         self.queue.finish()
         cc_path = Path('logs') / 'close_counters.csv'
         write_header = not cc_path.exists()
@@ -1762,6 +1785,10 @@ class CompactBacktester:
         # filter debug buffer for per-bot per-cycle filter bits
         filter_debug_host = np.zeros(num_bots * num_cycles, dtype=np.int32)
         filter_debug_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=filter_debug_host)
+        # Per-bot per-filter counters for aggregated debug statistics (ADX/ATR/VOL/SR/RSI/NAN)
+        NUM_FILTERS = 6
+        filter_count_host = np.zeros(num_bots * NUM_FILTERS, dtype=np.int32)
+        filter_count_buf = cl.Buffer(self.ctx, cl.mem_flags.READ_WRITE | cl.mem_flags.COPY_HOST_PTR, hostbuf=filter_count_host)
         
         # Execute kernel for all bot-cycle pairs in parallel
         global_size = (num_bots * num_cycles,)
@@ -1805,6 +1832,7 @@ class CompactBacktester:
                 , np.int32(self.debug_bypass_volume)
                 , np.int32(self.debug_force_signals)
                 , filter_debug_buf
+                , filter_count_buf
             )
             
             # Use a timeout-enabled finish to avoid hanging the process
@@ -1925,6 +1953,11 @@ class CompactBacktester:
                 cl.enqueue_copy(self.queue, filter_debug_host, filter_debug_buf, is_blocking=True)
             except TypeError:
                 cl.enqueue_copy(self.queue, filter_debug_host, filter_debug_buf, True)
+            # Read per-filter counter buffer
+            try:
+                cl.enqueue_copy(self.queue, filter_count_host, filter_count_buf, is_blocking=True)
+            except TypeError:
+                cl.enqueue_copy(self.queue, filter_count_host, filter_count_buf, True)
             # Timeout-safe finish to avoid hanging
             self._maybe_debug_log("[DEBUG] Waiting for close counters copy to finish (with timeout)")
             import time as _time, threading as _threading
@@ -1978,6 +2011,18 @@ class CompactBacktester:
                         if bits != 0:
                             global_cycle = cycle_global_idx[c_idx]
                             writer2.writerow([bots[b_idx].bot_id, global_cycle, bits])
+                # Write aggregated per-bot filter counts
+                fc_path = Path('logs') / 'filter_debug_counts.csv'
+                write_header_fc = not fc_path.exists()
+                with open(fc_path, 'a', newline='') as fcnt:
+                    writer_fc = csv.writer(fcnt, delimiter=';')
+                    if write_header_fc:
+                        writer_fc.writerow(['BotID', 'ADX', 'ATR', 'VOLUME', 'SR', 'RSI', 'NAN'])
+                    for b_idx in range(num_bots):
+                        row_counts = [int(filter_count_host[b_idx * NUM_FILTERS + i]) for i in range(NUM_FILTERS)]
+                        if sum(row_counts) > 0:
+                            writer_fc.writerow([bots[b_idx].bot_id] + row_counts)
+            # (filter_debug_counts.csv already written above)
             
         except cl.RuntimeError as e:
             log_error(f"GPU kernel execution failed: {e}")

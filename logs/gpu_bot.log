@@ -74998,3 +74998,962 @@ Execution interrupted by user
 2025-11-22 18:21:45,461 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
 2025-11-22 18:21:45,461 - src.utils.validation - INFO -   - Compute Units: 80
 2025-11-22 18:21:45,461 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-22 18:32:59,965 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 0 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:32:59,966 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:32:59,966 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:32:59,966 - src.utils.validation - INFO - ELIMINATED: 0 bots total
+2025-11-22 18:32:59,969 - src.utils.validation - ERROR - SURVIVAL FILTER (Gen 0, RELAXED): 0 high loss (>0%), 2 failed criteria, 0 no cycles, 0 bots passed
+2025-11-22 18:32:59,969 - src.utils.validation - ERROR - No bots met RELAXED criteria: avg profit > 0% AND 40%+ cycles profitable AND max drawdown < 15%
+2025-11-22 18:32:59,969 - src.utils.validation - ERROR - Generating completely new population for next generation
+2025-11-22 18:33:45,344 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 0 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:33:45,345 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:33:45,346 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:33:45,346 - src.utils.validation - INFO - ELIMINATED: 0 bots total
+2025-11-22 18:33:45,348 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 1 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:33:45,348 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:34:06,815 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 0 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:34:06,816 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:34:06,816 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:34:06,816 - src.utils.validation - INFO - ELIMINATED: 0 bots total
+2025-11-22 18:34:06,817 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 1 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:34:06,818 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:34:20,603 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 0 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:34:20,603 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:34:20,604 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:34:20,604 - src.utils.validation - INFO - ELIMINATED: 0 bots total
+2025-11-22 18:34:20,606 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 1 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:34:20,606 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:34:36,409 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 0 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:34:36,410 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:34:36,410 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:34:36,410 - src.utils.validation - INFO - ELIMINATED: 0 bots total
+2025-11-22 18:34:36,411 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 1 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:34:36,412 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:34:36,412 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:34:36,412 - src.utils.validation - INFO - ELIMINATED: 1 bots total
+2025-11-22 18:35:59,396 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 18:36:00,288 - src.utils.validation - ERROR - Backtest kernel compilation failed: clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE
+
+Build on <pyopencl.Device 'Intel(R) UHD Graphics' on 'Intel(R) OpenCL Graphics' at 0x237a9045d20>:
+
+1:828:17: error: use of undeclared identifier 'filter_count_buf'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                ^
+1:828:42: error: use of undeclared identifier 'bot_id'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                                         ^
+1:829:29: error: use of undeclared identifier 'filter_count_buf'; did you mean 'filter_debug_buf'?
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_NAN], 1);
+                            ^~~~~~~~~~~~~~~~
+                            filter_debug_buf
+1:804:21: note: 'filter_debug_buf' declared here
+    , __global int *filter_debug_buf
+                    ^
+1:829:46: error: use of undeclared identifier 'bot_id'
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_NAN], 1);
+                                             ^
+1:842:17: error: use of undeclared identifier 'filter_count_buf'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                ^
+1:842:42: error: use of undeclared identifier 'bot_id'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                                         ^
+1:843:29: error: use of undeclared identifier 'filter_count_buf'; did you mean 'filter_debug_buf'?
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
+                            ^~~~~~~~~~~~~~~~
+                            filter_debug_buf
+1:804:21: note: 'filter_debug_buf' declared here
+    , __global int *filter_debug_buf
+                    ^
+1:843:46: error: use of undeclared identifier 'bot_id'
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
+                                             ^
+1:852:17: error: use of undeclared identifier 'filter_count_buf'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                ^
+1:852:42: error: use of undeclared identifier 'bot_id'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                                         ^
+1:853:29: error: use of undeclared identifier 'filter_count_buf'; did you mean 'filter_debug_buf'?
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
+                            ^~~~~~~~~~~~~~~~
+                            filter_debug_buf
+1:804:21: note: 'filter_debug_buf' declared here
+    , __global int *filter_debug_buf
+                    ^
+1:853:46: error: use of undeclared identifier 'bot_id'
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
+                                             ^
+1:866:17: error: use of undeclared identifier 'filter_count_buf'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                ^
+1:866:42: error: use of undeclared identifier 'bot_id'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                                         ^
+1:867:29: error: use of undeclared identifier 'filter_count_buf'; did you mean 'filter_debug_buf'?
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ATR], 1);
+                            ^~~~~~~~~~~~~~~~
+                            filter_debug_buf
+1:804:21: note: 'filter_debug_buf' declared here
+    , __global int *filter_debug_buf
+                    ^
+1:867:46: error: use of undeclared identifier 'bot_id'
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ATR], 1);
+                                             ^
+1:883:21: error: use of undeclared identifier 'filter_count_buf'
+                if (filter_count_buf != 0 && bot_id >= 0) {
+                    ^
+1:883:46: error: use of undeclared identifier 'bot_id'
+                if (filter_count_buf != 0 && bot_id >= 0) {
+                                             ^
+1:884:33: error: use of undeclared identifier 'filter_count_buf'; did you mean 'filter_debug_buf'?
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_VOLUME], 1);
+                                ^~~~~~~~~~~~~~~~
+                                filter_debug_buf
+1:804:21: note: 'filter_debug_buf' declared here
+    , __global int *filter_debug_buf
+                    ^
+1:884:50: error: use of undeclared identifier 'bot_id'
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_VOLUME], 1);
+                                                 ^
+1:904:21: error: use of undeclared identifier 'filter_count_buf'
+                if (filter_count_buf != 0 && bot_id >= 0) {
+                    ^
+1:904:46: error: use of undeclared identifier 'bot_id'
+                if (filter_count_buf != 0 && bot_id >= 0) {
+                                             ^
+1:905:33: error: use of undeclared identifier 'filter_count_buf'; did you mean 'filter_debug_buf'?
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_SR], 1);
+                                ^~~~~~~~~~~~~~~~
+                                filter_debug_buf
+1:804:21: note: 'filter_debug_buf' declared here
+    , __global int *filter_debug_buf
+                    ^
+1:905:50: error: use of undeclared identifier 'bot_id'
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_SR], 1);
+                                                 ^
+1:922:21: error: use of undeclared identifier 'filter_count_buf'
+                if (filter_count_buf != 0 && bot_id >= 0) {
+                    ^
+1:922:46: error: use of undeclared identifier 'bot_id'
+                if (filter_count_buf != 0 && bot_id >= 0) {
+                                             ^
+1:923:33: error: use of undeclared identifier 'filter_count_buf'; did you mean 'filter_debug_buf'?
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_RSI], 1);
+                                ^~~~~~~~~~~~~~~~
+                                filter_debug_buf
+1:804:21: note: 'filter_debug_buf' declared here
+    , __global int *filter_debug_buf
+                    ^
+1:923:50: error: use of undeclared identifier 'bot_id'
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_RSI], 1);
+                                                 ^
+1:970:11: error: redefinition of parameter 'bot_id'
+    , int bot_id
+          ^
+1:956:9: note: previous declaration is here
+    int bot_id,
+        ^
+1:971:21: error: redefinition of parameter 'filter_count_buf'
+    , __global int *filter_count_buf
+                    ^
+1:969:21: note: previous declaration is here
+    , __global int *filter_count_buf
+                    ^
+1:970:11: warning: omitting the parameter name in a function definition is a C2x extension
+    , int bot_id
+          ^
+1:971:21: warning: omitting the parameter name in a function definition is a C2x extension
+    , __global int *filter_count_buf
+                    ^
+1:1402:278: error: too many arguments to function call, expected 16, have 18
+        if (!check_signal_quality(precomputed_indicators, ohlcv, bot, bar, num_bars, htf_indicators, num_htf_bars, htf_multiplier, enable_mtf, bars_per_day, debug_disable_filters, debug_bypass_sr, debug_bypass_volume, debug_force_signals, filter_debug_buf, debug_filter_index, bot_id, filter_count_buf)) {
+             ~~~~~~~~~~~~~~~~~~~~                                                                                                                                                                                                                                                    ^~~~~~~~~~~~~~~~~~~~~~~~
+1:789:5: note: 'check_signal_quality' declared here
+int check_signal_quality(
+    ^
+
+(options: -I C:\Users\Standard\Desktop\gpu_bot\.venv\Lib\site-packages\pyopencl\cl)
+(source saved as C:\Users\Standard\AppData\Local\Temp\tmpklrauwzt.cl)
+2025-11-22 18:38:02,969 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 18:38:03,501 - src.utils.validation - ERROR - Backtest kernel compilation failed: clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE
+
+Build on <pyopencl.Device 'Intel(R) UHD Graphics' on 'Intel(R) OpenCL Graphics' at 0x18a94f0cd50>:
+
+1:971:11: error: redefinition of parameter 'bot_id'
+    , int bot_id
+          ^
+1:958:9: note: previous declaration is here
+    int bot_id,
+        ^
+1:971:11: warning: omitting the parameter name in a function definition is a C2x extension
+    , int bot_id
+          ^
+
+(options: -I C:\Users\Standard\Desktop\gpu_bot\.venv\Lib\site-packages\pyopencl\cl)
+(source saved as C:\Users\Standard\AppData\Local\Temp\tmpf9rpv09t.cl)
+2025-11-22 18:38:37,171 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 18:38:37,438 - src.utils.validation - ERROR - Backtest kernel compilation failed: clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE
+
+Build on <pyopencl.Device 'Intel(R) UHD Graphics' on 'Intel(R) OpenCL Graphics' at 0x1780380f060>:
+
+1:829:42: error: use of undeclared identifier 'bot_id'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                                         ^
+1:830:46: error: use of undeclared identifier 'bot_id'
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_NAN], 1);
+                                             ^
+1:843:42: error: use of undeclared identifier 'bot_id'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                                         ^
+1:844:46: error: use of undeclared identifier 'bot_id'
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
+                                             ^
+1:853:42: error: use of undeclared identifier 'bot_id'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                                         ^
+1:854:46: error: use of undeclared identifier 'bot_id'
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
+                                             ^
+1:867:42: error: use of undeclared identifier 'bot_id'
+            if (filter_count_buf != 0 && bot_id >= 0) {
+                                         ^
+1:868:46: error: use of undeclared identifier 'bot_id'
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ATR], 1);
+                                             ^
+1:884:46: error: use of undeclared identifier 'bot_id'
+                if (filter_count_buf != 0 && bot_id >= 0) {
+                                             ^
+1:885:50: error: use of undeclared identifier 'bot_id'
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_VOLUME], 1);
+                                                 ^
+1:905:46: error: use of undeclared identifier 'bot_id'
+                if (filter_count_buf != 0 && bot_id >= 0) {
+                                             ^
+1:906:50: error: use of undeclared identifier 'bot_id'
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_SR], 1);
+                                                 ^
+1:923:46: error: use of undeclared identifier 'bot_id'
+                if (filter_count_buf != 0 && bot_id >= 0) {
+                                             ^
+1:924:50: error: use of undeclared identifier 'bot_id'
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_RSI], 1);
+                                                 ^
+1:1401:286: error: too many arguments to function call, expected 17, have 18
+        if (!check_signal_quality(precomputed_indicators, ohlcv, bot, bar, num_bars, htf_indicators, num_htf_bars, htf_multiplier, enable_mtf, bars_per_day, debug_disable_filters, debug_bypass_sr, debug_bypass_volume, debug_force_signals, filter_debug_buf, debug_filter_index, bot_id, filter_count_buf)) {
+             ~~~~~~~~~~~~~~~~~~~~                                                                                                                                                                                                                                                            ^~~~~~~~~~~~~~~~
+1:789:5: note: 'check_signal_quality' declared here
+int check_signal_quality(
+    ^
+
+(options: -I C:\Users\Standard\Desktop\gpu_bot\.venv\Lib\site-packages\pyopencl\cl)
+(source saved as C:\Users\Standard\AppData\Local\Temp\tmp0m1za5pg.cl)
+2025-11-22 18:38:56,864 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 18:39:01,412 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-22 18:39:01,415 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-22 18:39:01,421 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-22 18:39:01,422 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-22 18:39:01,422 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-22 18:39:01,422 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-22 18:39:01,423 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-22 18:39:01,423 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-22 18:39:01,423 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-22 18:42:31,250 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 0 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:42:31,251 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:42:31,251 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:42:31,251 - src.utils.validation - INFO - ELIMINATED: 0 bots total
+2025-11-22 18:42:31,253 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 1 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:42:31,253 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:42:31,254 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:42:31,254 - src.utils.validation - INFO - ELIMINATED: 1 bots total
+2025-11-22 18:42:52,129 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 0 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:42:52,129 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:42:52,130 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:42:52,131 - src.utils.validation - INFO - ELIMINATED: 0 bots total
+2025-11-22 18:42:52,132 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 1 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:42:52,133 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:42:52,133 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:42:52,133 - src.utils.validation - INFO - ELIMINATED: 1 bots total
+2025-11-22 18:48:47,340 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 0 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:48:47,341 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:48:47,342 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:48:47,342 - src.utils.validation - INFO - ELIMINATED: 0 bots total
+2025-11-22 18:48:47,344 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 1 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 18:48:47,344 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 18:48:47,344 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 18:48:47,344 - src.utils.validation - INFO - ELIMINATED: 1 bots total
+2025-11-22 19:08:58,528 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-22 19:08:58,696 - src.utils.validation - INFO - ============================================================
+2025-11-22 19:08:58,699 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-22 19:08:58,700 - src.utils.validation - INFO - ============================================================
+2025-11-22 19:08:58,701 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-22 19:08:58,702 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-22 19:08:58,703 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-22 19:08:58,703 - src.utils.validation - INFO - Compute Units: 80
+2025-11-22 19:08:58,704 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-22 19:08:58,705 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-22 19:08:58,705 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-22 19:08:58,707 - src.utils.validation - INFO - ============================================================
+
+2025-11-22 19:08:58,711 - src.utils.validation - ERROR - Invalid selection: '{' is not a valid number
+2025-11-22 19:08:58,712 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-22 19:08:58,712 - src.utils.validation - ERROR - Invalid selection: '"mode": 1,' is not a valid number
+2025-11-22 19:08:58,712 - src.utils.validation - WARNING - Please try again (3 attempts remaining)
+2025-11-22 19:08:58,713 - src.utils.validation - ERROR - Invalid selection: '"pair": "BTC/USDT",' is not a valid number
+2025-11-22 19:08:58,713 - src.utils.validation - WARNING - Please try again (2 attempts remaining)
+2025-11-22 19:08:58,713 - src.utils.validation - ERROR - Invalid selection: '"timeframe": "1m",' is not a valid number
+2025-11-22 19:08:58,714 - src.utils.validation - WARNING - Please try again (1 attempts remaining)
+2025-11-22 19:08:58,714 - src.utils.validation - ERROR - Invalid selection: '"cycles": 10,' is not a valid number
+2025-11-22 19:08:58,715 - src.utils.validation - ERROR - Maximum attempts reached. Defaulting to Mode 1.
+2025-11-22 19:08:58,733 - src.utils.validation - ERROR - Invalid input: Must be a valid float: could not convert string to float: '"population": 1000,'
+2025-11-22 19:08:58,737 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-22 19:08:58,739 - src.utils.validation - ERROR - Invalid input: Must be a valid float: could not convert string to float: '"generations": 2,'
+2025-11-22 19:08:58,740 - src.utils.validation - WARNING - Please try again (3 attempts remaining)
+2025-11-22 19:08:58,741 - src.utils.validation - ERROR - Invalid input: Must be a valid float: could not convert string to float: '"min_indicators": 3,'
+2025-11-22 19:08:58,743 - src.utils.validation - WARNING - Please try again (2 attempts remaining)
+2025-11-22 19:08:58,744 - src.utils.validation - ERROR - Invalid input: Must be a valid float: could not convert string to float: '"max_indicators": 5,'
+2025-11-22 19:08:58,744 - src.utils.validation - WARNING - Please try again (1 attempts remaining)
+2025-11-22 19:08:58,744 - src.utils.validation - ERROR - Invalid input: Must be a valid float: could not convert string to float: '"min_risk_strategies": 2,'
+2025-11-22 19:08:58,745 - src.utils.validation - ERROR - Maximum attempts reached. Using default value.
+2025-11-22 19:08:58,745 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '"max_risk_strategies": 5,'
+2025-11-22 19:08:58,745 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-22 19:08:58,746 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '"min_leverage": 1,'
+2025-11-22 19:08:58,746 - src.utils.validation - WARNING - Please try again (3 attempts remaining)
+2025-11-22 19:08:58,747 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '"max_leverage": 10,'
+2025-11-22 19:08:58,747 - src.utils.validation - WARNING - Please try again (2 attempts remaining)
+2025-11-22 19:08:58,748 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '"initial_balance": 1000,'
+2025-11-22 19:08:58,748 - src.utils.validation - WARNING - Please try again (1 attempts remaining)
+2025-11-22 19:08:58,749 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '"random_seed": 42,'
+2025-11-22 19:08:58,749 - src.utils.validation - ERROR - Maximum attempts reached. Using default value.
+2025-11-22 19:08:58,750 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '"days": 7'
+2025-11-22 19:08:58,750 - src.utils.validation - WARNING - Please try again (4 attempts remaining)
+2025-11-22 19:08:58,751 - src.utils.validation - ERROR - Invalid input: Must be a valid int: invalid literal for int() with base 10: '}'
+2025-11-22 19:08:58,751 - src.utils.validation - WARNING - Please try again (3 attempts remaining)
+2025-11-22 19:08:58,753 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,757 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,758 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,759 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,759 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,760 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,760 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,761 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,761 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,762 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,762 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,762 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,763 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,763 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,764 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:08:58,765 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-22 19:08:58,766 - src.utils.validation - INFO - Signal quality filters ENABLED
+2025-11-22 19:08:58,773 - src.utils.validation - INFO - Initialized Kucoin Spot API connection
+2025-11-22 19:09:00,566 - src.utils.validation - WARNING - Could not normalize pair '"BACKTEST_DAYS": 1,', using as-is
+2025-11-22 19:09:00,566 - src.utils.validation - INFO - Symbol '"BACKTEST_DAYS": 1,' normalized to '"BACKTEST_DAYS": 1,' for spot exchange
+2025-11-22 19:09:00,567 - src.utils.validation - INFO - Fetching 280 days of "BACKTEST_DAYS": 1, 1m data ending 2025-11-21 (excludes today)
+2025-11-22 19:09:00,568 - src.utils.validation - ERROR - 
+
+Fatal error: [WinError 123] La sintassi del nome del file, della directory o del volume non è corretta: 'data\\"BACKTEST_DAYS"_ 1,\\1m'
+2025-11-22 19:09:18,641 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-22 19:09:18,809 - src.utils.validation - INFO - ============================================================
+2025-11-22 19:09:18,810 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-22 19:09:18,811 - src.utils.validation - INFO - ============================================================
+2025-11-22 19:09:18,811 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-22 19:09:18,812 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-22 19:09:18,812 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-22 19:09:18,813 - src.utils.validation - INFO - Compute Units: 80
+2025-11-22 19:09:18,813 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-22 19:09:18,814 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-22 19:09:18,814 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-22 19:09:18,815 - src.utils.validation - INFO - ============================================================
+
+2025-11-22 19:09:18,818 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:09:18,820 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:09:18,822 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-22 19:09:18,822 - src.utils.validation - INFO - Signal quality filters ENABLED
+2025-11-22 19:09:18,828 - src.utils.validation - INFO - Initialized Kucoin Spot API connection
+2025-11-22 19:09:20,396 - src.utils.validation - WARNING - Could not normalize pair 'XBTUSDTM', using as-is
+2025-11-22 19:09:20,397 - src.utils.validation - INFO - Symbol 'XBTUSDTM' normalized to 'XBTUSDTM' for spot exchange
+2025-11-22 19:09:20,398 - src.utils.validation - INFO - Fetching 240 days of XBTUSDTM 1m data ending 2025-11-21 (excludes today)
+2025-11-22 19:09:23,833 - src.utils.validation - INFO - [CACHE] 238/240 files cached (99.2%), 2 need download
+2025-11-22 19:09:23,833 - src.utils.validation - INFO - [DOWNLOAD] Fetching 2 missing day(s) using 4 parallel threads...
+2025-11-22 19:09:23,835 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-20: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:09:23,837 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-19: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:09:23,837 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-20: Exchange error for 2025-11-20: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:09:23,838 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-19: Exchange error for 2025-11-19: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:09:23,838 - src.utils.validation - INFO - [OK] Downloaded and saved 0 new file(s)
+2025-11-22 19:09:23,839 - src.utils.validation - INFO - Data ready: 238 file(s) total (238 from cache, 2 newly downloaded)
+2025-11-22 19:09:23,840 - src.utils.validation - INFO - Set random seed to 42
+2025-11-22 19:09:23,840 - src.utils.validation - INFO - Loading 238 data files in parallel
+2025-11-22 19:09:24,251 - src.utils.validation - INFO - Loaded total of 340823 candles (excludes today's incomplete data)
+2025-11-22 19:09:24,254 - src.utils.validation - INFO - Validating data integrity
+2025-11-22 19:09:24,303 - src.utils.validation - WARNING - Found 1700 gaps in data (0.50% of intervals). Max gap: 32.0x expected interval
+2025-11-22 19:09:24,324 - src.utils.validation - INFO - Data validation passed
+2025-11-22 19:09:24,364 - src.utils.validation - INFO - Generating 2 non-overlapping cycle ranges (30 days each)
+2025-11-22 19:09:24,366 - src.utils.validation - INFO - Successfully generated 2 non-overlapping cycle ranges
+2025-11-22 19:09:24,430 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-22 19:09:24,430 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-22 19:09:24,431 - src.utils.validation - INFO -   Population: 1000 bots
+2025-11-22 19:09:24,432 - src.utils.validation - INFO -   Indicators: 1-3 per bot (50 available)
+2025-11-22 19:09:24,432 - src.utils.validation - INFO -   Risk strategies: 1-3 per bot
+2025-11-22 19:09:24,432 - src.utils.validation - INFO -   Leverage: 1-5x
+2025-11-22 19:09:24,452 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 19:09:24,476 - src.utils.validation - INFO - [DEBUG] Filter debug instrumentation ENABLED (atomic counters active)
+2025-11-22 19:09:29,089 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-22 19:09:29,106 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-22 19:09:29,122 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-22 19:09:29,122 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-22 19:09:29,123 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-22 19:09:29,123 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-22 19:09:29,124 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-22 19:09:29,124 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-22 19:09:29,124 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-22 19:09:29,141 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-22 19:09:29,142 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-22 19:09:29,142 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-22 19:09:29,158 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-22 19:09:29,159 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-22 19:09:29,159 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-22 19:09:29,160 - src.utils.validation - INFO -   Loading 1-indicator combinations from cache...
+2025-11-22 19:09:29,161 - src.utils.validation - INFO -     Loaded 48 combinations from cache
+2025-11-22 19:09:29,162 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-22 19:09:29,173 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-22 19:09:29,174 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-22 19:09:29,181 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-22 19:09:29,182 - src.utils.validation - INFO -   Total combinations ready: 18,472
+2025-11-22 19:09:29,182 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-22 19:09:29,182 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-22 19:09:29,183 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-22 19:09:29,183 - src.utils.validation - INFO -   Pre-computed combination pools: 18,472 total combinations
+2025-11-22 19:09:29,183 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-22 19:09:29,184 - src.utils.validation - INFO - 
+Starting Evolution: 1 generations, 2 cycles
+2025-11-22 19:09:29,184 - src.utils.validation - INFO - Evolution profiler started
+2025-11-22 19:09:29,185 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-22 19:09:29,186 - src.utils.validation - INFO - Generating 1000 compact bots on GPU...
+2025-11-22 19:09:29,187 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 19:09:29,189 - src.utils.validation - INFO - Launching GPU kernel: 1024 work items, 512 per group (2 groups)
+2025-11-22 19:09:29,193 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 19:09:29,198 - src.utils.validation - INFO - [OK] Generated 1000 compact bots (128 bytes each)
+2025-11-22 19:09:29,199 - src.utils.validation - INFO - Distributing 1000 bots across indicator sizes 1-3
+2025-11-22 19:09:29,204 - src.utils.validation - INFO - Initial population: 1000 bots, 1000 unique (100.0% uniqueness)
+2025-11-22 19:09:29,205 - src.utils.validation - INFO - Global tracking: 1000 combinations marked as used
+2025-11-22 19:09:29,206 - src.utils.validation - INFO - Size distribution: {1: 48, 2: 468, 3: 484}
+2025-11-22 19:09:29,207 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-22 19:09:29,207 - src.utils.validation - INFO - Evaluating 1000 bots...
+2025-11-22 19:09:29,216 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 19:09:29,711 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-22 19:09:32,226 - src.utils.validation - INFO - [DEBUG] Kernel finished within 2.50s
+2025-11-22 19:09:32,228 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-22 19:09:32,229 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=8000
+2025-11-22 19:09:32,230 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-22 19:09:32,231 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 8000)
+2025-11-22 19:09:32,232 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-22 19:09:32,232 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-22 19:09:32,234 - src.utils.validation - INFO - [DEBUG] Reading 200000 trade logs for streaming write
+2025-11-22 19:09:32,304 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-22 19:09:32,433 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-22 19:09:33,266 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 200000, written: 0, pending: 0)
+2025-11-22 19:09:33,271 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-22 19:09:33,825 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 200000
+2025-11-22 19:09:33,826 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 200000)
+2025-11-22 19:09:33,826 - src.utils.validation - INFO - Selecting survivors...
+2025-11-22 19:09:33,830 - src.utils.validation - INFO - SURVIVAL FILTER: 2 negative profit, 11 failed criteria, 6 missing trades cycles, 987 bots passed
+2025-11-22 19:09:33,831 - src.utils.validation - INFO - Survivors: 987 unique bots kept (no cap applied)
+2025-11-22 19:09:33,831 - src.utils.validation - INFO - SURVIVAL: 987 survivors (from 987 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 19:09:33,832 - src.utils.validation - INFO - ELIMINATED: 13 bots total
+2025-11-22 19:09:33,832 - src.utils.validation - INFO - Logging generation 0 results...
+2025-11-22 19:09:33,896 - src.utils.validation - INFO - GPU logging completed for generation 0 in 0.064s
+2025-11-22 19:09:33,899 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-22 19:09:33,908 - src.utils.validation - INFO - Survivors: 987 total, 987 unique combinations (100.0% diversity)
+2025-11-22 19:09:33,909 - src.utils.validation - INFO - Global tracking: 1000 combinations used across all generations
+2025-11-22 19:09:33,909 - src.utils.validation - INFO - Generating 13 new globally unique bots (insufficient top performers for breeding)
+2025-11-22 19:09:33,909 - src.utils.validation - INFO - Available combinations: 17,472 unused, 1,000 used globally
+2025-11-22 19:09:33,953 - src.utils.validation - INFO - After refill: 1000 bots, 1000 unique combinations (100.0% diversity)
+2025-11-22 19:09:33,954 - src.utils.validation - INFO - Remaining unused combinations: 17,460
+2025-11-22 19:09:33,954 - src.utils.validation - INFO - Population refilled: 1000 bots
+2025-11-22 19:09:33,955 - src.utils.validation - INFO - Generation 0 completed in 4.748s
+2025-11-22 19:09:33,955 - src.utils.validation - INFO - 
+--- FINAL EVALUATION ---
+2025-11-22 19:09:33,959 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 19:09:34,464 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-22 19:09:36,479 - src.utils.validation - INFO - [DEBUG] Kernel finished within 2.00s
+2025-11-22 19:09:36,479 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-22 19:09:36,479 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=8000
+2025-11-22 19:09:36,480 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-22 19:09:36,481 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 8000)
+2025-11-22 19:09:36,481 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-22 19:09:36,481 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-22 19:09:36,482 - src.utils.validation - INFO - [DEBUG] Reading 200000 trade logs for streaming write
+2025-11-22 19:09:36,549 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-22 19:09:36,618 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-22 19:09:37,476 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 200000, written: 0, pending: 0)
+2025-11-22 19:09:37,479 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-22 19:09:38,042 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 200000
+2025-11-22 19:09:38,043 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 200000)
+2025-11-22 19:09:38,110 - src.utils.validation - INFO - GPU logging completed for generation 1 in 0.066s
+2025-11-22 19:09:38,113 - src.utils.validation - INFO - 
+Evolution complete!
+
+2025-11-22 19:09:38,117 - src.utils.validation - INFO - Filtered to 987 bots where all cycles are profitable
+2025-11-22 19:09:38,120 - src.utils.validation - INFO - Saved bot 0 to bots/XBTUSDTM/1m/bot_0.json
+2025-11-22 19:09:38,123 - src.utils.validation - INFO - Saved bot 1 to bots/XBTUSDTM/1m/bot_1.json
+2025-11-22 19:09:38,125 - src.utils.validation - INFO - Saved bot 2 to bots/XBTUSDTM/1m/bot_2.json
+2025-11-22 19:09:38,126 - src.utils.validation - INFO - Saved bot 3 to bots/XBTUSDTM/1m/bot_3.json
+2025-11-22 19:09:38,126 - src.utils.validation - INFO - Saved bot 4 to bots/XBTUSDTM/1m/bot_4.json
+2025-11-22 19:09:38,128 - src.utils.validation - INFO - Saved bot 5 to bots/XBTUSDTM/1m/bot_5.json
+2025-11-22 19:09:38,130 - src.utils.validation - INFO - Saved bot 6 to bots/XBTUSDTM/1m/bot_6.json
+2025-11-22 19:09:38,131 - src.utils.validation - INFO - Saved bot 7 to bots/XBTUSDTM/1m/bot_7.json
+2025-11-22 19:09:38,132 - src.utils.validation - INFO - Saved bot 8 to bots/XBTUSDTM/1m/bot_8.json
+2025-11-22 19:09:38,133 - src.utils.validation - INFO - Saved bot 9 to bots/XBTUSDTM/1m/bot_9.json
+2025-11-22 19:09:38,134 - src.utils.validation - INFO - Saved bot 10 to bots/XBTUSDTM/1m/bot_10.json
+2025-11-22 19:09:38,137 - src.utils.validation - INFO - Saved bot 11 to bots/XBTUSDTM/1m/bot_11.json
+2025-11-22 19:09:38,139 - src.utils.validation - INFO - Saved bot 12 to bots/XBTUSDTM/1m/bot_12.json
+2025-11-22 19:09:38,140 - src.utils.validation - INFO - Saved bot 13 to bots/XBTUSDTM/1m/bot_13.json
+2025-11-22 19:09:38,141 - src.utils.validation - INFO - Saved bot 14 to bots/XBTUSDTM/1m/bot_14.json
+2025-11-22 19:09:38,143 - src.utils.validation - INFO - Saved bot 16 to bots/XBTUSDTM/1m/bot_16.json
+2025-11-22 19:09:38,143 - src.utils.validation - INFO - Saved bot 17 to bots/XBTUSDTM/1m/bot_17.json
+2025-11-22 19:09:38,144 - src.utils.validation - INFO - Saved bot 18 to bots/XBTUSDTM/1m/bot_18.json
+2025-11-22 19:09:38,146 - src.utils.validation - INFO - Saved bot 19 to bots/XBTUSDTM/1m/bot_19.json
+2025-11-22 19:09:38,148 - src.utils.validation - INFO - Saved bot 20 to bots/XBTUSDTM/1m/bot_20.json
+2025-11-22 19:09:38,149 - src.utils.validation - INFO - Saved bot 21 to bots/XBTUSDTM/1m/bot_21.json
+2025-11-22 19:09:38,150 - src.utils.validation - INFO - Saved bot 22 to bots/XBTUSDTM/1m/bot_22.json
+2025-11-22 19:09:38,152 - src.utils.validation - INFO - Saved bot 23 to bots/XBTUSDTM/1m/bot_23.json
+2025-11-22 19:09:38,156 - src.utils.validation - INFO - Saved bot 24 to bots/XBTUSDTM/1m/bot_24.json
+2025-11-22 19:09:38,157 - src.utils.validation - INFO - Saved bot 25 to bots/XBTUSDTM/1m/bot_25.json
+2025-11-22 19:09:38,159 - src.utils.validation - INFO - Saved bot 26 to bots/XBTUSDTM/1m/bot_26.json
+2025-11-22 19:09:38,160 - src.utils.validation - INFO - Saved bot 27 to bots/XBTUSDTM/1m/bot_27.json
+2025-11-22 19:09:38,161 - src.utils.validation - INFO - Saved bot 28 to bots/XBTUSDTM/1m/bot_28.json
+2025-11-22 19:09:38,163 - src.utils.validation - INFO - Saved bot 29 to bots/XBTUSDTM/1m/bot_29.json
+2025-11-22 19:09:38,164 - src.utils.validation - INFO - Saved bot 30 to bots/XBTUSDTM/1m/bot_30.json
+2025-11-22 19:09:38,165 - src.utils.validation - INFO - Saved bot 31 to bots/XBTUSDTM/1m/bot_31.json
+2025-11-22 19:09:38,166 - src.utils.validation - INFO - Saved bot 32 to bots/XBTUSDTM/1m/bot_32.json
+2025-11-22 19:09:38,167 - src.utils.validation - INFO - Saved bot 33 to bots/XBTUSDTM/1m/bot_33.json
+2025-11-22 19:09:38,170 - src.utils.validation - INFO - Saved bot 34 to bots/XBTUSDTM/1m/bot_34.json
+2025-11-22 19:09:38,172 - src.utils.validation - INFO - Saved bot 35 to bots/XBTUSDTM/1m/bot_35.json
+2025-11-22 19:09:38,174 - src.utils.validation - INFO - Saved bot 36 to bots/XBTUSDTM/1m/bot_36.json
+2025-11-22 19:09:38,176 - src.utils.validation - INFO - Saved bot 37 to bots/XBTUSDTM/1m/bot_37.json
+2025-11-22 19:09:38,177 - src.utils.validation - INFO - Saved bot 38 to bots/XBTUSDTM/1m/bot_38.json
+2025-11-22 19:09:38,178 - src.utils.validation - INFO - Saved bot 40 to bots/XBTUSDTM/1m/bot_40.json
+2025-11-22 19:09:38,179 - src.utils.validation - INFO - Saved bot 41 to bots/XBTUSDTM/1m/bot_41.json
+2025-11-22 19:09:38,180 - src.utils.validation - INFO - Saved bot 42 to bots/XBTUSDTM/1m/bot_42.json
+2025-11-22 19:09:38,181 - src.utils.validation - INFO - Saved bot 43 to bots/XBTUSDTM/1m/bot_43.json
+2025-11-22 19:09:38,182 - src.utils.validation - INFO - Saved bot 44 to bots/XBTUSDTM/1m/bot_44.json
+2025-11-22 19:09:38,183 - src.utils.validation - INFO - Saved bot 45 to bots/XBTUSDTM/1m/bot_45.json
+2025-11-22 19:09:38,184 - src.utils.validation - INFO - Saved bot 46 to bots/XBTUSDTM/1m/bot_46.json
+2025-11-22 19:09:38,187 - src.utils.validation - INFO - Saved bot 47 to bots/XBTUSDTM/1m/bot_47.json
+2025-11-22 19:09:38,191 - src.utils.validation - INFO - Saved bot 48 to bots/XBTUSDTM/1m/bot_48.json
+2025-11-22 19:09:38,192 - src.utils.validation - INFO - Saved bot 49 to bots/XBTUSDTM/1m/bot_49.json
+2025-11-22 19:09:38,193 - src.utils.validation - INFO - Saved bot 50 to bots/XBTUSDTM/1m/bot_50.json
+2025-11-22 19:09:38,195 - src.utils.validation - INFO - Saved bot 51 to bots/XBTUSDTM/1m/bot_51.json
+2025-11-22 19:09:38,196 - src.utils.validation - INFO - Saved bot 52 to bots/XBTUSDTM/1m/bot_52.json
+2025-11-22 19:09:38,197 - src.utils.validation - INFO - Saved bot 53 to bots/XBTUSDTM/1m/bot_53.json
+2025-11-22 19:09:38,198 - src.utils.validation - INFO - Saved bot 54 to bots/XBTUSDTM/1m/bot_54.json
+2025-11-22 19:09:38,199 - src.utils.validation - INFO - Saved bot 55 to bots/XBTUSDTM/1m/bot_55.json
+2025-11-22 19:09:38,200 - src.utils.validation - INFO - Saved bot 56 to bots/XBTUSDTM/1m/bot_56.json
+2025-11-22 19:09:38,201 - src.utils.validation - INFO - Saved bot 57 to bots/XBTUSDTM/1m/bot_57.json
+2025-11-22 19:09:38,204 - src.utils.validation - INFO - Saved bot 58 to bots/XBTUSDTM/1m/bot_58.json
+2025-11-22 19:09:38,206 - src.utils.validation - INFO - Saved bot 59 to bots/XBTUSDTM/1m/bot_59.json
+2025-11-22 19:09:38,208 - src.utils.validation - INFO - Saved bot 61 to bots/XBTUSDTM/1m/bot_61.json
+2025-11-22 19:09:38,209 - src.utils.validation - INFO - Saved bot 62 to bots/XBTUSDTM/1m/bot_62.json
+2025-11-22 19:09:38,210 - src.utils.validation - INFO - Saved bot 63 to bots/XBTUSDTM/1m/bot_63.json
+2025-11-22 19:09:38,211 - src.utils.validation - INFO - Saved bot 64 to bots/XBTUSDTM/1m/bot_64.json
+2025-11-22 19:09:38,212 - src.utils.validation - INFO - Saved bot 65 to bots/XBTUSDTM/1m/bot_65.json
+2025-11-22 19:09:38,213 - src.utils.validation - INFO - Saved bot 66 to bots/XBTUSDTM/1m/bot_66.json
+2025-11-22 19:09:38,214 - src.utils.validation - INFO - Saved bot 67 to bots/XBTUSDTM/1m/bot_67.json
+2025-11-22 19:09:38,216 - src.utils.validation - INFO - Saved bot 68 to bots/XBTUSDTM/1m/bot_68.json
+2025-11-22 19:09:38,217 - src.utils.validation - INFO - Saved bot 69 to bots/XBTUSDTM/1m/bot_69.json
+2025-11-22 19:09:38,219 - src.utils.validation - INFO - Saved bot 70 to bots/XBTUSDTM/1m/bot_70.json
+2025-11-22 19:09:38,221 - src.utils.validation - INFO - Saved bot 71 to bots/XBTUSDTM/1m/bot_71.json
+2025-11-22 19:09:38,224 - src.utils.validation - INFO - Saved bot 72 to bots/XBTUSDTM/1m/bot_72.json
+2025-11-22 19:09:38,225 - src.utils.validation - INFO - Saved bot 73 to bots/XBTUSDTM/1m/bot_73.json
+2025-11-22 19:09:38,226 - src.utils.validation - INFO - Saved bot 74 to bots/XBTUSDTM/1m/bot_74.json
+2025-11-22 19:09:38,228 - src.utils.validation - INFO - Saved bot 75 to bots/XBTUSDTM/1m/bot_75.json
+2025-11-22 19:09:38,229 - src.utils.validation - INFO - Saved bot 76 to bots/XBTUSDTM/1m/bot_76.json
+2025-11-22 19:09:38,230 - src.utils.validation - INFO - Saved bot 77 to bots/XBTUSDTM/1m/bot_77.json
+2025-11-22 19:09:38,231 - src.utils.validation - INFO - Saved bot 78 to bots/XBTUSDTM/1m/bot_78.json
+2025-11-22 19:09:38,232 - src.utils.validation - INFO - Saved bot 79 to bots/XBTUSDTM/1m/bot_79.json
+2025-11-22 19:09:38,233 - src.utils.validation - INFO - Saved bot 80 to bots/XBTUSDTM/1m/bot_80.json
+2025-11-22 19:09:38,234 - src.utils.validation - INFO - Saved bot 81 to bots/XBTUSDTM/1m/bot_81.json
+2025-11-22 19:09:38,237 - src.utils.validation - INFO - Saved bot 82 to bots/XBTUSDTM/1m/bot_82.json
+2025-11-22 19:09:38,240 - src.utils.validation - INFO - Saved bot 83 to bots/XBTUSDTM/1m/bot_83.json
+2025-11-22 19:09:38,241 - src.utils.validation - INFO - Saved bot 85 to bots/XBTUSDTM/1m/bot_85.json
+2025-11-22 19:09:38,243 - src.utils.validation - INFO - Saved bot 86 to bots/XBTUSDTM/1m/bot_86.json
+2025-11-22 19:09:38,244 - src.utils.validation - INFO - Saved bot 87 to bots/XBTUSDTM/1m/bot_87.json
+2025-11-22 19:09:38,245 - src.utils.validation - INFO - Saved bot 88 to bots/XBTUSDTM/1m/bot_88.json
+2025-11-22 19:09:38,245 - src.utils.validation - INFO - Saved bot 89 to bots/XBTUSDTM/1m/bot_89.json
+2025-11-22 19:09:38,247 - src.utils.validation - INFO - Saved bot 90 to bots/XBTUSDTM/1m/bot_90.json
+2025-11-22 19:09:38,248 - src.utils.validation - INFO - Saved bot 91 to bots/XBTUSDTM/1m/bot_91.json
+2025-11-22 19:09:38,249 - src.utils.validation - INFO - Saved bot 92 to bots/XBTUSDTM/1m/bot_92.json
+2025-11-22 19:09:38,249 - src.utils.validation - INFO - Saved bot 93 to bots/XBTUSDTM/1m/bot_93.json
+2025-11-22 19:09:38,251 - src.utils.validation - INFO - Saved bot 94 to bots/XBTUSDTM/1m/bot_94.json
+2025-11-22 19:09:38,255 - src.utils.validation - INFO - Saved bot 95 to bots/XBTUSDTM/1m/bot_95.json
+2025-11-22 19:09:38,257 - src.utils.validation - INFO - Saved bot 96 to bots/XBTUSDTM/1m/bot_96.json
+2025-11-22 19:09:38,258 - src.utils.validation - INFO - Saved bot 97 to bots/XBTUSDTM/1m/bot_97.json
+2025-11-22 19:09:38,259 - src.utils.validation - INFO - Saved bot 98 to bots/XBTUSDTM/1m/bot_98.json
+2025-11-22 19:09:38,260 - src.utils.validation - INFO - Saved bot 99 to bots/XBTUSDTM/1m/bot_99.json
+2025-11-22 19:09:38,261 - src.utils.validation - INFO - Saved bot 100 to bots/XBTUSDTM/1m/bot_100.json
+2025-11-22 19:09:38,262 - src.utils.validation - INFO - Saved bot 103 to bots/XBTUSDTM/1m/bot_103.json
+2025-11-22 19:09:38,263 - src.utils.validation - INFO - Saved bot 104 to bots/XBTUSDTM/1m/bot_104.json
+2025-11-22 19:09:38,265 - src.utils.validation - INFO - Saved bot 105 to bots/XBTUSDTM/1m/bot_105.json
+2025-11-22 19:09:38,272 - src.utils.validation - INFO - 
+Saved 100 survivor bots to bots/XBTUSDTM/1m/run_20251122_190938/best_bots.json and individual files
+2025-11-22 19:09:38,285 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-22 19:09:38,294 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-22 19:09:38,295 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-22 19:12:13,268 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 0 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 19:12:13,269 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 19:12:13,269 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 19:12:13,269 - src.utils.validation - INFO - ELIMINATED: 0 bots total
+2025-11-22 19:12:13,270 - src.utils.validation - INFO - SURVIVAL FILTER: 0 negative profit, 1 failed criteria, 0 missing trades cycles, 1 bots passed
+2025-11-22 19:12:13,270 - src.utils.validation - INFO - Survivors: 1 unique bots kept (no cap applied)
+2025-11-22 19:12:13,271 - src.utils.validation - INFO - SURVIVAL: 1 survivors (from 1 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 19:12:13,271 - src.utils.validation - INFO - ELIMINATED: 1 bots total
+2025-11-22 19:12:19,817 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-22 19:12:19,981 - src.utils.validation - INFO - ============================================================
+2025-11-22 19:12:19,983 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-22 19:12:19,984 - src.utils.validation - INFO - ============================================================
+2025-11-22 19:12:19,985 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-22 19:12:19,986 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-22 19:12:19,987 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-22 19:12:19,987 - src.utils.validation - INFO - Compute Units: 80
+2025-11-22 19:12:19,987 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-22 19:12:19,988 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-22 19:12:19,988 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-22 19:12:19,989 - src.utils.validation - INFO - ============================================================
+
+2025-11-22 19:12:19,992 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:12:19,992 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:12:19,993 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-22 19:12:19,994 - src.utils.validation - INFO - Signal quality filters ENABLED
+2025-11-22 19:12:19,997 - src.utils.validation - INFO - Initialized Kucoin Spot API connection
+2025-11-22 19:12:21,637 - src.utils.validation - WARNING - Could not normalize pair 'XBTUSDTM', using as-is
+2025-11-22 19:12:21,637 - src.utils.validation - INFO - Symbol 'XBTUSDTM' normalized to 'XBTUSDTM' for spot exchange
+2025-11-22 19:12:21,638 - src.utils.validation - INFO - Fetching 240 days of XBTUSDTM 1m data ending 2025-11-21 (excludes today)
+2025-11-22 19:12:22,272 - src.utils.validation - INFO - [CACHE] 238/240 files cached (99.2%), 2 need download
+2025-11-22 19:12:22,272 - src.utils.validation - INFO - [DOWNLOAD] Fetching 2 missing day(s) using 4 parallel threads...
+2025-11-22 19:12:22,273 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-20: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:12:22,273 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-19: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:12:22,274 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-20: Exchange error for 2025-11-20: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:12:22,274 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-19: Exchange error for 2025-11-19: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:12:22,274 - src.utils.validation - INFO - [OK] Downloaded and saved 0 new file(s)
+2025-11-22 19:12:22,275 - src.utils.validation - INFO - Data ready: 238 file(s) total (238 from cache, 2 newly downloaded)
+2025-11-22 19:12:22,276 - src.utils.validation - INFO - Set random seed to 42
+2025-11-22 19:12:22,276 - src.utils.validation - INFO - Loading 238 data files in parallel
+2025-11-22 19:12:22,653 - src.utils.validation - INFO - Loaded total of 340823 candles (excludes today's incomplete data)
+2025-11-22 19:12:22,654 - src.utils.validation - INFO - Validating data integrity
+2025-11-22 19:12:22,675 - src.utils.validation - WARNING - Found 1700 gaps in data (0.50% of intervals). Max gap: 32.0x expected interval
+2025-11-22 19:12:22,686 - src.utils.validation - INFO - Data validation passed
+2025-11-22 19:12:22,707 - src.utils.validation - INFO - Generating 2 non-overlapping cycle ranges (30 days each)
+2025-11-22 19:12:22,708 - src.utils.validation - INFO - Successfully generated 2 non-overlapping cycle ranges
+2025-11-22 19:12:22,736 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-22 19:12:22,737 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-22 19:12:22,737 - src.utils.validation - INFO -   Population: 1000 bots
+2025-11-22 19:12:22,737 - src.utils.validation - INFO -   Indicators: 1-3 per bot (50 available)
+2025-11-22 19:12:22,738 - src.utils.validation - INFO -   Risk strategies: 1-3 per bot
+2025-11-22 19:12:22,738 - src.utils.validation - INFO -   Leverage: 1-5x
+2025-11-22 19:12:22,741 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 19:12:22,774 - src.utils.validation - INFO - [DEBUG] Filter debug instrumentation DISABLED (no atomic counter overhead)
+2025-11-22 19:12:23,418 - src.utils.validation - ERROR - Backtest kernel compilation failed: clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE
+
+Build on <pyopencl.Device 'Intel(R) UHD Graphics' on 'Intel(R) OpenCL Graphics' at 0x12e00cc9850>:
+
+1:1430:304: error: use of undeclared identifier 'num_bots'; did you mean 'num_bars'?
+        if (!check_signal_quality(precomputed_indicators, ohlcv, bot, bar, num_bars, htf_indicators, num_htf_bars, htf_multiplier, enable_mtf, bars_per_day, debug_disable_filters, debug_bypass_sr, debug_bypass_volume, debug_force_signals, filter_debug_buf, debug_filter_index, bot_id, filter_count_buf, num_bots)) {
+                                                                                                                                                                                                                                                                                                               ^~~~~~~~
+                                                                                                                                                                                                                                                                                                               num_bars
+1:985:9: note: 'num_bars' declared here
+    int num_bars,
+        ^
+
+(options: -I C:\Users\Standard\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyopencl\cl)
+(source saved as C:\Users\Standard\AppData\Local\Temp\tmpulirbqwm.cl)
+2025-11-22 19:12:23,419 - src.utils.validation - ERROR - 
+
+Fatal error: clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE - clBuildProgram failed: BUILD_PROGRAM_FAILURE
+
+Build on <pyopencl.Device 'Intel(R) UHD Graphics' on 'Intel(R) OpenCL Graphics' at 0x12e00cc9850>:
+
+1:1430:304: error: use of undeclared identifier 'num_bots'; did you mean 'num_bars'?
+        if (!check_signal_quality(precomputed_indicators, ohlcv, bot, bar, num_bars, htf_indicators, num_htf_bars, htf_multiplier, enable_mtf, bars_per_day, debug_disable_filters, debug_bypass_sr, debug_bypass_volume, debug_force_signals, filter_debug_buf, debug_filter_index, bot_id, filter_count_buf, num_bots)) {
+                                                                                                                                                                                                                                                                                                               ^~~~~~~~
+                                                                                                                                                                                                                                                                                                               num_bars
+1:985:9: note: 'num_bars' declared here
+    int num_bars,
+        ^
+
+(options: -I C:\Users\Standard\AppData\Local\Programs\Python\Python311\Lib\site-packages\pyopencl\cl)
+(source saved as C:\Users\Standard\AppData\Local\Temp\tmpulirbqwm.cl)
+2025-11-22 19:13:23,734 - src.utils.validation - INFO - Initializing GPU (OpenCL)...
+
+2025-11-22 19:13:23,826 - src.utils.validation - INFO - ============================================================
+2025-11-22 19:13:23,828 - src.utils.validation - INFO - GPU INITIALIZATION SUCCESSFUL
+2025-11-22 19:13:23,829 - src.utils.validation - INFO - ============================================================
+2025-11-22 19:13:23,829 - src.utils.validation - INFO - Device: Intel(R) UHD Graphics
+2025-11-22 19:13:23,830 - src.utils.validation - INFO - Vendor: Intel(R) Corporation
+2025-11-22 19:13:23,830 - src.utils.validation - INFO - Version: OpenCL 3.0 NEO 
+2025-11-22 19:13:23,832 - src.utils.validation - INFO - Compute Units: 80
+2025-11-22 19:13:23,832 - src.utils.validation - INFO - Max Work Group Size: 512
+2025-11-22 19:13:23,833 - src.utils.validation - INFO - Global Memory: 3.19 GB
+2025-11-22 19:13:23,833 - src.utils.validation - INFO - Local Memory: 64.00 KB
+2025-11-22 19:13:23,834 - src.utils.validation - INFO - ============================================================
+
+2025-11-22 19:13:23,838 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:13:23,839 - src.utils.validation - WARNING - 
+EOF detected. Using default value.
+2025-11-22 19:13:23,840 - src.utils.validation - INFO - Configuration saved to config\last_run_config.json
+2025-11-22 19:13:23,841 - src.utils.validation - INFO - Signal quality filters ENABLED
+2025-11-22 19:13:23,845 - src.utils.validation - INFO - Initialized Kucoin Spot API connection
+2025-11-22 19:13:25,577 - src.utils.validation - WARNING - Could not normalize pair 'XBTUSDTM', using as-is
+2025-11-22 19:13:25,579 - src.utils.validation - INFO - Symbol 'XBTUSDTM' normalized to 'XBTUSDTM' for spot exchange
+2025-11-22 19:13:25,580 - src.utils.validation - INFO - Fetching 240 days of XBTUSDTM 1m data ending 2025-11-21 (excludes today)
+2025-11-22 19:13:26,173 - src.utils.validation - INFO - [CACHE] 238/240 files cached (99.2%), 2 need download
+2025-11-22 19:13:26,174 - src.utils.validation - INFO - [DOWNLOAD] Fetching 2 missing day(s) using 4 parallel threads...
+2025-11-22 19:13:26,175 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-20: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:13:26,175 - src.utils.validation - ERROR - Exchange error fetching data for 2025-11-19: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:13:26,175 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-20: Exchange error for 2025-11-20: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:13:26,175 - src.utils.validation - ERROR - Failed to fetch data for 2025-11-19: Exchange error for 2025-11-19: kucoin does not have market symbol XBTUSDTM
+2025-11-22 19:13:26,175 - src.utils.validation - INFO - [OK] Downloaded and saved 0 new file(s)
+2025-11-22 19:13:26,177 - src.utils.validation - INFO - Data ready: 238 file(s) total (238 from cache, 2 newly downloaded)
+2025-11-22 19:13:26,177 - src.utils.validation - INFO - Set random seed to 42
+2025-11-22 19:13:26,178 - src.utils.validation - INFO - Loading 238 data files in parallel
+2025-11-22 19:13:26,622 - src.utils.validation - INFO - Loaded total of 340823 candles (excludes today's incomplete data)
+2025-11-22 19:13:26,623 - src.utils.validation - INFO - Validating data integrity
+2025-11-22 19:13:26,647 - src.utils.validation - WARNING - Found 1700 gaps in data (0.50% of intervals). Max gap: 32.0x expected interval
+2025-11-22 19:13:26,661 - src.utils.validation - INFO - Data validation passed
+2025-11-22 19:13:26,686 - src.utils.validation - INFO - Generating 2 non-overlapping cycle ranges (30 days each)
+2025-11-22 19:13:26,687 - src.utils.validation - INFO - Successfully generated 2 non-overlapping cycle ranges
+2025-11-22 19:13:26,704 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-22 19:13:26,705 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-22 19:13:26,705 - src.utils.validation - INFO -   Population: 1000 bots
+2025-11-22 19:13:26,706 - src.utils.validation - INFO -   Indicators: 1-3 per bot (50 available)
+2025-11-22 19:13:26,706 - src.utils.validation - INFO -   Risk strategies: 1-3 per bot
+2025-11-22 19:13:26,707 - src.utils.validation - INFO -   Leverage: 1-5x
+2025-11-22 19:13:26,711 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-22 19:13:26,739 - src.utils.validation - INFO - [DEBUG] Filter debug instrumentation DISABLED (no atomic counter overhead)
+2025-11-22 19:13:32,441 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-22 19:13:32,444 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-22 19:13:32,447 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-22 19:13:32,447 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-22 19:13:32,449 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-22 19:13:32,449 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-22 19:13:32,450 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-22 19:13:32,450 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-22 19:13:32,450 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-22 19:13:32,454 - src.utils.validation - INFO - GA kernels compiled successfully
+2025-11-22 19:13:32,455 - src.utils.validation - INFO - GPU GA Processor initialized
+2025-11-22 19:13:32,455 - src.utils.validation - INFO - GPU GA acceleration enabled
+2025-11-22 19:13:32,458 - src.utils.validation - INFO - Logging kernels compiled successfully
+2025-11-22 19:13:32,459 - src.utils.validation - INFO - GPU Logging Processor initialized
+2025-11-22 19:13:32,459 - src.utils.validation - INFO - GPU logging acceleration enabled
+2025-11-22 19:13:32,459 - src.utils.validation - INFO -   Loading 1-indicator combinations from cache...
+2025-11-22 19:13:32,460 - src.utils.validation - INFO -     Loaded 48 combinations from cache
+2025-11-22 19:13:32,461 - src.utils.validation - INFO -   Loading 2-indicator combinations from cache...
+2025-11-22 19:13:32,462 - src.utils.validation - INFO -     Loaded 1,128 combinations from cache
+2025-11-22 19:13:32,462 - src.utils.validation - INFO -   Loading 3-indicator combinations from cache...
+2025-11-22 19:13:32,470 - src.utils.validation - INFO -     Loaded 17,296 combinations from cache
+2025-11-22 19:13:32,471 - src.utils.validation - INFO -   Total combinations ready: 18,472
+2025-11-22 19:13:32,472 - src.utils.validation - INFO - GeneticAlgorithmEvolver initialized (compact architecture)
+2025-11-22 19:13:32,472 - src.utils.validation - INFO -   Mutation rate: 15.0% (NOT USED - no crossover/mutation)
+2025-11-22 19:13:32,472 - src.utils.validation - INFO -   Elite percentage: 10.0%
+2025-11-22 19:13:32,473 - src.utils.validation - INFO -   Pre-computed combination pools: 18,472 total combinations
+2025-11-22 19:13:32,473 - src.utils.validation - INFO -   Strategy: Global tracking - no combination ever reused
+2025-11-22 19:13:32,473 - src.utils.validation - INFO - 
+Starting Evolution: 1 generations, 2 cycles
+2025-11-22 19:13:32,474 - src.utils.validation - INFO - Evolution profiler started
+2025-11-22 19:13:32,475 - src.utils.validation - INFO - Generating initial population with guaranteed unique combinations...
+2025-11-22 19:13:32,475 - src.utils.validation - INFO - Generating 1000 compact bots on GPU...
+2025-11-22 19:13:32,475 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-22 19:13:32,476 - src.utils.validation - INFO - Launching GPU kernel: 1024 work items, 512 per group (2 groups)
+2025-11-22 19:13:32,479 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-22 19:13:32,489 - src.utils.validation - INFO - [OK] Generated 1000 compact bots (128 bytes each)
+2025-11-22 19:13:32,490 - src.utils.validation - INFO - Distributing 1000 bots across indicator sizes 1-3
+2025-11-22 19:13:32,495 - src.utils.validation - INFO - Initial population: 1000 bots, 1000 unique (100.0% uniqueness)
+2025-11-22 19:13:32,496 - src.utils.validation - INFO - Global tracking: 1000 combinations marked as used
+2025-11-22 19:13:32,497 - src.utils.validation - INFO - Size distribution: {1: 48, 2: 469, 3: 483}
+2025-11-22 19:13:32,499 - src.utils.validation - INFO - 
+--- GENERATION 0 ---
+2025-11-22 19:13:32,499 - src.utils.validation - INFO - Evaluating 1000 bots...
+2025-11-22 19:13:32,503 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 19:13:33,001 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-22 19:13:35,013 - src.utils.validation - INFO - [DEBUG] Kernel finished within 2.00s
+2025-11-22 19:13:35,016 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-22 19:13:35,016 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=8000
+2025-11-22 19:13:35,017 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-22 19:13:35,017 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 8000)
+2025-11-22 19:13:35,018 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-22 19:13:35,018 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-22 19:13:35,019 - src.utils.validation - INFO - [DEBUG] Reading 200000 trade logs for streaming write
+2025-11-22 19:13:35,116 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-22 19:13:35,286 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-22 19:13:36,325 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 200000, written: 0, pending: 0)
+2025-11-22 19:13:36,328 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-22 19:13:37,139 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 200000
+2025-11-22 19:13:37,140 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 200000)
+2025-11-22 19:13:37,141 - src.utils.validation - INFO - Selecting survivors...
+2025-11-22 19:13:37,144 - src.utils.validation - INFO - SURVIVAL FILTER: 3 negative profit, 9 failed criteria, 7 missing trades cycles, 988 bots passed
+2025-11-22 19:13:37,144 - src.utils.validation - INFO - Survivors: 988 unique bots kept (no cap applied)
+2025-11-22 19:13:37,145 - src.utils.validation - INFO - SURVIVAL: 988 survivors (from 988 bots: avg profit and per-cycle thresholds passed; max DD < 15%)
+2025-11-22 19:13:37,145 - src.utils.validation - INFO - ELIMINATED: 12 bots total
+2025-11-22 19:13:37,145 - src.utils.validation - INFO - Logging generation 0 results...
+2025-11-22 19:13:37,255 - src.utils.validation - INFO - GPU logging completed for generation 0 in 0.109s
+2025-11-22 19:13:37,256 - src.utils.validation - INFO - Refilling population with new globally unique combinations...
+2025-11-22 19:13:37,273 - src.utils.validation - INFO - Survivors: 988 total, 988 unique combinations (100.0% diversity)
+2025-11-22 19:13:37,274 - src.utils.validation - INFO - Global tracking: 1000 combinations used across all generations
+2025-11-22 19:13:37,274 - src.utils.validation - INFO - Generating 12 new globally unique bots (insufficient top performers for breeding)
+2025-11-22 19:13:37,275 - src.utils.validation - INFO - Available combinations: 17,472 unused, 1,000 used globally
+2025-11-22 19:13:37,324 - src.utils.validation - INFO - After refill: 1000 bots, 1000 unique combinations (100.0% diversity)
+2025-11-22 19:13:37,324 - src.utils.validation - INFO - Remaining unused combinations: 17,461
+2025-11-22 19:13:37,324 - src.utils.validation - INFO - Population refilled: 1000 bots
+2025-11-22 19:13:37,326 - src.utils.validation - INFO - Generation 0 completed in 4.826s
+2025-11-22 19:13:37,326 - src.utils.validation - INFO - 
+--- FINAL EVALUATION ---
+2025-11-22 19:13:37,329 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-22 19:13:37,839 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-22 19:13:39,854 - src.utils.validation - INFO - [DEBUG] Kernel finished within 2.00s
+2025-11-22 19:13:39,854 - src.utils.validation - INFO - [DEBUG] Kernel finished, reading results...
+2025-11-22 19:13:39,855 - src.utils.validation - INFO - [DEBUG] Preparing to read results: results_size=8000
+2025-11-22 19:13:39,856 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read results buffer...
+2025-11-22 19:13:39,857 - src.utils.validation - INFO - [DEBUG] Results copy enqueued (results_flat size 8000)
+2025-11-22 19:13:39,857 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read trade_log_index_buf
+2025-11-22 19:13:39,857 - src.utils.validation - INFO - [DEBUG] Waiting for trade log index copy to finish (with timeout)
+2025-11-22 19:13:39,959 - src.utils.validation - INFO - [DEBUG] Reading 200000 trade logs for streaming write
+2025-11-22 19:13:40,057 - src.utils.validation - INFO - [DEBUG] Enqueuing copy to read close_counters_buf (for diagnostics)
+2025-11-22 19:13:40,170 - src.utils.validation - INFO - [DEBUG] Waiting for close counters copy to finish (with timeout)
+2025-11-22 19:13:41,198 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 200000, written: 0, pending: 0)
+2025-11-22 19:13:41,203 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-22 19:13:41,957 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 200000
+2025-11-22 19:13:41,958 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 200000)
+2025-11-22 19:13:42,071 - src.utils.validation - INFO - GPU logging completed for generation 1 in 0.110s
+2025-11-22 19:13:42,076 - src.utils.validation - INFO - 
+Evolution complete!
+
+2025-11-22 19:13:42,081 - src.utils.validation - INFO - Filtered to 988 bots where all cycles are profitable
+2025-11-22 19:13:42,083 - src.utils.validation - INFO - Saved bot 0 to bots/XBTUSDTM/1m/bot_0.json
+2025-11-22 19:13:42,086 - src.utils.validation - INFO - Saved bot 1 to bots/XBTUSDTM/1m/bot_1.json
+2025-11-22 19:13:42,087 - src.utils.validation - INFO - Saved bot 2 to bots/XBTUSDTM/1m/bot_2.json
+2025-11-22 19:13:42,088 - src.utils.validation - INFO - Saved bot 3 to bots/XBTUSDTM/1m/bot_3.json
+2025-11-22 19:13:42,090 - src.utils.validation - INFO - Saved bot 4 to bots/XBTUSDTM/1m/bot_4.json
+2025-11-22 19:13:42,091 - src.utils.validation - INFO - Saved bot 5 to bots/XBTUSDTM/1m/bot_5.json
+2025-11-22 19:13:42,093 - src.utils.validation - INFO - Saved bot 6 to bots/XBTUSDTM/1m/bot_6.json
+2025-11-22 19:13:42,094 - src.utils.validation - INFO - Saved bot 7 to bots/XBTUSDTM/1m/bot_7.json
+2025-11-22 19:13:42,094 - src.utils.validation - INFO - Saved bot 8 to bots/XBTUSDTM/1m/bot_8.json
+2025-11-22 19:13:42,095 - src.utils.validation - INFO - Saved bot 9 to bots/XBTUSDTM/1m/bot_9.json
+2025-11-22 19:13:42,096 - src.utils.validation - INFO - Saved bot 10 to bots/XBTUSDTM/1m/bot_10.json
+2025-11-22 19:13:42,098 - src.utils.validation - INFO - Saved bot 11 to bots/XBTUSDTM/1m/bot_11.json
+2025-11-22 19:13:42,100 - src.utils.validation - INFO - Saved bot 12 to bots/XBTUSDTM/1m/bot_12.json
+2025-11-22 19:13:42,102 - src.utils.validation - INFO - Saved bot 13 to bots/XBTUSDTM/1m/bot_13.json
+2025-11-22 19:13:42,104 - src.utils.validation - INFO - Saved bot 14 to bots/XBTUSDTM/1m/bot_14.json
+2025-11-22 19:13:42,105 - src.utils.validation - INFO - Saved bot 15 to bots/XBTUSDTM/1m/bot_15.json
+2025-11-22 19:13:42,105 - src.utils.validation - INFO - Saved bot 16 to bots/XBTUSDTM/1m/bot_16.json
+2025-11-22 19:13:42,107 - src.utils.validation - INFO - Saved bot 17 to bots/XBTUSDTM/1m/bot_17.json
+2025-11-22 19:13:42,108 - src.utils.validation - INFO - Saved bot 18 to bots/XBTUSDTM/1m/bot_18.json
+2025-11-22 19:13:42,110 - src.utils.validation - INFO - Saved bot 19 to bots/XBTUSDTM/1m/bot_19.json
+2025-11-22 19:13:42,111 - src.utils.validation - INFO - Saved bot 20 to bots/XBTUSDTM/1m/bot_20.json
+2025-11-22 19:13:42,112 - src.utils.validation - INFO - Saved bot 21 to bots/XBTUSDTM/1m/bot_21.json
+2025-11-22 19:13:42,114 - src.utils.validation - INFO - Saved bot 22 to bots/XBTUSDTM/1m/bot_22.json
+2025-11-22 19:13:42,115 - src.utils.validation - INFO - Saved bot 23 to bots/XBTUSDTM/1m/bot_23.json
+2025-11-22 19:13:42,117 - src.utils.validation - INFO - Saved bot 25 to bots/XBTUSDTM/1m/bot_25.json
+2025-11-22 19:13:42,119 - src.utils.validation - INFO - Saved bot 26 to bots/XBTUSDTM/1m/bot_26.json
+2025-11-22 19:13:42,121 - src.utils.validation - INFO - Saved bot 27 to bots/XBTUSDTM/1m/bot_27.json
+2025-11-22 19:13:42,123 - src.utils.validation - INFO - Saved bot 28 to bots/XBTUSDTM/1m/bot_28.json
+2025-11-22 19:13:42,125 - src.utils.validation - INFO - Saved bot 29 to bots/XBTUSDTM/1m/bot_29.json
+2025-11-22 19:13:42,125 - src.utils.validation - INFO - Saved bot 30 to bots/XBTUSDTM/1m/bot_30.json
+2025-11-22 19:13:42,127 - src.utils.validation - INFO - Saved bot 31 to bots/XBTUSDTM/1m/bot_31.json
+2025-11-22 19:13:42,128 - src.utils.validation - INFO - Saved bot 32 to bots/XBTUSDTM/1m/bot_32.json
+2025-11-22 19:13:42,129 - src.utils.validation - INFO - Saved bot 33 to bots/XBTUSDTM/1m/bot_33.json
+2025-11-22 19:13:42,131 - src.utils.validation - INFO - Saved bot 34 to bots/XBTUSDTM/1m/bot_34.json
+2025-11-22 19:13:42,133 - src.utils.validation - INFO - Saved bot 35 to bots/XBTUSDTM/1m/bot_35.json
+2025-11-22 19:13:42,135 - src.utils.validation - INFO - Saved bot 36 to bots/XBTUSDTM/1m/bot_36.json
+2025-11-22 19:13:42,137 - src.utils.validation - INFO - Saved bot 37 to bots/XBTUSDTM/1m/bot_37.json
+2025-11-22 19:13:42,138 - src.utils.validation - INFO - Saved bot 38 to bots/XBTUSDTM/1m/bot_38.json
+2025-11-22 19:13:42,139 - src.utils.validation - INFO - Saved bot 39 to bots/XBTUSDTM/1m/bot_39.json
+2025-11-22 19:13:42,141 - src.utils.validation - INFO - Saved bot 40 to bots/XBTUSDTM/1m/bot_40.json
+2025-11-22 19:13:42,142 - src.utils.validation - INFO - Saved bot 41 to bots/XBTUSDTM/1m/bot_41.json
+2025-11-22 19:13:42,144 - src.utils.validation - INFO - Saved bot 42 to bots/XBTUSDTM/1m/bot_42.json
+2025-11-22 19:13:42,145 - src.utils.validation - INFO - Saved bot 43 to bots/XBTUSDTM/1m/bot_43.json
+2025-11-22 19:13:42,146 - src.utils.validation - INFO - Saved bot 44 to bots/XBTUSDTM/1m/bot_44.json
+2025-11-22 19:13:42,149 - src.utils.validation - INFO - Saved bot 45 to bots/XBTUSDTM/1m/bot_45.json
+2025-11-22 19:13:42,152 - src.utils.validation - INFO - Saved bot 46 to bots/XBTUSDTM/1m/bot_46.json
+2025-11-22 19:13:42,154 - src.utils.validation - INFO - Saved bot 47 to bots/XBTUSDTM/1m/bot_47.json
+2025-11-22 19:13:42,156 - src.utils.validation - INFO - Saved bot 48 to bots/XBTUSDTM/1m/bot_48.json
+2025-11-22 19:13:42,178 - src.utils.validation - INFO - Saved bot 49 to bots/XBTUSDTM/1m/bot_49.json
+2025-11-22 19:13:42,182 - src.utils.validation - INFO - Saved bot 50 to bots/XBTUSDTM/1m/bot_50.json
+2025-11-22 19:13:42,186 - src.utils.validation - INFO - Saved bot 51 to bots/XBTUSDTM/1m/bot_51.json
+2025-11-22 19:13:42,190 - src.utils.validation - INFO - Saved bot 52 to bots/XBTUSDTM/1m/bot_52.json
+2025-11-22 19:13:42,192 - src.utils.validation - INFO - Saved bot 53 to bots/XBTUSDTM/1m/bot_53.json
+2025-11-22 19:13:42,194 - src.utils.validation - INFO - Saved bot 54 to bots/XBTUSDTM/1m/bot_54.json
+2025-11-22 19:13:42,196 - src.utils.validation - INFO - Saved bot 55 to bots/XBTUSDTM/1m/bot_55.json
+2025-11-22 19:13:42,201 - src.utils.validation - INFO - Saved bot 56 to bots/XBTUSDTM/1m/bot_56.json
+2025-11-22 19:13:42,204 - src.utils.validation - INFO - Saved bot 57 to bots/XBTUSDTM/1m/bot_57.json
+2025-11-22 19:13:42,207 - src.utils.validation - INFO - Saved bot 58 to bots/XBTUSDTM/1m/bot_58.json
+2025-11-22 19:13:42,209 - src.utils.validation - INFO - Saved bot 59 to bots/XBTUSDTM/1m/bot_59.json
+2025-11-22 19:13:42,212 - src.utils.validation - INFO - Saved bot 60 to bots/XBTUSDTM/1m/bot_60.json
+2025-11-22 19:13:42,217 - src.utils.validation - INFO - Saved bot 61 to bots/XBTUSDTM/1m/bot_61.json
+2025-11-22 19:13:42,221 - src.utils.validation - INFO - Saved bot 62 to bots/XBTUSDTM/1m/bot_62.json
+2025-11-22 19:13:42,226 - src.utils.validation - INFO - Saved bot 63 to bots/XBTUSDTM/1m/bot_63.json
+2025-11-22 19:13:42,231 - src.utils.validation - INFO - Saved bot 64 to bots/XBTUSDTM/1m/bot_64.json
+2025-11-22 19:13:42,235 - src.utils.validation - INFO - Saved bot 65 to bots/XBTUSDTM/1m/bot_65.json
+2025-11-22 19:13:42,238 - src.utils.validation - INFO - Saved bot 66 to bots/XBTUSDTM/1m/bot_66.json
+2025-11-22 19:13:42,241 - src.utils.validation - INFO - Saved bot 67 to bots/XBTUSDTM/1m/bot_67.json
+2025-11-22 19:13:42,244 - src.utils.validation - INFO - Saved bot 68 to bots/XBTUSDTM/1m/bot_68.json
+2025-11-22 19:13:42,246 - src.utils.validation - INFO - Saved bot 69 to bots/XBTUSDTM/1m/bot_69.json
+2025-11-22 19:13:42,253 - src.utils.validation - INFO - Saved bot 70 to bots/XBTUSDTM/1m/bot_70.json
+2025-11-22 19:13:42,258 - src.utils.validation - INFO - Saved bot 71 to bots/XBTUSDTM/1m/bot_71.json
+2025-11-22 19:13:42,266 - src.utils.validation - INFO - Saved bot 72 to bots/XBTUSDTM/1m/bot_72.json
+2025-11-22 19:13:42,271 - src.utils.validation - INFO - Saved bot 73 to bots/XBTUSDTM/1m/bot_73.json
+2025-11-22 19:13:42,275 - src.utils.validation - INFO - Saved bot 74 to bots/XBTUSDTM/1m/bot_74.json
+2025-11-22 19:13:42,279 - src.utils.validation - INFO - Saved bot 75 to bots/XBTUSDTM/1m/bot_75.json
+2025-11-22 19:13:42,283 - src.utils.validation - INFO - Saved bot 76 to bots/XBTUSDTM/1m/bot_76.json
+2025-11-22 19:13:42,287 - src.utils.validation - INFO - Saved bot 77 to bots/XBTUSDTM/1m/bot_77.json
+2025-11-22 19:13:42,289 - src.utils.validation - INFO - Saved bot 78 to bots/XBTUSDTM/1m/bot_78.json
+2025-11-22 19:13:42,291 - src.utils.validation - INFO - Saved bot 79 to bots/XBTUSDTM/1m/bot_79.json
+2025-11-22 19:13:42,293 - src.utils.validation - INFO - Saved bot 80 to bots/XBTUSDTM/1m/bot_80.json
+2025-11-22 19:13:42,295 - src.utils.validation - INFO - Saved bot 81 to bots/XBTUSDTM/1m/bot_81.json
+2025-11-22 19:13:42,298 - src.utils.validation - INFO - Saved bot 82 to bots/XBTUSDTM/1m/bot_82.json
+2025-11-22 19:13:42,300 - src.utils.validation - INFO - Saved bot 83 to bots/XBTUSDTM/1m/bot_83.json
+2025-11-22 19:13:42,303 - src.utils.validation - INFO - Saved bot 84 to bots/XBTUSDTM/1m/bot_84.json
+2025-11-22 19:13:42,305 - src.utils.validation - INFO - Saved bot 85 to bots/XBTUSDTM/1m/bot_85.json
+2025-11-22 19:13:42,308 - src.utils.validation - INFO - Saved bot 86 to bots/XBTUSDTM/1m/bot_86.json
+2025-11-22 19:13:42,311 - src.utils.validation - INFO - Saved bot 87 to bots/XBTUSDTM/1m/bot_87.json
+2025-11-22 19:13:42,317 - src.utils.validation - INFO - Saved bot 88 to bots/XBTUSDTM/1m/bot_88.json
+2025-11-22 19:13:42,323 - src.utils.validation - INFO - Saved bot 89 to bots/XBTUSDTM/1m/bot_89.json
+2025-11-22 19:13:42,328 - src.utils.validation - INFO - Saved bot 90 to bots/XBTUSDTM/1m/bot_90.json
+2025-11-22 19:13:42,335 - src.utils.validation - INFO - Saved bot 91 to bots/XBTUSDTM/1m/bot_91.json
+2025-11-22 19:13:42,340 - src.utils.validation - INFO - Saved bot 92 to bots/XBTUSDTM/1m/bot_92.json
+2025-11-22 19:13:42,345 - src.utils.validation - INFO - Saved bot 93 to bots/XBTUSDTM/1m/bot_93.json
+2025-11-22 19:13:42,350 - src.utils.validation - INFO - Saved bot 94 to bots/XBTUSDTM/1m/bot_94.json
+2025-11-22 19:13:42,353 - src.utils.validation - INFO - Saved bot 95 to bots/XBTUSDTM/1m/bot_95.json
+2025-11-22 19:13:42,356 - src.utils.validation - INFO - Saved bot 96 to bots/XBTUSDTM/1m/bot_96.json
+2025-11-22 19:13:42,358 - src.utils.validation - INFO - Saved bot 97 to bots/XBTUSDTM/1m/bot_97.json
+2025-11-22 19:13:42,360 - src.utils.validation - INFO - Saved bot 98 to bots/XBTUSDTM/1m/bot_98.json
+2025-11-22 19:13:42,362 - src.utils.validation - INFO - Saved bot 99 to bots/XBTUSDTM/1m/bot_99.json
+2025-11-22 19:13:42,364 - src.utils.validation - INFO - Saved bot 100 to bots/XBTUSDTM/1m/bot_100.json
+2025-11-22 19:13:42,378 - src.utils.validation - INFO - 
+Saved 100 survivor bots to bots/XBTUSDTM/1m/run_20251122_191342/best_bots.json and individual files
+2025-11-22 19:13:42,394 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-22 19:13:42,405 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-22 19:13:42,405 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)

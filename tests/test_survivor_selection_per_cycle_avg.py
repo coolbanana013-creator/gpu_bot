@@ -40,6 +40,7 @@ def evolver():
     evol.initial_balance = bb.initial_balance
     evol.used_combinations = set()
     evol.all_time_best = []
+    evol.top_performers_history = []
     eval_results = []
     return evol
 
@@ -103,14 +104,16 @@ def test_select_survivors_prefers_win_rate():
     evol.initial_balance = 1000.0
     evol.used_combinations = set()
     evol.all_time_best = []
+    evol.top_performers_history = []
+    evol.high_winrate_indicators = {}
 
     # Bot A: High cumulative profit but low win rate
     bot_a = types.SimpleNamespace(bot_id=1, num_indicators=1, leverage=1, indicator_indices=[0], indicator_risk_strategies=[0], indicator_params=[[1.0,1.0,0.0]], survival_generations=0)
-    result_a = BacktestResult(bot_id=1, total_trades=100, winning_trades=10, losing_trades=90, per_cycle_trades=[1]*10, per_cycle_wins=[1]*1+[0]*9, per_cycle_pnl=[100.0]*10, per_cycle_signals=[1]*10, total_pnl=1000.0, max_drawdown=0.1, sharpe_ratio=0.5, win_rate=10.0, avg_win=10.0, avg_loss=5.0, profit_factor=2.0, max_consecutive_wins=2, max_consecutive_losses=2, final_balance=2000.0)
+    result_a = BacktestResult(bot_id=1, total_trades=300, winning_trades=30, losing_trades=270, per_cycle_trades=[1]*10, per_cycle_wins=[1]*1+[0]*9, per_cycle_pnl=[100.0]*10, per_cycle_signals=[1]*10, total_pnl=1000.0, max_drawdown=0.1, sharpe_ratio=0.5, win_rate=10.0, avg_win=10.0, avg_loss=5.0, profit_factor=2.0, max_consecutive_wins=2, max_consecutive_losses=2, final_balance=2000.0)
 
     # Bot B: Lower profit but high win rate
     bot_b = types.SimpleNamespace(bot_id=2, num_indicators=1, leverage=1, indicator_indices=[0], indicator_risk_strategies=[0], indicator_params=[[1.0,1.0,0.0]], survival_generations=0)
-    result_b = BacktestResult(bot_id=2, total_trades=100, winning_trades=85, losing_trades=15, per_cycle_trades=[1]*10, per_cycle_wins=[1]*8+[0]*2, per_cycle_pnl=[20.0]*10, per_cycle_signals=[1]*10, total_pnl=200.0, max_drawdown=0.05, sharpe_ratio=1.0, win_rate=85.0, avg_win=4.0, avg_loss=2.0, profit_factor=2.0, max_consecutive_wins=5, max_consecutive_losses=1, final_balance=1200.0)
+    result_b = BacktestResult(bot_id=2, total_trades=300, winning_trades=255, losing_trades=45, per_cycle_trades=[1]*10, per_cycle_wins=[1]*8+[0]*2, per_cycle_pnl=[20.0]*10, per_cycle_signals=[1]*10, total_pnl=200.0, max_drawdown=0.05, sharpe_ratio=1.0, win_rate=85.0, avg_win=4.0, avg_loss=2.0, profit_factor=2.0, max_consecutive_wins=5, max_consecutive_losses=1, final_balance=1200.0)
 
     population = [bot_a, bot_b]
     results = [result_a, result_b]

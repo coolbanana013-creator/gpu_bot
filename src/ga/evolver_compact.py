@@ -13,7 +13,14 @@ import time
 from ..bot_generator.compact_generator import CompactBotConfig, CompactBotGenerator
 from ..backtester.compact_simulator import BacktestResult, CompactBacktester
 from ..utils.validation import log_info, log_debug, log_warning, log_error
-from ..utils.config import TOP_BOTS_COUNT, RESULTS_FILE
+from ..utils.config import (
+    TOP_BOTS_COUNT,
+    RESULTS_FILE,
+    MIN_SURVIVAL_AVG_PROFIT_PCT,
+    MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_EARLY,
+    MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_LATE,
+    MAX_SURVIVAL_DRAWDOWN,
+)
 from ..indicators.factory import IndicatorFactory
 from ..indicators.gpu_indicators import get_all_gpu_indicators, get_gpu_indicator_name, GPU_INDICATOR_COUNT
 from .gpu_ga_processor import GPUGAProcessor
@@ -409,12 +416,13 @@ class GeneticAlgorithmEvolver:
         # - Average profit per cycle > 0% (avg_profit_pct > 0)
         # - Max drawdown across cycles <= 15% (<= 0.15)
         # Use slightly relaxed cycle profitability threshold for early generations
-        min_profit_pct = 0.0  # Require avg profit > 0%
+        # Read defaults from global config (can be overridden externally)
+        min_profit_pct = MIN_SURVIVAL_AVG_PROFIT_PCT
         if generation <= 2:
-            min_profitable_cycles_pct = 0.40  # Early generations: 40% cycles profitable
+            min_profitable_cycles_pct = MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_EARLY
         else:
-            min_profitable_cycles_pct = 0.70  # Later generations: 70% cycles profitable
-        max_drawdown_threshold = 0.15  # 15% max drawdown across cycles
+            min_profitable_cycles_pct = MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_LATE
+        max_drawdown_threshold = MAX_SURVIVAL_DRAWDOWN
         
         profitable_pairs = []
         eliminated_negative_profit = 0

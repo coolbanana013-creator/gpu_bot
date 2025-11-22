@@ -130,6 +130,23 @@ def main():
         print(f'  {name:12s}: {count:6d} total occurrences')
     
     print()
+    # Read aggregated per-bot per-filter counts (if available)
+    fc_path = Path('logs') / 'filter_debug_counts.csv'
+    if fc_path.exists():
+        fc_counts = Counter()
+        with open(fc_path, newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f, delimiter=';')
+            for row in reader:
+                for filter_name in ['ADX', 'ATR', 'VOLUME', 'SR', 'RSI', 'NAN']:
+                    try:
+                        cnt = int(row.get(filter_name, '0'))
+                    except ValueError:
+                        cnt = 0
+                    fc_counts[filter_name] += cnt
+        print(f'Aggregated per-bot filter counts (from filter_debug_counts.csv):')
+        for name, count in fc_counts.most_common():
+            print(f'  {name:12s}: {count:6d} occurrences (sum across all bots)')
+        print()
 
 if __name__ == '__main__':
     main()

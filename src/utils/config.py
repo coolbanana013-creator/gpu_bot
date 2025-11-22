@@ -124,9 +124,32 @@ MAX_INDICATOR_LOOKBACK = 200  # bars
 # ATR config left for reference, but ATR/ADX filtering is disabled for short cycles
 ATR_MIN_PCT = 0.15  # default minimum ATR % for trading (0.15%)
 ATR_MAX_PCT = 3.0   # default maximum ATR % for trading (3.0%)
+DEFAULT_ADX_MIN = 14.0
+DEFAULT_ADX_MAX = 50.0
+DEFAULT_ATR_SPIKE_FACTOR = 4.0
+DEFAULT_VOLUME_MULTIPLIER = 1.0
+
+# Debug filter counting (set to False for production to avoid atomic counter overhead)
+ENABLE_FILTER_DEBUG_COUNTING = True  # Enable per-filter atomic counters
+ENABLE_FILTER_DEBUG_BITMASK = True   # Enable per-cycle bitmask logging
 
 # Consensus threshold for signals
 SIGNAL_CONSENSUS_THRESHOLD = 1.0  # 100% unanimous consensus (ALL indicators must agree)
+
+# ============================================================================
+# SURVIVAL FILTER / SELECTION THRESHOLDS (GA Evolver)
+# ============================================================================
+# Minimum average profit percentage required to survive (default: 0.0 -> >0% per-cycle average)
+MIN_SURVIVAL_AVG_PROFIT_PCT = 0.0
+
+# Percentage of profitable cycles in early generations (0-2)
+MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_EARLY = 0.40
+
+# Percentage of profitable cycles in later generations (3+)
+MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_LATE = 0.70
+
+# Maximum drawdown threshold to survive (e.g., 0.15 -> 15% max drawdown)
+MAX_SURVIVAL_DRAWDOWN = 0.15
 
 # ============================================================================
 # RISK MANAGEMENT CONFIGURATION
@@ -261,3 +284,15 @@ MODE_DESCRIPTIONS = {
     3: "Live Trading Mode - Real trading with real money (CPU-based, replicates GPU logic)",
     4: "Single Bot Backtest Mode - Test individual bots on historical data (supports loading saved bots)"
 }
+
+# ============================================================================
+# DEBUG AND PERFORMANCE CONFIGURATION
+# ============================================================================
+
+# Enable verbose GPU kernel logging (disable for production)
+ENABLE_VERBOSE_GPU_LOGGING = False
+
+# Enable filter debug instrumentation (per-filter atomic counters + bitmasks)
+# WARNING: Atomic operations have performance overhead (~10%) - disable for large production runs
+# DEFAULT: False for production safety, set True only when debugging filter behavior
+ENABLE_FILTER_DEBUG_INSTRUMENTATION = False

@@ -24,6 +24,12 @@
  *   - Slippage modeling
  *   - Proper PnL tracking
  * 
+ * Filter Debug Instrumentation:
+ *   - Compile-time gated with ENABLE_FILTER_DEBUG_INSTRUMENTATION macro
+ *   - Atomic counters track which filters (ADX, ATR, Volume, S/R, RSI, NaN) block signals
+ *   - Buffer bounds checked: bot_id must be in [0, num_bots) to prevent overflow
+ *   - Zero overhead when disabled (macro guards eliminate code at compile time)
+ * 
  * MEMORY USAGE:
  *   Per Bot: 128 bytes (CompactBotConfig)
  *   Positions: 1 × 32 bytes = 32 bytes per bot
@@ -142,6 +148,15 @@ typedef struct {
 #define FILTER_BIT_RSI        (1 << 4)
 #define FILTER_BIT_NAN        (1 << 5)
 
+/* Per-filter counter indices for atomic counters (used by host to collect filter counts) */
+#define NUM_FILTERS 6
+#define FILTER_IDX_ADX 0
+#define FILTER_IDX_ATR 1
+#define FILTER_IDX_VOLUME 2
+#define FILTER_IDX_SR 3
+#define FILTER_IDX_RSI 4
+#define FILTER_IDX_NAN 5
+
 // ============================================================================
 // CONSTANTS
 // ============================================================================
@@ -174,6 +189,20 @@ typedef struct {
 // Performance tuning
 #define MAX_SR_LOOKBACK 256
 #define MAX_VOLUME_LOOKBACK 1024
+
+// Configurable filter thresholds - can be overridden at compile-time via -D flags
+#ifndef ADX_MIN_THRESHOLD
+#define ADX_MIN_THRESHOLD 14.0f
+#endif
+#ifndef ADX_MAX_THRESHOLD
+#define ADX_MAX_THRESHOLD 50.0f
+#endif
+#ifndef ATR_SPIKE_FACTOR
+#define ATR_SPIKE_FACTOR 4.0f
+#endif
+#ifndef VOLUME_MULTIPLIER_THRESHOLD
+#define VOLUME_MULTIPLIER_THRESHOLD 1.0f
+#endif
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -776,6 +805,9 @@ int check_signal_quality(
     , int debug_force_signals
     , __global int *filter_debug_buf
     , int debug_filter_index
+    , int bot_id
+    , __global int *filter_count_buf
+    , int num_bots
 ) {
     // Debug mode: bypass filters to allow trades for testing/tracing
     if (debug_disable_filters) return 1;
@@ -798,6 +830,12 @@ int check_signal_quality(
         // Mark NaN-related filter
         if (filter_debug_buf != 0) {
             filter_debug_buf[debug_filter_index] |= FILTER_BIT_NAN;
+#ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
+            // CRITICAL: Bounds check to prevent buffer overflow
+            if (filter_count_buf != 0 && bot_id >= 0 && bot_id < num_bots) {
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_NAN], 1);
+            }
+#endif
         }
         return 0;  // Filter out - insufficient data
     }
@@ -806,16 +844,28 @@ int check_signal_quality(
     // Further loosened ADX threshold to 14 based on filter debug analysis showing ADX blocks 100% of cases
     // 1m timeframe requires lower thresholds: ADX 0-14 = weak/ranging, 14-20 = developing, 20-40 = strong
     // Research: ADX 0-20 = weak/ranging, 20-25 = developing, 25-40 = strong, 40+ = very strong/late
-    if (adx < 14.0f) {
+    if (adx < ADX_MIN_THRESHOLD) {
         if (filter_debug_buf != 0) {
             filter_debug_buf[debug_filter_index] |= FILTER_BIT_ADX;
+#ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
+            // CRITICAL: Bounds check to prevent buffer overflow
+            if (filter_count_buf != 0 && bot_id >= 0 && bot_id < num_bots) {
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
+            }
+#endif
         }
         return 0;  // Filter out - weak trend or ranging market
     }
     // Block late-stage trends (ADX > 50 often precedes reversals)
-    if (adx > 50.0f) {
+    if (adx > ADX_MAX_THRESHOLD) {
         if (filter_debug_buf != 0) {
             filter_debug_buf[debug_filter_index] |= FILTER_BIT_ADX;
+#ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
+            // CRITICAL: Bounds check to prevent buffer overflow
+            if (filter_count_buf != 0 && bot_id >= 0 && bot_id < num_bots) {
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
+            }
+#endif
         }
         return 0;  // Filter out - overextended trend, reversal risk
     }
@@ -824,9 +874,15 @@ int check_signal_quality(
     // Get ATR_20 for comparison (indicator index 21)
     // Further loosened from 3.0x to 4.0x based on filter debug showing ATR blocks 100% of cases
     float atr_20 = precomputed_indicators[21 * num_bars + bar];
-    if (!isnan(atr_20) && atr > atr_20 * 4.0f) {
+    if (!isnan(atr_20) && atr > atr_20 * ATR_SPIKE_FACTOR) {
         if (filter_debug_buf != 0) {
             filter_debug_buf[debug_filter_index] |= FILTER_BIT_ATR;
+#ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
+            // CRITICAL: Bounds check to prevent buffer overflow
+            if (filter_count_buf != 0 && bot_id >= 0 && bot_id < num_bots) {
+                atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ATR], 1);
+            }
+#endif
         }
         return 0;  // Filter out - volatility spike, unpredictable
     }
@@ -838,9 +894,15 @@ int check_signal_quality(
         
     // FIXED: Lowered baseline for volume to 1.0x to be less aggressive and avoid starving low-volume bars
     if (!debug_bypass_volume && !isnan(volume_ma)) {
-        if (current_volume < volume_ma * 1.0f) {
+            if (current_volume < volume_ma * VOLUME_MULTIPLIER_THRESHOLD) {
             if (filter_debug_buf != 0) {
                 filter_debug_buf[debug_filter_index] |= FILTER_BIT_VOLUME;
+#ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
+                // CRITICAL: Bounds check to prevent buffer overflow
+                if (filter_count_buf != 0 && bot_id >= 0 && bot_id < num_bots) {
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_VOLUME], 1);
+                }
+#endif
             }
             return 0;  // Filter out - below average volume
         }
@@ -859,6 +921,12 @@ int check_signal_quality(
         if (fabs(current_price - sr_mid) < buffer) {
             if (filter_debug_buf != 0) {
                 filter_debug_buf[debug_filter_index] |= FILTER_BIT_SR;
+#ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
+                // CRITICAL: Bounds check to prevent buffer overflow
+                if (filter_count_buf != 0 && bot_id >= 0 && bot_id < num_bots) {
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_SR], 1);
+                }
+#endif
             }
             return 0; // Filter out - too close to support/resistance midpoint
         }
@@ -871,9 +939,15 @@ int check_signal_quality(
     if (!isnan(rsi)) {
         // Block moderate overbought/oversold (70-85 and 15-30)
         // These levels often indicate upcoming reversal
-        if ((rsi >= 70.0f && rsi <= 85.0f) || (rsi >= 15.0f && rsi <= 30.0f)) {
+            if ((rsi >= 70.0f && rsi <= 85.0f) || (rsi >= 15.0f && rsi <= 30.0f)) {
             if (filter_debug_buf != 0) {
                 filter_debug_buf[debug_filter_index] |= FILTER_BIT_RSI;
+#ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
+                // CRITICAL: Bounds check to prevent buffer overflow
+                if (filter_count_buf != 0 && bot_id >= 0 && bot_id < num_bots) {
+                    atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_RSI], 1);
+                }
+#endif
             }
             return 0;  // Filter out - moderate extreme, reversal likely
         }
@@ -915,9 +989,11 @@ float generate_signal_consensus(
     int debug_disable_filters,
     int debug_bypass_sr,
     int debug_bypass_volume,
-    int debug_force_signals,
-    __global int *filter_debug_buf,
-    int debug_filter_index
+    int debug_force_signals
+    , __global int *filter_debug_buf
+    , int debug_filter_index
+    , __global int *filter_count_buf
+    , int num_bots
 ) {
     if (bot->num_indicators == 0) return 0.0f;
     
@@ -1348,7 +1424,7 @@ float generate_signal_consensus(
     // Apply quality filters only for directional consensus (non-zero)
     // This avoids preemptively blocking bars that are neutral by nature.
     if (!debug_disable_filters && (weighted_bullish > 0.0f || weighted_bearish > 0.0f)) {
-        if (!check_signal_quality(precomputed_indicators, ohlcv, bot, bar, num_bars, htf_indicators, num_htf_bars, htf_multiplier, enable_mtf, bars_per_day, debug_disable_filters, debug_bypass_sr, debug_bypass_volume, debug_force_signals, filter_debug_buf, debug_filter_index)) {
+        if (!check_signal_quality(precomputed_indicators, ohlcv, bot, bar, num_bars, htf_indicators, num_htf_bars, htf_multiplier, enable_mtf, bars_per_day, debug_disable_filters, debug_bypass_sr, debug_bypass_volume, debug_force_signals, filter_debug_buf, debug_filter_index, bot_id, filter_count_buf, num_bots)) {
             return 0.0f;  // No trade - low quality signal
         }
     }
@@ -2302,8 +2378,10 @@ __kernel void backtest_with_signals(
     , const int debug_bypass_volume   /* 1 = bypass volume checks */
     , const int debug_force_signals   /* 1 = force signals for debug (create a trade when none present) */
     , __global int *filter_debug_buf     /* per-bot per-cycle filter debug bitmap (optional) */
+    , __global int *filter_count_buf     /* per-bot per-filter atomic count buffer (optional) */
 ) {
     int bot_idx = get_global_id(0);
+    int num_bots = get_global_size(0);  // Total number of bots for bounds checking
     
     // CRITICAL: Write to close_counters immediately to prove kernel started
     if (bot_idx == 0) {
@@ -2744,6 +2822,8 @@ __kernel void backtest_with_signals(
                 , debug_force_signals
                 , filter_debug_buf
                 , debug_filter_index
+                , filter_count_buf
+                , num_bots
             );
             
             // Manage existing positions
@@ -3175,6 +3255,7 @@ __kernel void backtest_parallel_bot_cycle(
     , const int debug_bypass_volume   /* 1 = bypass volume checks */
     , const int debug_force_signals   /* 1 = force signals for debug (create a trade when none present) */
     , __global int *filter_debug_buf     /* per-bot per-cycle filter debug bitmap (optional) */
+    , __global int *filter_count_buf     /* per-bot per-filter atomic count buffer (optional) */
 ) {
     // Decode bot and cycle indices from work item ID
     int global_id = get_global_id(0);
@@ -3297,6 +3378,8 @@ __kernel void backtest_parallel_bot_cycle(
             , debug_force_signals
             , filter_debug_buf
             , debug_filter_index
+            , filter_count_buf
+            , num_bots
         );
         
         // Track signals generated
