@@ -2164,6 +2164,13 @@ class CompactBacktester:
         # Build per-cycle arrays by aggregating data points per cycle
         bot_cycle_map = {}  # {bot_id: {cycle_id: [trades, wins, pnl, signals]}}
         
+        # DEBUG: Log first 10 data points to see cycle distribution
+        if num_data_points > 0:
+            sample_size = min(10, num_data_points)
+            from ..utils.validation import log_debug
+            log_debug(f"Sample cycle distribution (first {sample_size} points): " + 
+                     ", ".join([f"bot{bot_ids[i]}_cycle{cycle_ids[i]}" for i in range(sample_size)]))
+        
         for i in range(num_data_points):
             b_id = bot_ids[i]
             c_id = cycle_ids[i]

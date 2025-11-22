@@ -268,16 +268,23 @@ class GPULoggingProcessor:
             indicator_indices = data_view[bot_data_offset:bot_data_offset+8]
             bot_data_offset += 8
 
-            # Extract per-cycle data
-            per_cycle_data = []
-            for c in range(num_cycles):
-                trades = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
-                bot_data_offset += 4
-                pnl = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]
-                bot_data_offset += 4
-                wins_count = np.frombuffer(data_view[bot_data_offset:bot_data_offset+4], dtype=np.float32)[0]  # WINS COUNT not ratio
-                bot_data_offset += 4
-                per_cycle_data.extend([trades, pnl, wins_count])
+            # CRITICAL FIX: Use result object's per-cycle data directly instead of broken binary parsing
+            # The binary buffer extraction was returning all zeros, causing incorrect CSV data
+            cycle_pnls = list(result.per_cycle_pnl) if hasattr(result, 'per_cycle_pnl') and result.per_cycle_pnl else [0.0] * num_cycles
+            cycle_trades = list(result.per_cycle_trades) if hasattr(result, 'per_cycle_trades') and result.per_cycle_trades else [0] * num_cycles
+            cycle_wins = list(result.per_cycle_wins) if hasattr(result, 'per_cycle_wins') and result.per_cycle_wins else [0] * num_cycles
+            
+            # DEBUG: Log first few bots to verify data
+            if bot_idx < 3:
+                log_debug(f"Bot {bot_id} per-cycle: trades={cycle_trades}, pnls={cycle_pnls}, wins={cycle_wins}")
+            
+            # Pad to num_cycles if needed
+            while len(cycle_pnls) < num_cycles:
+                cycle_pnls.append(0.0)
+            while len(cycle_trades) < num_cycles:
+                cycle_trades.append(0)
+            while len(cycle_wins) < num_cycles:
+                cycle_wins.append(0)
 
             # Use values directly from result object: report average profit per cycle
             # rather than cumulative across independent cycles to avoid exaggeration.
@@ -310,20 +317,6 @@ class GPULoggingProcessor:
                 log_debug(f"  Bot {bot_id} per-cycle PnL: {per_cycle_debug} | TotalPnL={result.total_pnl:.2f} | InitialBalance={initial_balance:.2f}")
             if survival_generations > 1000:
                 log_error(f"Bot {bot_id}: IMPOSSIBLE survival generations {survival_generations} > 1000")
-            
-            # Extract cycle data from per_cycle_data for cycle-specific checks
-            cycle_pnls = []
-            cycle_trades = []
-            cycle_wins = []
-            
-            for c in range(num_cycles):
-                idx = c * 3
-                c_trades = per_cycle_data[idx]
-                c_pnl = per_cycle_data[idx + 1]
-                c_wins = per_cycle_data[idx + 2]
-                cycle_trades.append(c_trades)
-                cycle_pnls.append(c_pnl)
-                cycle_wins.append(c_wins)
             
             # Check if ALL cycles have positive profit percentage
             all_cycles_positive = all((pnl / initial_balance) * 100 > 0 for pnl in cycle_pnls) if cycle_pnls else False
@@ -405,12 +398,11 @@ class GPULoggingProcessor:
                 indicator_params_str
             ]
 
-            # Add per-cycle data
+            # Add per-cycle data (use cycle_trades, cycle_pnls, cycle_wins arrays from result object)
             for c in range(num_cycles):
-                base_idx = c * 3
-                c_trades = int(per_cycle_data[base_idx])
-                c_pnl = per_cycle_data[base_idx + 1]
-                c_wins = per_cycle_data[base_idx + 2]  # This is wins count, not winrate
+                c_trades = int(cycle_trades[c])
+                c_pnl = cycle_pnls[c]
+                c_wins = int(cycle_wins[c])  # This is wins count, not winrate
                 
                 # Calculate cycle-specific metrics
                 c_profit_pct = (c_pnl / initial_balance) * 100 if initial_balance != 0 else 0.0

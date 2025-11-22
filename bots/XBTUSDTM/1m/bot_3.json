@@ -1,13 +1,13 @@
 {
-  "rank": 4,
+  "rank": 1,
   "bot_id": 3,
   "fitness_score": 0.0,
-  "total_pnl": 344.4131164550781,
-  "win_rate": 68.04511278195488,
-  "total_trades": 266,
-  "sharpe_ratio": 1.4728422072202891,
+  "total_pnl": 5.259139060974121,
+  "win_rate": 50.0,
+  "total_trades": 14,
+  "sharpe_ratio": 0.7251323778098173,
   "max_drawdown": 0.0,
-  "survival_generations": 0,
+  "survival_generations": 2,
   "config": {
     "num_indicators": 1,
     "indicator_indices": [
