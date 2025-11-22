@@ -856,51 +856,6 @@ class CompactBacktester:
         
         return chunks
     
-    def _chunk_cycle_data(
-        self,
-        cycle_data: np.ndarray,
-        chunk_size_bars: int
-    ) -> List[Dict]:
-        """
-        Split cycle data into chunks of specified size.
-        Each chunk will be processed with all bots.
-        
-        DEPRECATED: Use _chunk_full_data for multi-cycle processing.
-        """
-        chunks = []
-        total_bars = len(cycle_data)
-        
-        # Add overlap for indicator lookback
-        overlap_bars = 200  # For SMA(200) and other indicators
-        
-        chunk_start = 0
-        chunk_id = 0
-        
-        while chunk_start < total_bars:
-            # Calculate chunk end
-            chunk_end = min(chunk_start + chunk_size_bars, total_bars)
-            
-            # Extract chunk with lookback
-            data_start = max(0, chunk_start - overlap_bars)
-            chunk_data_slice = cycle_data[data_start:chunk_end]
-            
-            # Adjust cycle to account for lookback
-            cycle_offset = chunk_start - data_start
-            cycle_length = chunk_end - chunk_start
-            
-            chunks.append({
-                'id': chunk_id,
-                'data': chunk_data_slice,
-                'cycles': [(cycle_offset, cycle_offset + cycle_length)],
-                'global_start': chunk_start,
-                'global_end': chunk_end
-            })
-            
-            chunk_id += 1
-            chunk_start = chunk_end  # No overlap in processing, only for indicators
-        
-        return chunks
-
     def _aggregate_data_chunks_for_cycle(
         self,
         bot_chunks: List[List[BacktestResult]]
@@ -919,77 +874,6 @@ class CompactBacktester:
         for bot_chunk_results in bot_chunks:
             if not bot_chunk_results:
                 continue
-            
-            # Sum trades across chunks
-            total_trades = sum(r.total_trades for r in bot_chunk_results)
-            total_wins = sum(r.winning_trades for r in bot_chunk_results)
-            total_losses = sum(r.losing_trades for r in bot_chunk_results)
-            
-            # Average metrics (weighted by number of trades if needed)
-            if total_trades > 0:
-                # Weight by trades in each chunk
-                avg_win = sum(
-                    r.avg_win * r.winning_trades for r in bot_chunk_results if r.winning_trades > 0
-                ) / total_wins if total_wins > 0 else 0.0
-                
-                avg_loss = sum(
-                    r.avg_loss * r.losing_trades for r in bot_chunk_results if r.losing_trades > 0
-                ) / total_losses if total_losses > 0 else 0.0
-                
-                win_rate = total_wins / total_trades if total_trades > 0 else 0.0
-            else:
-                avg_win = 0.0
-                avg_loss = 0.0
-                win_rate = 0.0
-            
-            # Take worst drawdown and average other metrics
-            max_drawdown = max(r.max_drawdown for r in bot_chunk_results)
-            avg_sharpe = sum(r.sharpe_ratio for r in bot_chunk_results) / len(bot_chunk_results)
-            avg_profit_factor = sum(r.profit_factor for r in bot_chunk_results) / len(bot_chunk_results)
-            
-            # Use last chunk's final balance
-            final_balance = bot_chunk_results[-1].final_balance
-            
-            result = BacktestResult(
-                bot_id=bot_chunk_results[0].bot_id,
-                total_trades=total_trades,
-                winning_trades=total_wins,
-                losing_trades=total_losses,
-                per_cycle_trades=[],
-                per_cycle_wins=[],
-                per_cycle_pnl=[],
-                total_pnl=sum(r.total_pnl for r in bot_chunk_results),
-                max_drawdown=max_drawdown,
-                sharpe_ratio=avg_sharpe,
-                win_rate=win_rate,
-                avg_win=avg_win,
-                avg_loss=avg_loss,
-                profit_factor=avg_profit_factor,
-                max_consecutive_wins=max(r.max_consecutive_wins for r in bot_chunk_results),
-                max_consecutive_losses=max(r.max_consecutive_losses for r in bot_chunk_results),
-                final_balance=final_balance
-            )
-            
-            aggregated.append(result)
-        
-        return aggregated
-    
-    def _aggregate_data_chunks(
-        self,
-        chunk_results: List[List[BacktestResult]],
-        num_bots: int
-    ) -> List[BacktestResult]:
-        """
-        Aggregate results from multiple data chunks within a single cycle.
-        Sum up trades and metrics across chunks for each bot.
-        
-        DEPRECATED: Use _aggregate_data_chunks_for_cycle for clearer semantics.
-        """
-        aggregated = []
-        
-        for bot_idx in range(num_bots):
-            # Collect this bot's results from all chunks
-            bot_chunk_results = [chunks[bot_idx] for chunks in chunk_results]
             
             # Sum trades across chunks
             total_trades = sum(r.total_trades for r in bot_chunk_results)

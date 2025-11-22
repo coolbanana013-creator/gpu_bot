@@ -1,9 +1,11 @@
 # Python cache
 __pycache__/
+**/__pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.pyc
 
 # Virtual environment
 venv/
@@ -20,6 +22,10 @@ ENV/
 logs/*.csv
 logs/*.log
 logs/*.txt
+logs/analyze_*.py
+
+# Bot results
+bots/**/run_*/
 
 # Cache files
 cache/*.pkl
