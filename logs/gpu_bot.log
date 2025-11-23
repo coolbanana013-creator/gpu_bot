@@ -3066,3 +3066,167 @@ Saved 100 survivor bots to bots/BTCUSDT/1m/run_20251123_175352/best_bots.json an
 2025-11-23 17:53:53,749 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
 2025-11-23 17:53:53,752 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
 2025-11-23 17:53:53,753 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 200000)
+2025-11-23 18:15:27,245 - src.utils.validation - INFO - Set random seed to 42
+2025-11-23 18:15:27,246 - src.utils.validation - INFO - Loading 852 data files in parallel
+2025-11-23 18:15:30,683 - src.utils.validation - INFO - Loaded total of 1226940 candles (excludes today's incomplete data)
+2025-11-23 18:15:30,684 - src.utils.validation - INFO - Validating data integrity
+2025-11-23 18:15:31,012 - src.utils.validation - INFO - Data validation passed
+2025-11-23 18:15:31,036 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (7 days each)
+2025-11-23 18:15:31,037 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-23 18:15:44,520 - src.utils.validation - INFO - Set random seed to 42
+2025-11-23 18:15:44,523 - src.utils.validation - INFO - Loading 852 data files in parallel
+2025-11-23 18:15:47,557 - src.utils.validation - INFO - Loaded total of 1226940 candles (excludes today's incomplete data)
+2025-11-23 18:15:47,558 - src.utils.validation - INFO - Validating data integrity
+2025-11-23 18:15:47,855 - src.utils.validation - INFO - Data validation passed
+2025-11-23 18:15:47,877 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (7 days each)
+2025-11-23 18:15:47,879 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-23 18:15:47,958 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-23 18:15:47,961 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-23 18:15:47,963 - src.utils.validation - INFO -   Population: 10 bots
+2025-11-23 18:15:47,963 - src.utils.validation - INFO -   Indicators: 2-5 per bot (50 available)
+2025-11-23 18:15:47,965 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-23 18:15:47,965 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-23 18:15:47,966 - src.utils.validation - INFO - Generating 10 compact bots on GPU...
+2025-11-23 18:15:47,967 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-23 18:15:47,970 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-23 18:15:47,978 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-23 18:15:47,983 - src.utils.validation - INFO - [OK] Generated 10 compact bots (128 bytes each) - directional enforced, unique combos updated
+2025-11-23 18:15:47,998 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-23 18:15:48,000 - src.utils.validation - INFO - [DEBUG] Filter debug instrumentation DISABLED (no atomic counter overhead)
+2025-11-23 18:15:59,075 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-23 18:15:59,086 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-23 18:15:59,098 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-23 18:15:59,099 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-23 18:15:59,100 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-23 18:15:59,100 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-23 18:15:59,101 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-23 18:15:59,102 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-23 18:15:59,102 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-23 18:15:59,178 - src.utils.validation - INFO - Trade log streaming writer initialized (batch=100, queue=1000)
+2025-11-23 18:15:59,702 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-23 18:16:00,530 - src.utils.validation - INFO - Shutting down trade log writer (enqueued: 21336, written: 0, pending: 0)
+2025-11-23 18:16:00,544 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 0)
+2025-11-23 18:16:00,635 - src.utils.validation - INFO - TradeLogStreamWriter shutdown complete. Total written: 21336
+2025-11-23 18:16:00,636 - src.utils.validation - INFO - Trade log writer shutdown complete (total written: 21336)
+2025-11-23 18:16:00,643 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 21336)
+2025-11-23 18:16:00,675 - src.utils.validation - INFO - TradeLogStreamWriter shutting down (queued: 0, written: 21336)
+2025-11-23 18:16:26,202 - src.utils.validation - INFO - Set random seed to 42
+2025-11-23 18:16:26,203 - src.utils.validation - INFO - Loading 852 data files in parallel
+2025-11-23 18:16:29,089 - src.utils.validation - INFO - Loaded total of 1226940 candles (excludes today's incomplete data)
+2025-11-23 18:16:29,091 - src.utils.validation - INFO - Validating data integrity
+2025-11-23 18:16:29,406 - src.utils.validation - INFO - Data validation passed
+2025-11-23 18:16:29,432 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (7 days each)
+2025-11-23 18:16:29,433 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-23 18:16:29,470 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-23 18:16:29,471 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-23 18:16:29,473 - src.utils.validation - INFO -   Population: 100 bots
+2025-11-23 18:16:29,475 - src.utils.validation - INFO -   Indicators: 2-5 per bot (50 available)
+2025-11-23 18:16:29,476 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-23 18:16:29,478 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-23 18:16:29,479 - src.utils.validation - INFO - Generating 100 compact bots on GPU...
+2025-11-23 18:16:29,480 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-23 18:16:29,482 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-23 18:16:29,485 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-23 18:16:29,505 - src.utils.validation - INFO - [OK] Generated 100 compact bots (128 bytes each) - directional enforced, unique combos updated
+2025-11-23 18:16:29,521 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-23 18:16:29,524 - src.utils.validation - INFO - [DEBUG] Filter debug instrumentation DISABLED (no atomic counter overhead)
+2025-11-23 18:16:29,663 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-23 18:16:29,670 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-23 18:16:29,679 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-23 18:16:29,679 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-23 18:16:29,681 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-23 18:16:29,682 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-23 18:16:29,683 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-23 18:16:29,686 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-23 18:16:29,687 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-23 18:16:30,270 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-23 18:17:01,235 - src.utils.validation - INFO - Set random seed to 42
+2025-11-23 18:17:01,235 - src.utils.validation - INFO - Loading 852 data files in parallel
+2025-11-23 18:17:04,414 - src.utils.validation - INFO - Loaded total of 1226940 candles (excludes today's incomplete data)
+2025-11-23 18:17:04,416 - src.utils.validation - INFO - Validating data integrity
+2025-11-23 18:17:04,716 - src.utils.validation - INFO - Data validation passed
+2025-11-23 18:17:04,738 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (7 days each)
+2025-11-23 18:17:04,739 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-23 18:17:04,772 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-23 18:17:04,773 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-23 18:17:04,773 - src.utils.validation - INFO -   Population: 50 bots
+2025-11-23 18:17:04,775 - src.utils.validation - INFO -   Indicators: 2-5 per bot (50 available)
+2025-11-23 18:17:04,775 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-23 18:17:04,776 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-23 18:17:04,777 - src.utils.validation - INFO - Generating 50 compact bots on GPU...
+2025-11-23 18:17:04,779 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-23 18:17:04,781 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-23 18:17:04,785 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-23 18:17:04,792 - src.utils.validation - INFO - [OK] Generated 50 compact bots (128 bytes each) - directional enforced, unique combos updated
+2025-11-23 18:17:04,801 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-23 18:17:04,804 - src.utils.validation - INFO - [DEBUG] Filter debug instrumentation DISABLED (no atomic counter overhead)
+2025-11-23 18:17:04,817 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-23 18:17:04,825 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-23 18:17:04,835 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-23 18:17:04,836 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-23 18:17:04,838 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-23 18:17:04,839 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-23 18:17:04,841 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-23 18:17:04,843 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-23 18:17:04,846 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-23 18:17:05,402 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-23 18:17:31,722 - src.utils.validation - INFO - Set random seed to 42
+2025-11-23 18:17:31,723 - src.utils.validation - INFO - Loading 852 data files in parallel
+2025-11-23 18:17:34,727 - src.utils.validation - INFO - Loaded total of 1226940 candles (excludes today's incomplete data)
+2025-11-23 18:17:34,728 - src.utils.validation - INFO - Validating data integrity
+2025-11-23 18:17:35,034 - src.utils.validation - INFO - Data validation passed
+2025-11-23 18:17:35,060 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (7 days each)
+2025-11-23 18:17:35,061 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-23 18:17:35,098 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-23 18:17:35,098 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-23 18:17:35,098 - src.utils.validation - INFO -   Population: 50 bots
+2025-11-23 18:17:35,099 - src.utils.validation - INFO -   Indicators: 2-5 per bot (50 available)
+2025-11-23 18:17:35,099 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-23 18:17:35,101 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-23 18:17:35,101 - src.utils.validation - INFO - Generating 50 compact bots on GPU...
+2025-11-23 18:17:35,102 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-23 18:17:35,104 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-23 18:17:35,107 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-23 18:17:35,115 - src.utils.validation - INFO - [OK] Generated 50 compact bots (128 bytes each) - directional enforced, unique combos updated
+2025-11-23 18:17:35,122 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-23 18:17:35,206 - src.utils.validation - INFO - [DEBUG] Filter debug instrumentation DISABLED (no atomic counter overhead)
+2025-11-23 18:17:44,899 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-23 18:17:44,906 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-23 18:17:44,913 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-23 18:17:44,913 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-23 18:17:44,915 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-23 18:17:44,916 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-23 18:17:44,917 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-23 18:17:44,917 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-23 18:17:44,918 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-23 18:17:45,482 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)
+2025-11-23 18:17:59,630 - src.utils.validation - INFO - Set random seed to 42
+2025-11-23 18:17:59,630 - src.utils.validation - INFO - Loading 852 data files in parallel
+2025-11-23 18:18:02,412 - src.utils.validation - INFO - Loaded total of 1226940 candles (excludes today's incomplete data)
+2025-11-23 18:18:02,413 - src.utils.validation - INFO - Validating data integrity
+2025-11-23 18:18:02,722 - src.utils.validation - INFO - Data validation passed
+2025-11-23 18:18:02,745 - src.utils.validation - INFO - Generating 5 non-overlapping cycle ranges (7 days each)
+2025-11-23 18:18:02,746 - src.utils.validation - INFO - Successfully generated 5 non-overlapping cycle ranges
+2025-11-23 18:18:02,775 - src.utils.validation - INFO - Compiled compact_bot_gen.cl
+2025-11-23 18:18:02,776 - src.utils.validation - INFO - CompactBotGenerator initialized:
+2025-11-23 18:18:02,777 - src.utils.validation - INFO -   Population: 100 bots
+2025-11-23 18:18:02,778 - src.utils.validation - INFO -   Indicators: 2-5 per bot (50 available)
+2025-11-23 18:18:02,778 - src.utils.validation - INFO -   Risk strategies: 2-5 per bot
+2025-11-23 18:18:02,779 - src.utils.validation - INFO -   Leverage: 1-125x
+2025-11-23 18:18:02,780 - src.utils.validation - INFO - Generating 100 compact bots on GPU...
+2025-11-23 18:18:02,781 - src.utils.validation - INFO - GPU: Intel(R) UHD Graphics - Using work group size: 512/512
+2025-11-23 18:18:02,782 - src.utils.validation - INFO - Launching GPU kernel: 512 work items, 512 per group (1 groups)
+2025-11-23 18:18:02,785 - src.utils.validation - INFO - GPU kernel completed - processing results...
+2025-11-23 18:18:02,797 - src.utils.validation - INFO - [OK] Generated 100 compact bots (128 bytes each) - directional enforced, unique combos updated
+2025-11-23 18:18:02,805 - src.utils.validation - INFO - [OK] Compiled precompute_all_indicators.cl (50 indicators)
+2025-11-23 18:18:02,808 - src.utils.validation - INFO - [DEBUG] Filter debug instrumentation DISABLED (no atomic counter overhead)
+2025-11-23 18:18:02,856 - src.utils.validation - INFO - [OK] Compiled backtest_with_precomputed.cl (real trading logic + parallel bot-cycle kernel)
+2025-11-23 18:18:02,865 - src.utils.validation - INFO - [OK] Compiled aggregate_results.cl (GPU result aggregation)
+2025-11-23 18:18:02,873 - src.utils.validation - INFO - [OK] Compiled signal_debug.cl (debug helper kernel)
+2025-11-23 18:18:02,875 - src.utils.validation - INFO - CompactBacktester initialized (two-kernel precomputed strategy)
+2025-11-23 18:18:02,879 - src.utils.validation - INFO -   - Kernel 1: Precompute 50 indicators
+2025-11-23 18:18:02,880 - src.utils.validation - INFO -   - Kernel 2: Backtest with signal generation
+2025-11-23 18:18:02,882 - src.utils.validation - INFO -   - GPU Memory: 3.19 GB
+2025-11-23 18:18:02,883 - src.utils.validation - INFO -   - Compute Units: 80
+2025-11-23 18:18:02,885 - src.utils.validation - INFO -   - MTF Enabled: HTF multiplier = 60x (higher timeframe filtering)
+2025-11-23 18:18:03,472 - src.utils.validation - INFO - [MTF] Computed 2400 HTF bars from 144000 base bars (1:60)

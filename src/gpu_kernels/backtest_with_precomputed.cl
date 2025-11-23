@@ -214,47 +214,47 @@ TimeframeFilters calculate_timeframe_filters(int bars_per_day) {
     
     // Determine timeframe category based on bars_per_day
     if (bars_per_day >= 1440) {
-        // 1m timeframe: Very sensitive, low thresholds
-        filters.adx_min = 10.0f;
-        filters.adx_max = 60.0f;
-        filters.atr_spike_factor = 4.0f;
-        filters.volume_multiplier = 1.2f;
+        // 1m timeframe: Balanced - allow trades but filter weak signals
+        filters.adx_min = 6.0f;    // Minimum trend strength (was 5)
+        filters.adx_max = 80.0f;   // Allow strong trends (was 85)
+        filters.atr_spike_factor = 5.0f;  // Moderate volatility tolerance (was 6.0)
+        filters.volume_multiplier = 0.5f; // Low volume requirement (was 0.4)
     } else if (bars_per_day >= 288) {
-        // 5m timeframe: Slightly higher thresholds
-        filters.adx_min = 12.0f;
-        filters.adx_max = 65.0f;
-        filters.atr_spike_factor = 4.5f;
-        filters.volume_multiplier = 1.3f;
-    } else if (bars_per_day >= 96) {
-        // 15m timeframe: Medium-low thresholds
-        filters.adx_min = 14.0f;
-        filters.adx_max = 70.0f;
-        filters.atr_spike_factor = 5.0f;
-        filters.volume_multiplier = 1.4f;
-    } else if (bars_per_day >= 48) {
-        // 30m timeframe: Medium thresholds
-        filters.adx_min = 16.0f;
-        filters.adx_max = 72.0f;
-        filters.atr_spike_factor = 5.5f;
-        filters.volume_multiplier = 1.5f;
-    } else if (bars_per_day >= 24) {
-        // 1h timeframe: Medium-high thresholds
-        filters.adx_min = 18.0f;
-        filters.adx_max = 75.0f;
-        filters.atr_spike_factor = 6.0f;
-        filters.volume_multiplier = 1.6f;
-    } else if (bars_per_day >= 6) {
-        // 4h timeframe: High thresholds
-        filters.adx_min = 22.0f;
-        filters.adx_max = 78.0f;
-        filters.atr_spike_factor = 7.0f;
-        filters.volume_multiplier = 1.8f;
-    } else {
-        // 1d timeframe: Highest thresholds, most filtering
-        filters.adx_min = 25.0f;
+        // 5m timeframe: Slightly more selective
+        filters.adx_min = 8.0f;
         filters.adx_max = 80.0f;
-        filters.atr_spike_factor = 8.0f;
-        filters.volume_multiplier = 2.0f;
+        filters.atr_spike_factor = 5.5f;
+        filters.volume_multiplier = 0.5f;
+    } else if (bars_per_day >= 96) {
+        // 15m timeframe: Moderately selective
+        filters.adx_min = 10.0f;
+        filters.adx_max = 75.0f;
+        filters.atr_spike_factor = 5.0f;
+        filters.volume_multiplier = 0.7f;
+    } else if (bars_per_day >= 48) {
+        // 30m timeframe: Balanced filtering
+        filters.adx_min = 12.0f;
+        filters.adx_max = 72.0f;
+        filters.atr_spike_factor = 4.5f;
+        filters.volume_multiplier = 0.9f;
+    } else if (bars_per_day >= 24) {
+        // 1h timeframe: More selective
+        filters.adx_min = 15.0f;
+        filters.adx_max = 70.0f;
+        filters.atr_spike_factor = 4.0f;
+        filters.volume_multiplier = 1.1f;
+    } else if (bars_per_day >= 6) {
+        // 4h timeframe: Selective filtering for quality
+        filters.adx_min = 18.0f;
+        filters.adx_max = 68.0f;
+        filters.atr_spike_factor = 3.5f;
+        filters.volume_multiplier = 1.3f;
+    } else {
+        // 1d timeframe: Most selective, quality over quantity
+        filters.adx_min = 20.0f;
+        filters.adx_max = 65.0f;
+        filters.atr_spike_factor = 3.0f;
+        filters.volume_multiplier = 1.5f;
     }
     
     return filters;
@@ -989,14 +989,14 @@ int check_signal_quality(
         }
     }
     
-    // EXPERIMENTAL: Stricter RSI filter for high winrate - block all overbought/oversold
-    // Avoid entering when RSI shows potential exhaustion or imminent reversal
-    // Only allow RSI in 35-65 range (neutral momentum, not overextended)
+    // RSI filter: Block overbought/oversold to avoid reversals
+    // Balanced range to allow momentum while filtering extremes
+    // Block RSI < 25 or RSI > 75 for better signal quality
     float rsi = precomputed_indicators[16 * num_bars + bar];
     if (!isnan(rsi)) {
-        // EXPERIMENT: Block any overbought/oversold (>65 or <35)
-        // Only trade in neutral RSI zone to avoid reversals
-            if (rsi < 35.0f || rsi > 65.0f) {
+        // Block moderate extremes (was 20-80, now 25-75 for quality)
+        // This balances trade frequency with win rate
+            if (rsi < 25.0f || rsi > 75.0f) {
             if (filter_debug_buf != 0) {
                 filter_debug_buf[debug_filter_index] |= FILTER_BIT_RSI;
 #ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
