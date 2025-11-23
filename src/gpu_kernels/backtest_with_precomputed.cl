@@ -191,18 +191,74 @@ typedef struct {
 #define MAX_VOLUME_LOOKBACK 1024
 
 // Configurable filter thresholds - can be overridden at compile-time via -D flags
-#ifndef ADX_MIN_THRESHOLD
-#define ADX_MIN_THRESHOLD 20.0f  // EXPERIMENT: Stricter ADX for stronger trends (was 14.0)
-#endif
-#ifndef ADX_MAX_THRESHOLD
-#define ADX_MAX_THRESHOLD 45.0f  // EXPERIMENT: Avoid overextended trends earlier (was 50.0)
-#endif
-#ifndef ATR_SPIKE_FACTOR
-#define ATR_SPIKE_FACTOR 3.0f  // EXPERIMENT: Stricter volatility filter (was 4.0)
-#endif
-#ifndef VOLUME_MULTIPLIER_THRESHOLD
-#define VOLUME_MULTIPLIER_THRESHOLD 1.2f  // EXPERIMENT: Require above-average volume (was 1.0)
-#endif
+// REMOVED: Static thresholds replaced with timeframe-proportional calculation
+// See calculate_timeframe_filters() function below
+
+// ============================================================================
+// TIMEFRAME-PROPORTIONAL FILTER CALCULATION
+// ============================================================================
+
+/**
+ * Calculate timeframe-adjusted filter thresholds
+ * bars_per_day: 1440 for 1m, 288 for 5m, 96 for 15m, 48 for 30m, 24 for 1h, 6 for 4h, 1 for 1d
+ */
+typedef struct {
+    float adx_min;
+    float adx_max;
+    float atr_spike_factor;
+    float volume_multiplier;
+} TimeframeFilters;
+
+TimeframeFilters calculate_timeframe_filters(int bars_per_day) {
+    TimeframeFilters filters;
+    
+    // Determine timeframe category based on bars_per_day
+    if (bars_per_day >= 1440) {
+        // 1m timeframe: Very sensitive, low thresholds
+        filters.adx_min = 10.0f;
+        filters.adx_max = 60.0f;
+        filters.atr_spike_factor = 4.0f;
+        filters.volume_multiplier = 1.2f;
+    } else if (bars_per_day >= 288) {
+        // 5m timeframe: Slightly higher thresholds
+        filters.adx_min = 12.0f;
+        filters.adx_max = 65.0f;
+        filters.atr_spike_factor = 4.5f;
+        filters.volume_multiplier = 1.3f;
+    } else if (bars_per_day >= 96) {
+        // 15m timeframe: Medium-low thresholds
+        filters.adx_min = 14.0f;
+        filters.adx_max = 70.0f;
+        filters.atr_spike_factor = 5.0f;
+        filters.volume_multiplier = 1.4f;
+    } else if (bars_per_day >= 48) {
+        // 30m timeframe: Medium thresholds
+        filters.adx_min = 16.0f;
+        filters.adx_max = 72.0f;
+        filters.atr_spike_factor = 5.5f;
+        filters.volume_multiplier = 1.5f;
+    } else if (bars_per_day >= 24) {
+        // 1h timeframe: Medium-high thresholds
+        filters.adx_min = 18.0f;
+        filters.adx_max = 75.0f;
+        filters.atr_spike_factor = 6.0f;
+        filters.volume_multiplier = 1.6f;
+    } else if (bars_per_day >= 6) {
+        // 4h timeframe: High thresholds
+        filters.adx_min = 22.0f;
+        filters.adx_max = 78.0f;
+        filters.atr_spike_factor = 7.0f;
+        filters.volume_multiplier = 1.8f;
+    } else {
+        // 1d timeframe: Highest thresholds, most filtering
+        filters.adx_min = 25.0f;
+        filters.adx_max = 80.0f;
+        filters.atr_spike_factor = 8.0f;
+        filters.volume_multiplier = 2.0f;
+    }
+    
+    return filters;
+}
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -845,15 +901,14 @@ int check_signal_quality(
         return 0;  // Filter out - insufficient data
     }
     
-    // FIXED: ADX Filter (Code Review Fix #10 + Filter Debug Analysis)
-    // Further loosened ADX threshold to 14 based on filter debug analysis showing ADX blocks 100% of cases
-    // 1m timeframe requires lower thresholds: ADX 0-14 = weak/ranging, 14-20 = developing, 20-40 = strong
-    // Research: ADX 0-20 = weak/ranging, 20-25 = developing, 25-40 = strong, 40+ = very strong/late
-    if (adx < ADX_MIN_THRESHOLD) {
+    // TIMEFRAME-PROPORTIONAL FILTERS: Calculate dynamic thresholds based on timeframe
+    TimeframeFilters tf_filters = calculate_timeframe_filters(bars_per_day);
+    
+    // ADX Filter: Trend strength check with timeframe-adjusted thresholds
+    if (adx < tf_filters.adx_min) {
         if (filter_debug_buf != 0) {
             filter_debug_buf[debug_filter_index] |= FILTER_BIT_ADX;
 #ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
-            // CRITICAL: Bounds check to prevent buffer overflow
             if (filter_count_buf != 0 && bot_id >= 0 && bot_id < num_bots) {
                 atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
             }
@@ -861,12 +916,11 @@ int check_signal_quality(
         }
         return 0;  // Filter out - weak trend or ranging market
     }
-    // Block late-stage trends (ADX > 50 often precedes reversals)
-    if (adx > ADX_MAX_THRESHOLD) {
+    // Block late-stage trends (overextended)
+    if (adx > tf_filters.adx_max) {
         if (filter_debug_buf != 0) {
             filter_debug_buf[debug_filter_index] |= FILTER_BIT_ADX;
 #ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
-            // CRITICAL: Bounds check to prevent buffer overflow
             if (filter_count_buf != 0 && bot_id >= 0 && bot_id < num_bots) {
                 atomic_add(&filter_count_buf[bot_id * NUM_FILTERS + FILTER_IDX_ADX], 1);
             }
@@ -875,11 +929,9 @@ int check_signal_quality(
         return 0;  // Filter out - overextended trend, reversal risk
     }
     
-    // ATR Filter: Avoid extreme volatility
-    // Get ATR_20 for comparison (indicator index 21)
-    // Further loosened from 3.0x to 4.0x based on filter debug showing ATR blocks 100% of cases
+    // ATR Filter: Avoid extreme volatility with timeframe-adjusted spike threshold
     float atr_20 = precomputed_indicators[21 * num_bars + bar];
-    if (!isnan(atr_20) && atr > atr_20 * ATR_SPIKE_FACTOR) {
+    if (!isnan(atr_20) && atr > atr_20 * tf_filters.atr_spike_factor) {
         if (filter_debug_buf != 0) {
             filter_debug_buf[debug_filter_index] |= FILTER_BIT_ATR;
 #ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
@@ -897,9 +949,9 @@ int check_signal_quality(
     float current_volume = ohlcv[bar].volume;
     float volume_ma = precomputed_indicators[40 * num_bars + bar]; // Volume SMA(20)
         
-    // FIXED: Lowered baseline for volume to 1.0x to be less aggressive and avoid starving low-volume bars
+    // Volume Filter: Timeframe-adjusted threshold (lower TFs need less volume)
     if (!debug_bypass_volume && !isnan(volume_ma)) {
-            if (current_volume < volume_ma * VOLUME_MULTIPLIER_THRESHOLD) {
+            if (current_volume < volume_ma * tf_filters.volume_multiplier) {
             if (filter_debug_buf != 0) {
                 filter_debug_buf[debug_filter_index] |= FILTER_BIT_VOLUME;
 #ifdef ENABLE_FILTER_DEBUG_INSTRUMENTATION
@@ -1398,16 +1450,10 @@ float generate_signal_consensus(
     
         // Need at least one directional indicator
         if (valid_indicators == 0 || total_weight == 0.0f) {
-        // If debugging is enabled, accept neutral consensus as a weak signal (use price direction)
-    #ifdef DEBUG_ACCEPT_NEUTRAL_AS_SIGNAL
-        // Force a directional signal based on current price vs previous bar
-        float price_now = ohlcv[bar].close;
-        float price_prev = (bar > 0) ? ohlcv[bar - 1].close : price_now;
-        if (price_now >= price_prev) return 0.1f;  // Weak bullish
-        else return -0.1f;  // Weak bearish
-    #else
+        // Do not fall back to weak signals when no indicators are directional.
+        // Per requirement: no fallback signal generation — return neutral signal (0.0f)
+        // so that downstream code writes zero trades or NaN if nothing can be computed.
         return 0.0f;
-    #endif
         }
     
     // Calculate weighted consensus percentages
@@ -1420,7 +1466,18 @@ float generate_signal_consensus(
     #ifdef DEBUG_FORCE_LOW_CONSENSUS
     float consensus_threshold = 0.01f; // VERY LOW for debug - any signal accepted
     #else
-    float consensus_threshold = 0.80f;  // 80% consensus for high-quality signals (EXPERIMENT)
+    // Dynamic consensus threshold scaled to timeframe. Small timeframes (1m) require
+    // lower consensus to allow activity, larger timeframes remain stricter.
+    float consensus_threshold = 0.80f;  // default
+    if (bars_per_day >= 1440) {
+        consensus_threshold = 0.50f; // 1m timeframe - more permissive
+    } else if (bars_per_day >= 288) {
+        consensus_threshold = 0.60f; // 5m timeframe
+    } else if (bars_per_day >= 96) {
+        consensus_threshold = 0.65f; // 15m timeframe
+    } else if (bars_per_day >= 24) {
+        consensus_threshold = 0.75f; // 1h timeframe
+    }
     #endif
     // Runtime debug override: accept any signal if debug_disable_filters true
     if (debug_disable_filters) consensus_threshold = 0.01f;
@@ -3305,61 +3362,10 @@ __kernel void backtest_parallel_bot_cycle(
     
     unsigned int seed = bot.bot_id * 31337 + cycle_idx * 997 + 42;
     
-    // Indicators are precomputed with sufficient buffer, no warmup needed in kernel
-    int warmup_bars = 0;
-
-    // Calculate warmup for parallel kernel (indicators need warmup same as single-kernel)
-    for (int i = 0; i < bot.num_indicators; i++) {
-        unsigned char idx = bot.indicator_indices[i];
-        float period = bot.indicator_params[i][0];
-        float period2 = bot.indicator_params[i][1];
-        float period3 = bot.indicator_params[i][2];
-        int indicator_warmup = 0;
-        if (idx >= 0 && idx <= 5) {
-            indicator_warmup = (int)period;
-        } else if (idx >= 6 && idx <= 11) {
-            indicator_warmup = (int)(period * 5.0f);  // FIXED: 5x for 99% convergence
-        }
-        else if (idx >= 12 && idx <= 14) {
-            indicator_warmup = (int)(period * 2.0f);
-        } else if (idx == 15 || idx == 16) {
-            indicator_warmup = (int)(period * 2.0f);
-        } else if (idx >= 17 && idx <= 19) {
-            indicator_warmup = (int)period + 10;
-        } else if (idx >= 20 && idx <= 22) {
-            indicator_warmup = (int)(period * 2.0f);
-        } else if (idx == 23 || idx == 24) {
-            indicator_warmup = (int)(period * 5.0f);  // FIXED: 5x for stable stddev
-        } else if (idx == 25) {
-            indicator_warmup = (int)(period * 2.5f);
-        } else if (idx == 26) {
-            indicator_warmup = (int)(period2 * 5.0f + period3 * 3.0f);  // FIXED
-        } else if (idx == 27) {
-            indicator_warmup = (int)(period * 2.0f);
-        } else if (idx >= 28 && idx <= 35) {
-            indicator_warmup = (int)(period * 1.5f);
-        } else if (idx >= 36 && idx <= 40) {
-            indicator_warmup = (int)period + 20;
-        } else if (idx >= 41 && idx <= 45) {
-            indicator_warmup = (int)period + 10;
-        } else if (idx >= 46 && idx <= 49) {
-            indicator_warmup = 20;
-        }
-        if (indicator_warmup > warmup_bars) {
-            warmup_bars = indicator_warmup;
-        }
-    }
-
-    // Start trading only after indicators are fully initialized
-    int actual_start_bar = start_bar + warmup_bars;
-    if (actual_start_bar > end_bar) {
-        // Cycle too short for this bot's indicators - write zero results and exit kernel
-        cycle_results[result_idx] = 0.0f;
-        cycle_results[result_idx + 1] = 0.0f;
-        cycle_results[result_idx + 2] = 0.0f;
-        cycle_results[result_idx + 3] = 0.0f;
-        return;
-    }
+    // FIXED: Indicators are precomputed with 200-bar lookback buffer, so they're already
+    // warmed up and ready to trade from cycle start. No need to skip bars for warmup.
+    // This maximizes tradeable bars in each cycle.
+    int actual_start_bar = start_bar;  // Start immediately - indicators are pre-warmed
     
     // Backtest this specific cycle
     for (int bar = actual_start_bar; bar <= end_bar && bar < num_bars; bar++) {

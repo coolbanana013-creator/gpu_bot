@@ -740,6 +740,65 @@ class GeneticAlgorithmEvolver:
         # Last resort: return bot with duplicate combo (should never happen with 2M+ combinations)
         return bot
     
+    def generate_unique_bot_with_directional(self, bot_id: int, excluded_combinations: set = None) -> CompactBotConfig:
+        """
+        Generate a bot with a GUARANTEED unique indicator combination AND at least one directional indicator.
+        Ensures uniqueness across ALL generations - no combination is ever reused.
+        Directional indicators: MA-family (0-11), Momentum (12-19), Trend (26-35)
+        
+        Args:
+            bot_id: ID to assign to new bot
+            excluded_combinations: Combinations already used in current batch
+            
+        Returns:
+            New bot with globally unique indicator combination and at least one directional indicator
+        """
+        # Directional indicator index ranges: MA-family (0-11), Momentum (12-19), Trend (26-35)
+        directional_indices = set(list(range(0, 12)) + list(range(12, 20)) + list(range(26, 36)))
+        
+        # Try to generate a bot with directional indicators
+        max_attempts = 100
+        for attempt in range(max_attempts):
+            bot = self.generate_unique_bot(bot_id, excluded_combinations)
+            
+            # Check if bot has at least one directional indicator
+            has_directional = False
+            for i in range(bot.num_indicators):
+                idx = int(bot.indicator_indices[i])
+                if idx in directional_indices and idx != 0:
+                    has_directional = True
+                    break
+            
+            if has_directional:
+                return bot
+            
+            # If no directional indicator, remove this combo from used_combinations and try again
+            combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+            if combo in self.used_combinations:
+                self.used_combinations.remove(combo)
+                # Add back to unused pool
+                if bot.num_indicators in self.unused_combinations:
+                    self.unused_combinations[bot.num_indicators].add(combo)
+        
+        # If all attempts failed, force add a directional indicator
+        # Replace the first indicator with MACD (index 26) - a reliable trend indicator
+        combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+        if combo in self.used_combinations:
+            self.used_combinations.remove(combo)
+            if bot.num_indicators in self.unused_combinations:
+                self.unused_combinations[bot.num_indicators].add(combo)
+        
+        bot.indicator_indices[0] = 26  # MACD index
+        bot.indicator_params[0] = np.array([12.0, 26.0, 9.0], dtype=np.float32)  # Standard MACD parameters
+        
+        # Register the new combo as used
+        combo = frozenset(bot.indicator_indices[:bot.num_indicators])
+        self.used_combinations.add(combo)
+        if combo in self.unused_combinations.get(bot.num_indicators, set()):
+            self.unused_combinations[bot.num_indicators].remove(combo)
+        
+        return bot
+    
     def refill_population(
         self,
         survivors: List[CompactBotConfig],
@@ -798,59 +857,44 @@ class GeneticAlgorithmEvolver:
         log_info(f"Survivors: {total_survivors} total, {unique_survivor_combos} unique combinations ({diversity_pct:.1f}% diversity)")
         log_info(f"Global tracking: {len(self.used_combinations)} combinations used across all generations")
         
-        # Fill remaining slots with BREEDING + NEW BOTS
+        # Fill remaining slots with BREEDING + NEW BOTS (20% breeding, 80% random)
         next_bot_id = max(bot.bot_id for bot in survivors) + 1
         num_new_bots = target_size - len(survivors)
         
         if num_new_bots > 0:
-            # Use breeding if we have top performers
             bred_count = 0
-            mutated_count = 0
-            cloned_count = 0
-            if len(self.top_performers_history) >= 5:
-                log_info(f"Generating {num_new_bots} new bots (90% breeding, 8% elite clones, 2% random)")
+            random_count = 0
+            
+            # Calculate target counts
+            num_breeding = int(num_new_bots * 0.20)  # 20% breeding
+            num_random = num_new_bots - num_breeding  # 80% random
+            
+            if len(self.top_performers_history) >= 2:
+                log_info(f"Generating {num_new_bots} new bots (20% breeding={num_breeding}, 80% random={num_random})")
             else:
                 log_info(f"Generating {num_new_bots} new globally unique bots (insufficient top performers for breeding)")
+                num_breeding = 0  # No breeding if insufficient top performers
+                num_random = num_new_bots
             
             # Log pool availability
             pool_sizes = {size: len(pool) for size, pool in self.unused_combinations.items()}
             total_unused = sum(pool_sizes.values())
             log_info(f"Available combinations: {total_unused:,} unused, {len(self.used_combinations):,} used globally")
             
-            for i in range(num_new_bots):
+            # Generate breeding bots first (20%)
+            for i in range(num_breeding):
                 new_bot = None
                 
-                # 8% chance to clone an elite performer with slight mutation
-                if len(self.top_performers_history) >= 5 and random.random() < 0.08:
-                    # Clone top 5 performers
-                    elite_bot, _ = self.top_performers_history[random.randint(0, min(4, len(self.top_performers_history)-1))]
-                    new_bot = self.mutate_bot_parameters(elite_bot, next_bot_id + i)
-                    combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
-                    if combo not in batch_combinations and combo not in self.used_combinations:
-                        cloned_count += 1
-                    else:
-                        new_bot = None
-                
-                # 92% chance to breed from top performers (if available)
-                if new_bot is None and len(self.top_performers_history) >= 5 and random.random() < 0.92:
-                    new_bot = self.breed_top_performers(next_bot_id + i, batch_combinations)
+                # Try to breed from top performers
+                if len(self.top_performers_history) >= 2:
+                    new_bot = self.breed_top_performers(next_bot_id + bred_count + random_count, batch_combinations)
                     if new_bot:
                         bred_count += 1
                 
-                # 5% chance to mutate a top performer
-                if new_bot is None and len(self.top_performers_history) >= 2 and random.random() < 0.2:
-                    parent_bot, _ = random.choice(self.top_performers_history)
-                    new_bot = self.mutate_bot_parameters(parent_bot, next_bot_id + i)
-                    combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
-                    # Check uniqueness
-                    if combo not in batch_combinations and combo not in self.used_combinations:
-                        mutated_count += 1
-                    else:
-                        new_bot = None  # Not unique, generate random instead
-                
-                # Fallback: Generate globally unique random bot
+                # Fallback: Generate globally unique random bot if breeding fails
                 if new_bot is None:
-                    new_bot = self.generate_unique_bot(next_bot_id + i, batch_combinations)
+                    new_bot = self.generate_unique_bot_with_directional(next_bot_id + bred_count + random_count, batch_combinations)
+                    random_count += 1
                 
                 combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
                 
@@ -859,9 +903,20 @@ class GeneticAlgorithmEvolver:
                 
                 new_population.append(new_bot)
             
-            if bred_count > 0 or mutated_count > 0 or cloned_count > 0:
-                random_count = num_new_bots - bred_count - mutated_count - cloned_count
-                log_info(f"Population breeding: {bred_count} bred, {cloned_count} elite clones, {mutated_count} mutated, {random_count} random")
+            # Generate random bots for remaining slots (80%)
+            for i in range(num_random):
+                new_bot = self.generate_unique_bot_with_directional(next_bot_id + bred_count + random_count, batch_combinations)
+                random_count += 1
+                
+                combo = frozenset(new_bot.indicator_indices[:new_bot.num_indicators])
+                
+                # Track in batch for within-generation uniqueness check
+                batch_combinations.add(combo)
+                
+                new_population.append(new_bot)
+            
+            if bred_count > 0:
+                log_info(f"Population refilled: {bred_count} bred, {random_count} random (with directional indicators)")
             
             # Verify final diversity (should always be 100%)
             all_combos = [frozenset(bot.indicator_indices[:bot.num_indicators]) for bot in new_population]

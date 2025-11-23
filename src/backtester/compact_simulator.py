@@ -371,7 +371,9 @@ class CompactBacktester:
     
     def _maybe_debug_log(self, message: str) -> None:
         if not self.disable_debug_logging:
-            log_info(message)
+            # Use the central debug logger so the message is shown only when debug logging
+            # is enabled (set by `set_debug_logging()` from `src.utils.validation`).
+            log_debug(message)
     
     def __del__(self):
         """Cleanup OpenCL resources."""
@@ -634,6 +636,11 @@ class CompactBacktester:
                                 if cycle_chunk_end > cycle_chunk_start:
                                     active_cycles.append((cycle_chunk_start, cycle_chunk_end))
                                     cycle_indices.append(cycle_idx)
+                                    
+                                    # DEBUG: Print cycle ranges for first chunk
+                                    if chunk_idx == 0 and len(active_cycles) <= 5:
+                                        if not self.disable_debug_logging:
+                                            log_debug(f"[DEBUG] Cycle {cycle_idx}: global=[{cycle_start}:{cycle_end}], chunk_relative=[{cycle_chunk_start}:{cycle_chunk_end}], bars={cycle_chunk_end-cycle_chunk_start}")
                         
                         if not active_cycles:
                             pbar.update(1)
@@ -1643,6 +1650,11 @@ class CompactBacktester:
         cycle_starts = np.array([c[0] for c in cycles], dtype=np.int32)
         cycle_ends = np.array([c[1] for c in cycles], dtype=np.int32)
         
+        # DEBUG: Print cycle arrays being sent to GPU
+        if chunk_id == 0:
+            if not self.disable_debug_logging:
+                log_debug(f"[DEBUG] GPU kernel cycle arrays: starts={cycle_starts[:min(5,len(cycle_starts))]}, ends={cycle_ends[:min(5,len(cycle_ends))]}")
+        
         cycle_starts_buf = cl.Buffer(
             self.ctx,
             cl.mem_flags.READ_ONLY | cl.mem_flags.COPY_HOST_PTR,
@@ -1957,10 +1969,13 @@ class CompactBacktester:
                 pnl_val = results_flat[idx + 2]
                 signals_val = int(results_flat[idx + 3])
                 
-                # DEBUG: Log for first bot
-                if bot_idx == 0 and num_bots <= 10:
+                # DEBUG: Log for first 3 bots if they have trades/closes
+                if bot_idx < 3:
                     close_counter = int(close_counters_host[bot_idx * num_cycles + cycle_idx])
-                    print(f"  [DEBUG] Bot {bots[bot_idx].bot_id} Cycle {cycle_idx}: kernel reports {trades_val} trades, close_counter={close_counter}")
+                    if trades_val > 0 or close_counter > 0:
+                        # Respect the per-instance env override and the global debug logging
+                        if not self.disable_debug_logging:
+                            log_debug(f"[DEBUG] Bot {bots[bot_idx].bot_id} Cycle {cycle_idx}: trades={trades_val}, closes={close_counter}")
                 
                 filter_bits = int(filter_debug_host[bot_idx * num_cycles + cycle_idx])
                 results[bot_idx][cycle_idx] = {

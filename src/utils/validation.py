@@ -427,6 +427,28 @@ def log_debug(message: str) -> None:
     logger.debug(message)
 
 
+def set_debug_logging(enabled: bool) -> None:
+    """
+    Toggle debug logging output to console.
+
+    When enabled, all console log messages (and file logs) will include DEBUG-level messages.
+    When disabled, console logs will be limited to INFO and above.
+    """
+    global console_handler, file_handler
+    # Set root logger to ensure other modules' loggers also show debug messages
+    root_logger = logging.getLogger()
+    if enabled:
+        root_logger.setLevel(logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
+        console_handler.setLevel(logging.DEBUG)
+        logger.debug("Console debug logging enabled")
+    else:
+        root_logger.setLevel(logging.INFO)
+        logger.setLevel(logging.INFO)
+        console_handler.setLevel(logging.INFO)
+        logger.info("Console debug logging disabled")
+
+
 def validate_path(
     path: str,
     name: str = "path",

@@ -17,7 +17,8 @@ from pathlib import Path
 
 from src.utils.validation import (
     validate_int, validate_float, validate_pair, validate_timeframe,
-    validate_leverage, validate_path, log_info, log_error, log_warning
+    validate_leverage, validate_path, log_info, log_error, log_warning,
+    set_debug_logging
 )
 from src.utils.config import (
     DEFAULT_TRADING_PAIR, DEFAULT_INITIAL_BALANCE, DEFAULT_POPULATION,
@@ -1470,6 +1471,14 @@ def run_mode3(gpu_context, gpu_queue):
 def main():
     """Main entry point."""
     try:
+        # Ask the user whether debug logs should be displayed on console
+        show_debug = get_user_input(
+            "Show debug logs (y/n)",
+            False,
+            input_type=bool
+        )
+        set_debug_logging(show_debug)
+
         # CRITICAL: Initialize GPU first - crashes if unavailable
         log_info("Initializing GPU (OpenCL)...\n")
         gpu_context, gpu_queue, gpu_info = initialize_gpu()

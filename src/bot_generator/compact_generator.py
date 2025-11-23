@@ -201,6 +201,8 @@ class CompactBotGenerator:
         self.max_leverage = max_leverage
         self.random_seed = random_seed
         self._rng = np.random.RandomState(random_seed)  # Dedicated RNG instance
+        # Track used indicator combinations across generations for diversity
+        self.used_combinations = set()
         
         # Compile kernel
         self._compile_kernel()
@@ -342,7 +344,9 @@ class CompactBotGenerator:
         # Parse bots
         bots = self._parse_bots(bot_configs_raw)
         
-        log_info(f"[OK] Generated {len(bots)} compact bots (128 bytes each)")
+        # Remove or replace non-directional indicators and ensure uniqueness
+        self._enforce_directional_and_unique(bots)
+        log_info(f"[OK] Generated {len(bots)} compact bots (128 bytes each) - directional enforced, unique combos updated")
         
         return bots
     
@@ -454,8 +458,124 @@ class CompactBotGenerator:
                 survival_generations=0  # New bots start with 0
             )
             bots.append(bot)
-        
+        # Ensure every bot contains at least one directional-producing indicator
+        self._ensure_directional_indicators(bots)
+
         return bots
+
+    def _ensure_directional_indicators(self, bots: List[CompactBotConfig]):
+        """
+        Ensure every bot includes at least one directional-producing indicator.
+        Directional indicators include moving averages, momentum, and trend indicators.
+        This avoids generating bots that may produce zero trades across cycles due to
+        neutral indicator combos.
+        """
+        # Directional indicator index ranges: MA-family (0-11), Momentum (12-19), Trend (26-35)
+        directional_indices = set(list(range(0, 12)) + list(range(12, 20)) + list(range(26, 36)))
+        for bot in bots:
+            # Ensure min_indicators enforced (some CSV bots may have fewer)
+            if bot.num_indicators < self.min_indicators:
+                for i in range(bot.num_indicators, min(self.min_indicators, MAX_INDICATORS_PER_BOT)):
+                    # set to directional indicator
+                    rep = int(self._rng.choice(directional_choices))
+                    bot.indicator_indices[i] = np.uint8(rep)
+                    bot.indicator_params[i][0] = 10.0
+                bot.num_indicators = min(self.min_indicators, MAX_INDICATORS_PER_BOT)
+            has_directional = False
+            for idx in bot.indicator_indices[:bot.num_indicators]:
+                if int(idx) in directional_indices and idx != 0:
+                    has_directional = True
+                    break
+            if not has_directional:
+                # Replace the first indicator slot with a known directional indicator (MACD index 26)
+                pos = 0
+                if bot.num_indicators > 0:
+                    pos = 0
+                replacement = 26  # MACD index - trend-producing
+                # Mutate indicator list in-place
+                bot.indicator_indices[pos] = np.uint8(replacement)
+                bot.indicator_params[pos] = np.array([12.0, 26.0, 9.0], dtype=np.float32)  # MACD params
+        # Additional tuning: ensure at least one short-period indicator exists (increases activity on 1m)
+        for bot in bots:
+            tuned = False
+            for i in range(bot.num_indicators):
+                idx = int(bot.indicator_indices[i])
+                # If indicator is moving average/EMA family, set a short period (e.g., 5-20)
+                if 0 <= idx <= 11 and not tuned:
+                    bot.indicator_params[i][0] = 10.0
+                    tuned = True
+                # If indicator is MACD, set to common sensitive fast/slow/signal
+                if idx == 26 and not tuned:
+                    bot.indicator_params[i] = np.array([12.0, 26.0, 9.0], dtype=np.float32)
+                    tuned = True
+            # If no tune applied, forcibly set first indicator to a short MA
+            if not tuned and bot.num_indicators > 0:
+                bot.indicator_indices[0] = np.uint8(0)  # SMA/EMA index 0
+                bot.indicator_params[0][0] = 10.0
+            # Set risk strategy to fixed percent if many bots show no activity
+            if bot.num_indicators > 0:
+                bot.indicator_risk_strategies[0] = np.uint8(0)  # RISK_FIXED_PCT
+                bot.risk_param = max(bot.risk_param, 0.02)  # 2% risk per trade by default
+                if bot.leverage > 50:
+                    bot.leverage = min(10, bot.leverage)  # Reduce leverage for stability
+
+    def _bot_signature(self, bot: CompactBotConfig):
+        """Create a hashable signature for uniqueness checks based on indices and rounded parameters."""
+        # Use first parameter rounded to integer for signature stability and indices list
+        idxs = tuple(int(i) for i in bot.indicator_indices[:bot.num_indicators])
+        params = tuple(int(round(float(bot.indicator_params[i][0]))) for i in range(bot.num_indicators))
+        return (bot.num_indicators, idxs, params, int(bot.leverage), round(bot.risk_param, 3))
+
+    def _enforce_directional_and_unique(self, bots: List[CompactBotConfig]):
+        """Enforce directional-only indicators and uniqueness across generated bots.
+
+        This mutates the bot list in-place, clears non-directional indicators by replacing them
+        with directional ones, and ensures uniqueness of indicator combinations using a
+        per-population `seen` set and the `used_combinations` cache.
+        """
+        # Directional indicator index ranges: MA-family (0-11), Momentum (12-19), Trend (26-35), MACD (26)
+        directional_indices = list(range(0, 12)) + list(range(12, 20)) + list(range(26, 36))
+        directional_choices = [np.uint8(i) for i in directional_indices if i < self.num_indicators]
+        if not directional_choices:
+            directional_choices = [np.uint8(26)]  # fallback to MACD if meta-data incorrect
+
+        seen = set()
+        for bot in bots:
+            # Ensure min_indicators enforced (some CSV bots may have fewer)
+            if bot.num_indicators < self.min_indicators:
+                for i in range(bot.num_indicators, min(self.min_indicators, MAX_INDICATORS_PER_BOT)):
+                    # set to directional indicator
+                    rep = int(self._rng.choice(directional_choices))
+                    bot.indicator_indices[i] = np.uint8(rep)
+                    bot.indicator_params[i][0] = 10.0
+                bot.num_indicators = min(self.min_indicators, MAX_INDICATORS_PER_BOT)
+
+            # Replace any non-directional indicators with directional ones
+            for i in range(bot.num_indicators):
+                idx = int(bot.indicator_indices[i])
+                if idx not in directional_indices or idx == 0:
+                    # pick a random directional indicator to replace
+                    replacement = int(self._rng.choice(directional_choices))
+                    bot.indicator_indices[i] = np.uint8(replacement)
+                    # Set a short period default where applicable
+                    bot.indicator_params[i][0] = 10.0
+
+            # Ensure at least one directional indicator and short period tuning
+            self._ensure_directional_indicators([bot])
+
+            # Now ensure uniqueness across population and global cache
+            sig = self._bot_signature(bot)
+            tries = 0
+            while (sig in seen or sig in self.used_combinations) and tries < 50:
+                # Apply mutation: change first indicator to a different directional one
+                pos = 0 if bot.num_indicators > 0 else 0
+                new_idx = int(self._rng.choice(directional_choices))
+                bot.indicator_indices[pos] = np.uint8(new_idx)
+                bot.indicator_params[pos][0] = float(max(5.0, int(self._rng.randint(5, 25))))
+                sig = self._bot_signature(bot)
+                tries += 1
+            seen.add(sig)
+            self.used_combinations.add(sig)
     
     def estimate_vram(self) -> dict:
         """Estimate VRAM usage."""
@@ -471,3 +591,7 @@ class CompactBotGenerator:
             'total_mb': total_mb,
             'total_bytes': int(total_mb * 1024 * 1024)
         }
+
+    def clear_used_combinations(self):
+        """Clear the global used combinations cache (for refilling or fresh generation)."""
+        self.used_combinations.clear()
