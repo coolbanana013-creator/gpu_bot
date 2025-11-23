@@ -139,17 +139,11 @@ SIGNAL_CONSENSUS_THRESHOLD = 1.0  # 100% unanimous consensus (ALL indicators mus
 # ============================================================================
 # SURVIVAL FILTER / SELECTION THRESHOLDS (GA Evolver)
 # ============================================================================
-# Minimum average profit percentage required to survive (default: -2.0 -> allow small losses for diversity)
-MIN_SURVIVAL_AVG_PROFIT_PCT = -2.0
+# Minimum average profit percentage required to survive (must be positive)
+MIN_SURVIVAL_AVG_PROFIT_PCT = 0.0
 
-# Percentage of profitable cycles in early generations (0-2)
-MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_EARLY = 0.30
-
-# Percentage of profitable cycles in later generations (3+)
-MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_LATE = 0.50
-
-# Maximum drawdown threshold to survive (e.g., 0.25 -> 25% max drawdown)
-MAX_SURVIVAL_DRAWDOWN = 0.25
+# Maximum drawdown threshold to survive (15%)
+MAX_SURVIVAL_DRAWDOWN = 0.15
 
 # ============================================================================
 # RISK MANAGEMENT CONFIGURATION

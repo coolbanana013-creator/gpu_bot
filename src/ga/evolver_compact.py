@@ -17,8 +17,6 @@ from ..utils.config import (
     TOP_BOTS_COUNT,
     RESULTS_FILE,
     MIN_SURVIVAL_AVG_PROFIT_PCT,
-    MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_EARLY,
-    MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_LATE,
     MAX_SURVIVAL_DRAWDOWN,
 )
 from ..indicators.factory import IndicatorFactory
@@ -409,26 +407,20 @@ class GeneticAlgorithmEvolver:
         Returns:
             Tuple of (surviving_bots, surviving_results) with 100% unique indicator combinations
         """
-        # Step 1: Filter bots where BOTH criteria are met:
-        # Use relaxed criteria for early generations (0-2) to preserve diversity
-        # Gradually tighten criteria in later generations
-        # Enforce the following survival criteria across generations:
-        # - Average profit per cycle > 0% (avg_profit_pct > 0)
-        # - Max drawdown across cycles <= 15% (<= 0.15)
-        # Use slightly relaxed cycle profitability threshold for early generations
-        # Read defaults from global config (can be overridden externally)
-        min_profit_pct = MIN_SURVIVAL_AVG_PROFIT_PCT
-        if generation <= 2:
-            min_profitable_cycles_pct = MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_EARLY
-        else:
-            min_profitable_cycles_pct = MIN_SURVIVAL_PROFITABLE_CYCLES_PCT_LATE
-        max_drawdown_threshold = MAX_SURVIVAL_DRAWDOWN
+        # Step 1: New survival criteria:
+        # - Max drawdown <= 15%
+        # - Positive average % profit across all cycles
+        # - Moderate bonus if all cycles have trades
+        # - Moderate bonus if win rate > 40%
+        # - Very big bonus if all cycles have positive profit
+        
+        max_drawdown_threshold = MAX_SURVIVAL_DRAWDOWN  # 15%
+        min_profit_pct = MIN_SURVIVAL_AVG_PROFIT_PCT  # 0.0 (positive)
         
         profitable_pairs = []
         eliminated_negative_profit = 0
         eliminated_high_drawdown = 0
         eliminated_no_cycles = 0
-        eliminated_no_trades = 0
         
         for bot, result in zip(population, results):
             # Calculate average profit percentage across all cycles
@@ -439,59 +431,34 @@ class GeneticAlgorithmEvolver:
             # Use average per-cycle profit percent rather than cumulative across cycles.
             avg_profit_pct = ((sum(result.per_cycle_pnl) / num_cycles) / self.initial_balance) * 100
             
-            # Check 1: Average profit threshold (generation-aware)
-            if avg_profit_pct < min_profit_pct:
+            # Check 1: Max drawdown threshold (must be <= 15%)
+            if result.max_drawdown > max_drawdown_threshold:
+                eliminated_high_drawdown += 1
+                continue
+            
+            # Check 2: Positive average profit (must be > 0%)
+            if avg_profit_pct <= min_profit_pct:
                 eliminated_negative_profit += 1
                 continue
             
-            # Check 2: Profitable cycles percentage (generation-aware)
-            profitable_cycles = sum(
-                1 for pnl in result.per_cycle_pnl if pnl > 0.0
-            )
-            profitable_pct = profitable_cycles / num_cycles if num_cycles > 0 else 0
-            if profitable_pct < min_profitable_cycles_pct:
-                eliminated_high_drawdown += 1  # Reuse counter for simplicity
-                continue
+            # Bot passed all criteria - compute score with bonuses
+            # Base score: average profit percentage
+            score = avg_profit_pct
             
-            # Check 3: Max drawdown threshold (global across cycles)
-            if result.max_drawdown >= max_drawdown_threshold:
-                eliminated_high_drawdown += 1
-                continue
-
-            # Check for trades in each cycle; log but do not eliminate by default
+            # Moderate bonus: all cycles have trades (10 points)
             all_cycles_have_trades = all(t > 0 for t in result.per_cycle_trades) if result.per_cycle_trades else False
-            if not all_cycles_have_trades:
-                eliminated_no_trades += 1
+            if all_cycles_have_trades:
+                score += 10.0
             
-            # Check 4: Minimum win rate threshold when optimizing for win rate
-            if prefer_win_rate and result.win_rate < 60.0:  # 60% minimum win rate for 90%+ target
-                eliminated_high_drawdown += 1
-                continue
+            # Moderate bonus: win rate > 40% (scaled bonus up to 20 points)
+            if result.win_rate > 40.0:
+                winrate_bonus = (result.win_rate - 40.0) * 0.5  # 0.5 points per % above 40%
+                score += min(winrate_bonus, 20.0)  # cap at 20 points
             
-            # Check 5: Require sufficient trades (at least 200 total)
-            if prefer_win_rate and result.total_trades < 200:
-                eliminated_high_drawdown += 1
-                continue
-            
-            # Bot passed all criteria
-            # Compute a score that optionally emphasizes win rate (for selecting top bots)
-            # Compute bonuses
+            # Very big bonus: all cycles have positive profit (50 points)
             all_cycles_positive = all(pnl > 0.0 for pnl in result.per_cycle_pnl) if result.per_cycle_pnl else False
-            winrate_bonus = max(0.0, result.win_rate - 50.0) * 0.5  # scaled bonus for >50% win rate
-            all_positive_bonus = 25.0 if all_cycles_positive else 0.0  # significant reward for consistency
-
-            if prefer_win_rate:
-                # Use win_rate ULTRA EXTREMELY heavily (200x weight for 90%+ target)
-                win_rate_weight = result.win_rate * 200.0
-                drawdown_penalty = result.max_drawdown * 100.0
-                score = avg_profit_pct + win_rate_weight - drawdown_penalty
-                # Apply bonuses
-                score += winrate_bonus + all_positive_bonus
-            else:
-                # Default scoring primarily by profit and penalize drawdown moderately
-                score = avg_profit_pct - (result.max_drawdown * 100.0 * 0.5)
-                # Apply bonuses
-                score += winrate_bonus + all_positive_bonus
+            if all_cycles_positive:
+                score += 50.0
 
             # Store combo so we can enforce unique combinations later
             combo = frozenset(bot.indicator_indices[:bot.num_indicators])
@@ -499,17 +466,13 @@ class GeneticAlgorithmEvolver:
         
         # Check if any bots passed
         if not profitable_pairs:
-            if generation <= 2:
-                log_error(f"SURVIVAL FILTER (Gen {generation}, RELAXED): {eliminated_negative_profit} high loss (>{min_profit_pct:.0f}%), {eliminated_high_drawdown} failed criteria, {eliminated_no_cycles} no cycles, 0 bots passed")
-                log_error(f"No bots met RELAXED criteria: avg profit > {min_profit_pct:.0f}% AND {min_profitable_cycles_pct*100:.0f}%+ cycles profitable AND max drawdown < {max_drawdown_threshold*100:.0f}%")
-            else:
-                log_error(f"SURVIVAL FILTER (Gen {generation}): {eliminated_negative_profit} high loss (>{min_profit_pct:.0f}%), {eliminated_high_drawdown} failed criteria, {eliminated_no_cycles} no cycles, 0 bots passed")
-                log_error(f"No bots met criteria: avg profit > {min_profit_pct:.0f}% AND {min_profitable_cycles_pct*100:.0f}%+ cycles profitable AND max drawdown < {max_drawdown_threshold*100:.0f}%")
+            log_error(f"SURVIVAL FILTER (Gen {generation}): {eliminated_negative_profit} non-positive profit, {eliminated_high_drawdown} high drawdown (>{max_drawdown_threshold*100:.0f}%), {eliminated_no_cycles} no cycles, 0 bots passed")
+            log_error(f"No bots met criteria: positive avg profit AND max drawdown <= {max_drawdown_threshold*100:.0f}%")
             log_error("Generating completely new population for next generation")
             # Return empty survivors - refill_population will generate all new bots
             return [], []
         
-        log_info(f"SURVIVAL FILTER: {eliminated_negative_profit} negative profit, {eliminated_high_drawdown} failed criteria, {eliminated_no_trades} missing trades cycles, {len(profitable_pairs)} bots passed")
+        log_info(f"SURVIVAL FILTER: {eliminated_negative_profit} non-positive profit, {eliminated_high_drawdown} high drawdown, {eliminated_no_cycles} no cycles, {len(profitable_pairs)} bots passed")
         
         # Step 2: Sort by either the provided scoring function or fitness score
         if prefer_win_rate:
