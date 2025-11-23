@@ -369,17 +369,17 @@ void compute_macd(__global OHLCVBar *ohlcv, int num_bars, int fast, int slow, in
     float fast_ema = 0.0f;
     float slow_ema = 0.0f;
     float signal_ema = 0.0f;
-    
     for (int bar = 0; bar < num_bars; bar++) {
-        // Warmup period: need at least 'slow' bars for valid MACD
+        // Always update EMA state for both fast and slow so the prev_em accumulators are correct.
+        // This avoids incorrect EMA initialization when 'fast' < 'slow' and we only start computing at 'bar >= slow'.
+        fast_ema = compute_ema_helper(ohlcv, bar, fast, fast_ema);
+        slow_ema = compute_ema_helper(ohlcv, bar, slow, slow_ema);
+
+        // Warmup period: need at least 'slow' bars to produce valid MACD; otherwise write neutral 0.0
         if (bar < slow) {
             out[bar] = 0.0f;  // Neutral value during warmup
             continue;
         }
-        
-        // Compute fast and slow EMAs
-        fast_ema = compute_ema_helper(ohlcv, bar, fast, fast_ema);
-        slow_ema = compute_ema_helper(ohlcv, bar, slow, slow_ema);
         
         // MACD line = fast EMA - slow EMA
         float macd_line = fast_ema - slow_ema;
@@ -408,11 +408,14 @@ void compute_macd(__global OHLCVBar *ohlcv, int num_bars, int fast, int slow, in
 }
 
 // ADX - Average Directional Index (1 indicator: 27)
-// Uses DOUBLE PRECISION for smoothed calculations
-// Also computes +DI and -DI internally (can be exported if needed)
+// Implements TA-Lib ADX algorithm:
+// 1. Smooth TR/+DM/-DM using Wilder's method
+// 2. Compute DX from smoothed DI values
+// 3. Initialize ADX as SMA of first 'period' DX values
+// 4. Continue smoothing ADX using Wilder's method
 void compute_adx(__global OHLCVBar *ohlcv, int num_bars, int period, __global float *out) {
-    if (num_bars < period + 1) {
-        for (int i = 0; i < num_bars; i++) out[i] = 0.0f;
+    if (num_bars < period * 2) {
+        for (int i = 0; i < num_bars; i++) out[i] = NAN;
         return;
     }
     
@@ -420,6 +423,7 @@ void compute_adx(__global OHLCVBar *ohlcv, int num_bars, int period, __global fl
     float smoothed_tr = 0.0f;
     float smoothed_plus_dm = 0.0f;
     float smoothed_minus_dm = 0.0f;
+    float dx_sum = 0.0f;  // For computing initial ADX as SMA
     float prev_adx = 0.0f;
     
     // Initial smoothing (sum of first period values)
@@ -435,18 +439,10 @@ void compute_adx(__global OHLCVBar *ohlcv, int num_bars, int period, __global fl
         smoothed_minus_dm += minus_dm;
     }
     
-    for (int bar = 0; bar < num_bars; bar++) {
-        // FIXED: ADX needs 2× period for full warmup (Code Review Fix #7)
-        // First period: compute +DI/-DI smoothing
-        // Second period: compute ADX smoothing
-        if (bar < period * 2) {
-            out[bar] = NAN;  // Mark as invalid instead of 0.0
-            continue;
-        }
-        
+    // Compute DX values for bars [period, period*2-1] and accumulate for SMA
+    for (int bar = period; bar < period * 2; bar++) {
         if (bar > period) {
-            // Wilder's smoothing: Smoothed = (Prev_Smoothed * (period - 1) + Current) / period
-            // Equivalent to: Smoothed = Prev_Smoothed - (Prev_Smoothed / period) + Current
+            // Update smoothed values using Wilder's method
             float tr = compute_true_range(ohlcv, bar);
             float plus_dm = (ohlcv[bar].high - ohlcv[bar-1].high > ohlcv[bar-1].low - ohlcv[bar].low) ?
                            fmax(ohlcv[bar].high - ohlcv[bar-1].high, 0.0f) : 0.0f;
@@ -458,44 +454,71 @@ void compute_adx(__global OHLCVBar *ohlcv, int num_bars, int period, __global fl
             smoothed_minus_dm = smoothed_minus_dm - (smoothed_minus_dm / (float)period) + minus_dm;
         }
         
-        // +DI and -DI (Directional Indicators)
+        // Compute DI and DX
         float plus_di = (smoothed_tr > 0.0f) ? (smoothed_plus_dm / smoothed_tr) * 100.0f : 0.0f;
         float minus_di = (smoothed_tr > 0.0f) ? (smoothed_minus_dm / smoothed_tr) * 100.0f : 0.0f;
-        
-        // DX (Directional Movement Index)
         float dx = (plus_di + minus_di > 0.0f) ?
                    (fabs(plus_di - minus_di) / (plus_di + minus_di)) * 100.0f : 0.0f;
         
-        // ADX is smoothed DX using Wilder's method
-        if (bar == period) {
-            prev_adx = dx;
+        dx_sum += dx;
+    }
+    
+    // Initialize ADX as SMA of first 'period' DX values
+    prev_adx = dx_sum / (float)period;
+    
+    // Fill output array
+    for (int bar = 0; bar < num_bars; bar++) {
+        if (bar < period * 2 - 1) {
+            out[bar] = NAN;
+        } else if (bar == period * 2 - 1) {
+            out[bar] = prev_adx;
         } else {
+            // Update smoothed values
+            float tr = compute_true_range(ohlcv, bar);
+            float plus_dm = (ohlcv[bar].high - ohlcv[bar-1].high > ohlcv[bar-1].low - ohlcv[bar].low) ?
+                           fmax(ohlcv[bar].high - ohlcv[bar-1].high, 0.0f) : 0.0f;
+            float minus_dm = (ohlcv[bar-1].low - ohlcv[bar].low > ohlcv[bar].high - ohlcv[bar-1].high) ?
+                            fmax(ohlcv[bar-1].low - ohlcv[bar].low, 0.0f) : 0.0f;
+            
+            smoothed_tr = smoothed_tr - (smoothed_tr / (float)period) + tr;
+            smoothed_plus_dm = smoothed_plus_dm - (smoothed_plus_dm / (float)period) + plus_dm;
+            smoothed_minus_dm = smoothed_minus_dm - (smoothed_minus_dm / (float)period) + minus_dm;
+            
+            // Compute DI and DX
+            float plus_di = (smoothed_tr > 0.0f) ? (smoothed_plus_dm / smoothed_tr) * 100.0f : 0.0f;
+            float minus_di = (smoothed_tr > 0.0f) ? (smoothed_minus_dm / smoothed_tr) * 100.0f : 0.0f;
+            float dx = (plus_di + minus_di > 0.0f) ?
+                       (fabs(plus_di - minus_di) / (plus_di + minus_di)) * 100.0f : 0.0f;
+            
+            // Smooth ADX using Wilder's method
             prev_adx = (prev_adx * (float)(period - 1) + dx) / (float)period;
+            out[bar] = prev_adx;
         }
-        
-        out[bar] = prev_adx;
     }
 }
 
 // Aroon (1 indicator: 28 - Aroon Up)
 void compute_aroon_up(__global OHLCVBar *ohlcv, int num_bars, int period, __global float *out) {
     for (int bar = 0; bar < num_bars; bar++) {
-        if (bar < period - 1) {
-            out[bar] = 50.0f;
+        // TA-Lib starts output at bar >= period
+        if (bar < period) {
+            out[bar] = NAN;
             continue;
         }
-        
-        // Find bars since highest high
-        int bars_since_high = 0;
-        float highest = ohlcv[bar].high;
-        
-        for (int i = 1; i < period; i++) {
-            if (ohlcv[bar - i].high > highest) {
-                highest = ohlcv[bar - i].high;
-                bars_since_high = i;
+
+        // exclusive window: from (bar - period) to (bar - 1)
+        int start = bar - period;
+        if (start < 0) start = 0;
+        float highest = ohlcv[start].high;
+        int highest_idx = start;
+        for (int i = start + 1; i < bar; i++) {
+            // pick right-most in case of tie
+            if (ohlcv[i].high >= highest) {
+                highest = ohlcv[i].high;
+                highest_idx = i;
             }
         }
-        
+        int bars_since_high = bar - highest_idx;
         out[bar] = ((float)(period - bars_since_high) / (float)period) * 100.0f;
     }
 }

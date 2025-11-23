@@ -12,6 +12,7 @@ from pathlib import Path
 
 from ..indicators.factory import IndicatorFactory
 from ..indicators.gpu_indicators import get_all_gpu_indicators, get_gpu_indicator_name, GPU_INDICATOR_COUNT
+from ..indicators.gpu_default_params import get_gpu_default_params
 from ..utils.validation import log_info, log_error
 
 
@@ -170,7 +171,8 @@ class CompactBotGenerator:
         max_risk_strategies: int = 5,
         min_leverage: int = 1,
         max_leverage: int = 125,  # Maximum leverage for testing
-        random_seed: int = 42
+        random_seed: int = 42,
+        force_gpu_default_params: bool = True
     ):
         """Initialize compact bot generator."""
         if gpu_context is None or gpu_queue is None:
@@ -200,6 +202,8 @@ class CompactBotGenerator:
         self.min_leverage = min_leverage
         self.max_leverage = max_leverage
         self.random_seed = random_seed
+        # If True, force all indicator_params to the GPU precompute defaults - ensures parity for now
+        self.force_gpu_default_params = force_gpu_default_params
         self._rng = np.random.RandomState(random_seed)  # Dedicated RNG instance
         # Track used indicator combinations across generations for diversity
         self.used_combinations = set()
@@ -216,6 +220,7 @@ class CompactBotGenerator:
         log_info(f"  Indicators: {min_indicators}-{max_indicators} per bot ({self.num_indicators} available)")
         log_info(f"  Risk strategies: {min_risk_strategies}-{max_risk_strategies} per bot")
         log_info(f"  Leverage: {min_leverage}-{max_leverage}x")
+
     
     def _compile_kernel(self):
         """Compile compact bot generation kernel."""
@@ -346,6 +351,16 @@ class CompactBotGenerator:
         
         # Remove or replace non-directional indicators and ensure uniqueness
         self._enforce_directional_and_unique(bots)
+        # If forcing GPU default params for parity, re-apply them after any additional
+        # mutations (uniqueness and directional enforcement) that may have altered params.
+        if self.force_gpu_default_params:
+            for bot in bots:
+                for i in range(bot.num_indicators):
+                    idx = int(bot.indicator_indices[i])
+                    p0, p1, p2 = get_gpu_default_params(idx)
+                    bot.indicator_params[i][0] = p0
+                    bot.indicator_params[i][1] = p1
+                    bot.indicator_params[i][2] = p2
         log_info(f"[OK] Generated {len(bots)} compact bots (128 bytes each) - directional enforced, unique combos updated")
         
         return bots
@@ -420,6 +435,15 @@ class CompactBotGenerator:
         # Update bot_id to requested value
         bot = bots[0]
         bot.bot_id = bot_id
+
+        # Re-apply GPU default params for single-bot generation after any modifications
+        if self.force_gpu_default_params:
+            for i in range(bot.num_indicators):
+                idx = int(bot.indicator_indices[i])
+                p0, p1, p2 = get_gpu_default_params(idx)
+                bot.indicator_params[i][0] = p0
+                bot.indicator_params[i][1] = p1
+                bot.indicator_params[i][2] = p2
         
         return bot
     
@@ -461,6 +485,16 @@ class CompactBotGenerator:
         # Ensure every bot contains at least one directional-producing indicator
         self._ensure_directional_indicators(bots)
 
+        # Optionally, force all generated indicator_params to GPU precompute defaults
+        if self.force_gpu_default_params:
+            for bot in bots:
+                for i in range(bot.num_indicators):
+                    idx = int(bot.indicator_indices[i])
+                    p0, p1, p2 = get_gpu_default_params(idx)
+                    bot.indicator_params[i][0] = p0
+                    bot.indicator_params[i][1] = p1
+                    bot.indicator_params[i][2] = p2
+
         return bots
 
     def _ensure_directional_indicators(self, bots: List[CompactBotConfig]):
@@ -472,6 +506,9 @@ class CompactBotGenerator:
         """
         # Directional indicator index ranges: MA-family (0-11), Momentum (12-19), Trend (26-35)
         directional_indices = set(list(range(0, 12)) + list(range(12, 20)) + list(range(26, 36)))
+        directional_choices = [np.uint8(i) for i in directional_indices if i < self.num_indicators]
+        if not directional_choices:
+            directional_choices = [np.uint8(26)]
         for bot in bots:
             # Ensure min_indicators enforced (some CSV bots may have fewer)
             if bot.num_indicators < self.min_indicators:
@@ -518,6 +555,16 @@ class CompactBotGenerator:
                 bot.risk_param = max(bot.risk_param, 0.02)  # 2% risk per trade by default
                 if bot.leverage > 50:
                     bot.leverage = min(10, bot.leverage)  # Reduce leverage for stability
+
+            # Ensure every indicator_param entry is populated with sensible GPU-defaults
+            # If kernel or generator left param0 == 0.0 (not set), fill with GPU precompute defaults
+            for i in range(bot.num_indicators):
+                idx = int(bot.indicator_indices[i])
+                defaults = get_gpu_default_params(idx)
+                # If any param is zero, fill with defaults for parity and future parameterized GPU support
+                for p in range(3):
+                    if bot.indicator_params[i][p] == 0.0 or np.isnan(bot.indicator_params[i][p]):
+                        bot.indicator_params[i][p] = defaults[p]
 
     def _bot_signature(self, bot: CompactBotConfig):
         """Create a hashable signature for uniqueness checks based on indices and rounded parameters."""

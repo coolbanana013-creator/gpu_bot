@@ -2679,39 +2679,111 @@ class CompactBacktester:
         self.memory_usage['indicators_mb'] = indicator_bytes / (1024 * 1024)
         
         # === MEMORY USAGE ANALYSIS === (removed verbose logging for cleaner output)
-        
-        # Execute precompute kernel
-        # Increased work items per indicator for better GPU utilization
-        # 50 indicators × 512 work items per indicator = 25,600 total work items
-        # Each work item processes ~235 bars (for 4,320 bar chunks)
-        # Better utilizes 80 compute units on Intel UHD 630
-        kernel = self._precompute_kernel
-        global_size = (self.NUM_INDICATORS, 512)  # 2D: (indicators, work_items_per_indicator)
-        local_size = (1, 512)  # Work group size
-        
-        try:
-            kernel(
-                self.queue,
-                global_size,
-                local_size,
-                ohlcv_buf,               # Input: OHLCV data
-                np.int32(num_bars),      # Number of bars
-                indicators_buf           # Output: Indicator values
-            )
-            
-            self.queue.finish()
-            
-        except cl.RuntimeError as e:
-            log_error(f"Precompute kernel execution failed: {e}")
-            # Cleanup on error
-            ohlcv_buf.release()
-            indicators_buf.release()
-            raise
-        except Exception as e:
-            log_error(f"Unexpected error in precompute kernel: {e}")
-            ohlcv_buf.release()
-            indicators_buf.release()
-            raise
+        # IMPORTANT: Use batched precompute to avoid large kernel compile/runtime issues
+        # that can corrupt indicator outputs on some devices (esp. Intel integrated GPUs).
+        KERNEL_PATH = Path(__file__).resolve().parents[1] / 'gpu_kernels' / 'precompute_all_indicators.cl'
+        kernel_base_src = KERNEL_PATH.read_text()
+
+        # Batch indicators to avoid huge compiled kernel sizes; this improves stability
+        # and avoids rare cross-indicator buffer corruption due to register pressure.
+        batch_size = 8  # compute 8 indicators per compiled kernel batch
+        indicator_ids = list(range(self.NUM_INDICATORS))
+        for b in range(0, len(indicator_ids), batch_size):
+            batch_ids = indicator_ids[b:b + batch_size]
+            # Build wrapper kernel that calls functions explicitly in ascending order
+            call_lines = []
+            # Map indicator ids to compute function calls (matching GPU kernel)
+            id_to_call = {
+                0: 'compute_sma(ohlcv, num_bars, 5, &indicators_out[0 * num_bars]);',
+                1: 'compute_sma(ohlcv, num_bars, 10, &indicators_out[1 * num_bars]);',
+                2: 'compute_sma(ohlcv, num_bars, 20, &indicators_out[2 * num_bars]);',
+                3: 'compute_sma(ohlcv, num_bars, 50, &indicators_out[3 * num_bars]);',
+                4: 'compute_sma(ohlcv, num_bars, 100, &indicators_out[4 * num_bars]);',
+                5: 'compute_sma(ohlcv, num_bars, 200, &indicators_out[5 * num_bars]);',
+                6: 'compute_ema(ohlcv, num_bars, 5, &indicators_out[6 * num_bars]);',
+                7: 'compute_ema(ohlcv, num_bars, 10, &indicators_out[7 * num_bars]);',
+                8: 'compute_ema(ohlcv, num_bars, 20, &indicators_out[8 * num_bars]);',
+                9: 'compute_ema(ohlcv, num_bars, 50, &indicators_out[9 * num_bars]);',
+                10: 'compute_ema(ohlcv, num_bars, 100, &indicators_out[10 * num_bars]);',
+                11: 'compute_ema(ohlcv, num_bars, 200, &indicators_out[11 * num_bars]);',
+                12: 'compute_rsi(ohlcv, num_bars, 7, &indicators_out[12 * num_bars]);',
+                13: 'compute_rsi(ohlcv, num_bars, 14, &indicators_out[13 * num_bars]);',
+                14: 'compute_rsi(ohlcv, num_bars, 21, &indicators_out[14 * num_bars]);',
+                15: 'compute_stochastic(ohlcv, num_bars, 14, 3, &indicators_out[15 * num_bars]);',
+                16: 'compute_stochrsi(ohlcv, num_bars, 14, &indicators_out[16 * num_bars], &indicators_out[13 * num_bars]);',
+                17: 'compute_momentum(ohlcv, num_bars, 10, &indicators_out[17 * num_bars]);',
+                18: 'compute_roc(ohlcv, num_bars, 10, &indicators_out[18 * num_bars]);',
+                19: 'compute_willr(ohlcv, num_bars, 14, &indicators_out[19 * num_bars]);',
+                20: 'compute_atr(ohlcv, num_bars, 14, &indicators_out[20 * num_bars]);',
+                21: 'compute_atr(ohlcv, num_bars, 20, &indicators_out[21 * num_bars]);',
+                22: 'compute_natr(ohlcv, num_bars, 14, &indicators_out[22 * num_bars], &indicators_out[20 * num_bars]);',
+                23: 'compute_bollinger_bands(ohlcv, num_bars, 20, 2.0f, &indicators_out[23 * num_bars], &indicators_out[24 * num_bars]);',
+                25: 'compute_keltner(ohlcv, num_bars, 20, &indicators_out[25 * num_bars], &indicators_out[21 * num_bars]);',
+                26: 'compute_macd(ohlcv, num_bars, 12, 26, 9, &indicators_out[26 * num_bars]);',
+                27: 'compute_adx(ohlcv, num_bars, 14, &indicators_out[27 * num_bars]);',
+                28: 'compute_aroon_up(ohlcv, num_bars, 25, &indicators_out[28 * num_bars]);',
+                29: 'compute_cci(ohlcv, num_bars, 20, &indicators_out[29 * num_bars]);',
+                30: 'compute_dpo(ohlcv, num_bars, 20, &indicators_out[30 * num_bars]);',
+                31: 'compute_psar(ohlcv, num_bars, 0.02f, 0.2f, &indicators_out[31 * num_bars]);',
+                32: 'compute_supertrend(ohlcv, num_bars, 10, 3.0f, &indicators_out[32 * num_bars], &indicators_out[20 * num_bars]);',
+                33: 'compute_trend_strength(ohlcv, num_bars, 20, &indicators_out[33 * num_bars]);',
+                34: 'compute_trend_strength(ohlcv, num_bars, 50, &indicators_out[34 * num_bars]);',
+                35: 'compute_trend_strength(ohlcv, num_bars, 100, &indicators_out[35 * num_bars]);',
+                36: 'compute_obv(ohlcv, num_bars, &indicators_out[36 * num_bars]);',
+                37: 'compute_vwap(ohlcv, num_bars, &indicators_out[37 * num_bars]);',
+                38: 'compute_mfi(ohlcv, num_bars, 14, &indicators_out[38 * num_bars]);',
+                39: 'compute_ad(ohlcv, num_bars, &indicators_out[39 * num_bars]);',
+                40: 'compute_volume_sma(ohlcv, num_bars, 20, &indicators_out[40 * num_bars]);',
+                41: 'compute_pivot_points(ohlcv, num_bars, &indicators_out[41 * num_bars]);',
+                42: 'compute_fractal_high(ohlcv, num_bars, 5, &indicators_out[42 * num_bars]);',
+                43: 'compute_fractal_low(ohlcv, num_bars, 5, &indicators_out[43 * num_bars]);',
+                44: 'compute_support_resistance(ohlcv, num_bars, 20, &indicators_out[44 * num_bars]);',
+                45: 'compute_price_channel(ohlcv, num_bars, 20, &indicators_out[45 * num_bars]);',
+                46: 'compute_hl_range(ohlcv, num_bars, &indicators_out[46 * num_bars]);',
+                47: 'compute_close_position(ohlcv, num_bars, &indicators_out[47 * num_bars]);',
+                48: 'compute_price_acceleration(ohlcv, num_bars, 10, &indicators_out[48 * num_bars]);',
+                49: 'compute_volume_roc(ohlcv, num_bars, 10, &indicators_out[49 * num_bars]);',
+            }
+            # Build id-to-call using local subset indices so the wrapper writes into
+            # a temporary subset buffer (indices 0..subset_count-1). We'll later
+            # copy each local region into the global indicators buffer at the correct offset.
+            for local_iid, iid in enumerate(batch_ids):
+                if iid in id_to_call:
+                    # Use the global-index call string (we'll run into a subset buffer
+                    # that mirrors the full indicator layout and copy only the relevant
+                    # sections into the main output buffer).
+                    call_lines.append(id_to_call[iid])
+
+            # Build wrapper kernel
+            wrapper = '\n__kernel void precompute_subset(__global OHLCVBar *ohlcv, const int num_bars, __global float *indicators_out) {\n    if (get_global_id(0) == 0) {\n'
+            for l in call_lines:
+                wrapper += '        ' + l + '\n'
+            wrapper += '    }\n}\n'
+            kernel_src = kernel_base_src + '\n' + wrapper
+            try:
+                prg = cl.Program(self.ctx, kernel_src).build()
+                subset_kernel = prg.precompute_subset
+                # Create a temporary subset buffer sized for the full indicator layout.
+                # This lets us use unmodified call strings that reference global positions.
+                subset_bytes = indicator_bytes
+                subset_buf = cl.Buffer(self.ctx, cl.mem_flags.WRITE_ONLY, size=subset_bytes)
+                # Execute subset kernel (single work item executes sequentially) writing to subset_buf
+                subset_kernel(self.queue, (1,), None, ohlcv_buf, np.int32(num_bars), subset_buf)
+                self.queue.finish()
+                # Copy subset buffer to the main indicators buffer at proper offsets
+                for local_index, iid in enumerate(batch_ids):
+                    # bytes offsets (global positions in subset_buf)
+                    # src_offset uses the global indicator index in subset_buf (since subset_buf mirrors full layout)
+                    src_offset = iid * num_bars * 4
+                    dst_offset = iid * num_bars * 4
+                    cl.enqueue_copy(self.queue, indicators_buf, subset_buf, byte_count=num_bars * 4, src_offset=src_offset, dest_offset=dst_offset)
+                self.queue.finish()
+                subset_buf.release()
+            except Exception as e:
+                log_error(f"Subset kernel build or execution failed: {e}")
+                ohlcv_buf.release()
+                indicators_buf.release()
+                raise
         
         # Clean up OHLCV buffer (not needed anymore)
         ohlcv_buf.release()

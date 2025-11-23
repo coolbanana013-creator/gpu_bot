@@ -155,6 +155,23 @@ class KucoinUniversalClient:
         except Exception as e:
             log_error(f"Failed to set leverage: {e}")
             return False
+
+    def get_account_balance(self, currency: str = 'USDT') -> Optional[Dict]:
+        """Fetch futures account balance using the direct client.
+
+        Args:
+            currency: Currency code, default 'USDT'
+        Returns:
+            Dict with balance info or None on failure
+        """
+        try:
+            balance = self.direct_client.get_account_balance(currency=currency)
+            if balance is not None:
+                log_info(f"Fetched account balance for {currency}")
+            return balance
+        except Exception as e:
+            log_error(f"Failed to fetch account balance: {e}")
+            return None
     
     @rate_limit_order
     def create_market_order(

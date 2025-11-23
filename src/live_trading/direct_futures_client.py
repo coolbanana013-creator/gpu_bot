@@ -101,6 +101,28 @@ class DirectKucoinFuturesClient:
         except Exception as e:
             print(f"❌ Request failed: {e}")
             return None
+
+    def get_account_balance(self, currency: str = 'USDT') -> Optional[Dict]:
+        """Get futures account balance (by currency). Returns a dict with balances or None."""
+        endpoint = f"/api/v1/accounts?currency={currency}"
+        headers = self._get_headers("GET", endpoint)
+        url = self.base_url + endpoint
+
+        try:
+            response = requests.get(url, headers=headers, timeout=10)
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('code') == '200000':
+                    return data.get('data', {})
+                else:
+                    print(f"❌ API Error: {data.get('msg', 'Unknown error')}")
+                    return None
+            else:
+                print(f"❌ HTTP {response.status_code}: {response.text}")
+                return None
+        except Exception as e:
+            print(f"❌ Request failed: {e}")
+            return None
     
     def create_market_order(self, symbol: str, side: str, size: int, leverage: int = 1) -> Optional[Dict]:
         """Create market order."""

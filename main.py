@@ -1044,6 +1044,18 @@ def run_mode2(gpu_context, gpu_queue):
             test_mode=True
         )
         
+        # Try to fetch account balance from API if available
+        account_balance_info = kucoin_client.get_account_balance(currency='USDT')
+        if account_balance_info and 'availableBalance' in account_balance_info:
+            try:
+                api_balance = float(account_balance_info.get('availableBalance', 0.0))
+                log_info(f"Fetched available balance from Kucoin: ${api_balance:.2f}")
+                # If user picked default initial_balance we override to use real account size
+                if initial_balance == float(get_user_input("Initial balance (USDT)", "1000.0", lambda x: float(x))):
+                    initial_balance = api_balance
+            except Exception:
+                log_warning("Failed to parse account balance from API; using provided initial_balance")
+
         # Fetch historical futures data for live paper trading
         log_info("Loading historical futures data...")
         fetcher = DataFetcher(exchange_type='futures')
@@ -1068,6 +1080,41 @@ def run_mode2(gpu_context, gpu_queue):
         # Convert DataFrame to numpy array
         ohlcv_array = ohlcv_data[['timestamp', 'open', 'high', 'low', 'close', 'volume']].values.astype(np.float32)
         
+        # Compute warmup bars based on bot config and save for auditing
+        warmup_bars = engine.indicator_calculator.compute_warmup_for_bot(bot_config)
+        log_info(f"Indicator warmup bars required: {warmup_bars}")
+
+        # Save warmup candles (last warmup_bars) and session historical candles for reproducibility
+        from pathlib import Path
+        from datetime import datetime
+        session_dir = Path('sessions') / 'paper_trading'
+        session_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        warmup_file = session_dir / f'warmup_bot{bot_config.bot_id}_{timestamp}.csv'
+        full_historical_file = session_dir / f'historical_bot{bot_config.bot_id}_{timestamp}.csv'
+
+        import csv
+        # Save full ohlcv for reproduction (careful - can be large)
+        with open(full_historical_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+            for row in ohlcv_array:
+                writer.writerow([int(row[0]), float(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[5])])
+
+        # Save warmup portion only (more compact)
+        warmup_start = max(0, len(ohlcv_array) - warmup_bars - 2)
+        warmup_candles = ohlcv_array[warmup_start:]
+        with open(warmup_file, 'w', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(['timestamp', 'open', 'high', 'low', 'close', 'volume'])
+            for row in warmup_candles:
+                writer.writerow([int(row[0]), float(row[1]), float(row[2]), float(row[3]), float(row[4]), float(row[5])])
+
+        log_info(f"Saved historical candles to {full_historical_file}")
+        log_info(f"Saved warmup candles to {warmup_file}")
+
+        
+
         # Process historical candles to warm up indicators
         for i in range(len(ohlcv_array)):
             timestamp_ms, open_, high, low, close, volume = ohlcv_array[i]
@@ -1159,6 +1206,18 @@ def run_mode2(gpu_context, gpu_queue):
                     "candles_processed": final_state.get('candles_processed', 0),
                     "bot_config": bot_config.to_dict()
                 }
+                # Add saved filenames for reproducibility
+                try:
+                    session_data['warmup_file'] = str(warmup_file)
+                    session_data['historical_file'] = str(full_historical_file)
+                except Exception:
+                    pass
+                # Add saved filenames for reproducibility
+                try:
+                    session_data['warmup_file'] = str(warmup_file)
+                    session_data['historical_file'] = str(full_historical_file)
+                except Exception:
+                    pass
                 
                 session_file = session_dir / f"session_{timestamp}_bot{bot_config.bot_id}.json"
                 with open(session_file, 'w') as f:
@@ -1344,6 +1403,18 @@ def run_mode3(gpu_context, gpu_queue):
             total_days=2
         )
         
+        # Try to fetch account balance via API to use as active balance (if not provided)
+        account_balance_info = kucoin_client.get_account_balance(currency='USDT')
+        if account_balance_info and 'availableBalance' in account_balance_info:
+            try:
+                api_balance = float(account_balance_info.get('availableBalance', 0.0))
+                log_info(f"Fetched available balance from Kucoin: ${api_balance:.2f}")
+                # Only override if initial_balance equals the default 1000.0
+                if initial_balance == 1000.0:
+                    initial_balance = api_balance
+            except Exception:
+                log_warning("Failed to parse account balance from API; using provided initial_balance")
+
         # Load data from parquet files
         from src.data_provider.loader import DataLoader
         loader = DataLoader(

@@ -33,7 +33,7 @@ class DataFetcher:
     Data is organized by pair/timeframe: data/{pair}/{timeframe}/{date}.parquet
     """
     
-    def __init__(self, data_dir: str = DATA_DIR, max_workers: int = 4, exchange_type: str = 'spot'):
+    def __init__(self, data_dir: str = DATA_DIR, max_workers: int = 4, exchange_type: str = 'spot', skip_load_markets: bool = False):
         """
         Initialize DataFetcher.
         
@@ -66,8 +66,11 @@ class DataFetcher:
                 })
                 log_info("Initialized Kucoin Futures API connection")
             
-            # Load markets to ensure symbols are available
-            self.exchange.load_markets()
+            # Load markets to ensure symbols are available. In test/offline
+            # environments, callers may choose to skip this (skip_load_markets)
+            # to avoid network calls.
+            if not skip_load_markets:
+                self.exchange.load_markets()
         except Exception as e:
             log_error(f"Failed to initialize Kucoin API: {e}")
             raise RuntimeError(f"Cannot initialize Kucoin API: {e}")
@@ -102,10 +105,13 @@ class DataFetcher:
                         standard_format = f"{base}{quote}"
                         perp_format = f"{base}/{quote}:{quote}"
                         
-                        # Check which format is available in the exchange
-                        if perp_format in self.exchange.markets:
+                        # If markets not loaded or not present, default to standard format
+                        markets = getattr(self.exchange, 'markets', None)
+                        if not markets:
+                            return standard_format
+                        if perp_format in markets:
                             return perp_format
-                        elif standard_format in self.exchange.markets:
+                        elif standard_format in markets:
                             return standard_format
                         else:
                             # Default to standard format

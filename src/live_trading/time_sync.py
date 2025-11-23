@@ -22,7 +22,9 @@ class TimeSync:
         self.last_sync = 0
         self.sync_interval = 60000  # Sync every 60 seconds
         self.lock = Lock()
-        self._sync_now()
+        # Defer initial sync; call _sync_now when first needed to avoid
+        # network calls and prints at import time (which break tests on
+        # Windows consoles with cp1252 encoding).
     
     def _sync_now(self):
         """Fetch server time and calculate offset."""
@@ -40,10 +42,20 @@ class TimeSync:
                     self.offset_ms = server_time - local_time
                     self.last_sync = local_time
                     
-                print(f"⏰ Time sync: offset = {self.offset_ms} ms")
+                message = f"⏰ Time sync: offset = {self.offset_ms} ms"
+                try:
+                    print(message)
+                except UnicodeEncodeError:
+                    # Fallback to ASCII-only message if console encoding can't
+                    # encode emoji characters (common on Windows default CP1252).
+                    print(f"Time sync: offset = {self.offset_ms} ms")
                 return True
         except Exception as e:
-            print(f"⚠️  Time sync failed: {e}")
+            message = f"⚠️  Time sync failed: {e}"
+            try:
+                print(message)
+            except UnicodeEncodeError:
+                print(f"Time sync failed: {e}")
             with self.lock:
                 self.offset_ms = 0
         return False
@@ -61,17 +73,22 @@ class TimeSync:
             return current_time + self.offset_ms
 
 
-# Global time sync instance
-_time_sync = TimeSync()
+_time_sync = None  # Lazy-init to avoid import-time network calls
 
 
 def get_kucoin_server_time() -> int:
-    """Get Kucoin server time."""
+    """Get Kucoin server time, lazily creating the TimeSync instance if needed."""
+    global _time_sync
+    if _time_sync is None:
+        _time_sync = TimeSync()
     return _time_sync.get_server_time()
 
 
 def resync_time():
     """Force time resynchronization."""
+    global _time_sync
+    if _time_sync is None:
+        _time_sync = TimeSync()
     _time_sync._sync_now()
 
 
