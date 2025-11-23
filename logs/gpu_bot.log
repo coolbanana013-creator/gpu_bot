@@ -58854,3 +58854,408 @@ NameError: name 'get_fixed' is not defined
 2025-11-24 00:05:31,778 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
 2025-11-24 00:05:31,778 - src.utils.validation - INFO - Validating data integrity
 2025-11-24 00:05:31,781 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:24:01,729 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:24:02,469 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTC/USDT:USDT' for futures exchange
+2025-11-24 00:24:02,470 - src.utils.validation - INFO - Fetching 1 days of BTC/USDT:USDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:24:02,593 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:24:02,594 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:24:02,594 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:24:02,603 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:24:02,603 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:24:02,608 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:24:05,653 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:24:06,422 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTC/USDT:USDT' for futures exchange
+2025-11-24 00:24:06,423 - src.utils.validation - INFO - Fetching 1 days of BTC/USDT:USDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:24:06,449 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:24:06,450 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:24:06,450 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:24:06,454 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:24:06,454 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:24:06,456 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:24:12,067 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:24:12,801 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTC/USDT:USDT' for futures exchange
+2025-11-24 00:24:12,801 - src.utils.validation - INFO - Fetching 1 days of BTC/USDT:USDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:24:12,828 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:24:12,829 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:24:12,829 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:24:12,832 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:24:12,833 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:24:12,835 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:24:20,271 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:24:20,826 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTC/USDT:USDT' for futures exchange
+2025-11-24 00:24:20,827 - src.utils.validation - INFO - Fetching 1 days of BTC/USDT:USDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:24:20,829 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:24:20,829 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:24:20,829 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:24:20,832 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:24:20,832 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:24:20,834 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:24:30,940 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:24:31,513 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTC/USDT:USDT' for futures exchange
+2025-11-24 00:24:31,514 - src.utils.validation - INFO - Fetching 1 days of BTC/USDT:USDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:24:31,543 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:24:31,543 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:24:31,543 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:24:31,547 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:24:31,547 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:24:31,550 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:24:33,001 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:24:33,810 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTC/USDT:USDT' for futures exchange
+2025-11-24 00:24:33,811 - src.utils.validation - INFO - Fetching 1 days of BTC/USDT:USDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:24:33,838 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:24:33,839 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:24:33,839 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:24:33,843 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:24:33,845 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:24:33,847 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:24:37,428 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:24:37,429 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:24:37,430 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:24:37,485 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:24:37,486 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:24:37,486 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:24:37,493 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:24:37,494 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:24:37,498 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:24:43,330 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:24:43,331 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:24:43,331 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:24:43,337 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:24:43,338 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:24:43,338 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:24:43,344 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:24:43,345 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:24:43,348 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:24:50,654 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:24:50,655 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:24:50,655 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:24:50,658 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:24:50,658 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:24:50,658 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:24:50,662 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:24:50,662 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:24:50,665 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:25:03,699 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:25:03,700 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:25:03,700 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:25:03,702 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:25:03,703 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:25:03,703 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:25:03,707 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:25:03,707 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:25:03,710 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:25:35,801 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:25:35,802 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:25:35,802 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:25:35,806 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:25:35,807 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:25:35,808 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:25:35,814 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:25:35,814 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:25:35,820 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:26:34,608 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:26:34,609 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:26:34,609 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:26:34,613 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:26:34,613 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:26:34,613 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:26:34,617 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:26:34,617 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:26:34,619 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:28:16,666 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:28:16,667 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:28:16,669 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:28:16,751 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:28:16,752 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:28:16,752 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:28:16,779 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:28:16,779 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:28:16,784 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:28:17,702 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:28:17,702 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:28:17,703 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:28:17,707 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:28:17,708 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:28:17,708 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:28:17,713 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:28:17,713 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:28:17,716 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:28:18,695 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:28:18,695 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:28:18,695 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:28:18,699 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:28:18,699 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:28:18,699 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:28:18,702 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:28:18,702 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:28:18,706 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:28:19,553 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:28:19,553 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:28:19,553 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:28:19,557 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:28:19,557 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:28:19,557 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:28:19,561 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:28:19,561 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:28:19,563 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:28:20,413 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:28:20,414 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:28:20,414 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:28:20,416 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:28:20,416 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:28:20,417 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:28:20,420 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:28:20,420 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:28:20,423 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:28:21,299 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:28:21,300 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:28:21,300 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:28:21,303 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:28:21,303 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:28:21,303 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:28:21,308 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:28:21,308 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:28:21,311 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:28:22,241 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:28:22,241 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:28:22,241 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:28:22,243 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:28:22,244 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:28:22,244 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:28:22,248 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:28:22,248 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:28:22,250 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:28:29,440 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:28:29,440 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:28:29,440 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:28:29,443 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:28:29,443 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:28:29,443 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:28:29,446 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:28:29,446 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:28:29,448 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:28:36,761 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:28:36,762 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:28:36,763 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:28:36,765 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:28:36,765 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:28:36,766 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:28:36,771 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:28:36,772 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:28:36,775 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:29:02,029 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:29:02,032 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:29:02,033 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:29:02,268 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:29:02,269 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:29:02,271 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:29:02,319 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:29:02,321 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:29:02,339 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:29:02,586 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:29:02,587 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:29:02,590 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:29:02,598 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:29:02,598 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:29:02,599 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:29:02,606 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:29:02,607 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:29:02,611 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:29:02,849 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:29:02,849 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:29:02,850 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:29:02,855 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:29:02,856 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:29:02,857 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:29:02,862 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:29:02,862 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:29:02,867 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:29:03,090 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:29:03,090 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:29:03,091 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:29:03,095 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:29:03,095 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:29:03,096 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:29:03,101 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:29:03,102 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:29:03,109 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:29:09,864 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:29:09,865 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:29:09,866 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:29:09,874 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:29:09,875 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:29:09,876 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:29:09,888 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:29:09,888 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:29:09,898 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:30:40,393 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:30:40,398 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:30:40,401 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:30:40,521 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:30:40,521 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:30:40,522 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:30:40,561 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:30:40,562 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:30:40,582 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:30:48,845 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:30:48,846 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:30:48,847 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:30:48,855 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:30:48,856 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:30:48,857 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:30:48,864 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:30:48,865 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:30:48,869 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:30:49,140 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:30:49,141 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:30:49,142 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:30:49,148 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:30:49,149 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:30:49,149 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:30:49,159 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:30:49,159 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:30:49,164 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:07,686 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:07,687 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:07,689 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:07,695 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:07,695 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:07,696 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:07,703 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:07,703 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:07,708 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:08,003 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:08,003 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:08,004 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:08,010 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:08,011 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:08,012 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:08,022 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:08,023 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:08,028 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:08,310 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:08,312 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:08,312 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:08,430 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:08,431 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:08,433 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:08,444 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:08,444 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:08,456 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:12,016 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:12,017 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:12,018 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:12,022 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:12,023 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:12,024 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:12,031 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:12,031 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:12,035 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:33,780 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:33,781 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:33,782 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:33,788 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:33,790 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:33,791 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:33,799 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:33,801 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:33,806 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:34,057 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:34,058 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:34,059 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:34,064 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:34,064 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:34,065 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:34,074 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:34,074 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:34,080 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:34,700 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:34,701 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:34,702 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:34,707 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:34,708 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:34,708 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:34,714 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:34,714 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:34,719 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:34,925 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:34,925 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:34,927 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:34,932 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:34,933 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:34,933 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:34,940 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:34,942 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:34,947 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:35,185 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:35,186 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:35,186 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:35,190 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:35,191 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:35,191 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:35,196 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:35,197 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:35,202 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:40,508 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:40,508 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:40,509 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:40,513 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:40,514 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:40,514 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:40,520 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:40,521 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:40,525 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:40,718 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:40,719 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:40,721 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:40,725 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:40,726 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:40,726 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:40,733 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:40,734 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:40,741 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:40,917 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:40,918 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:40,919 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:40,924 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:40,925 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:40,925 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:40,932 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:40,933 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:40,940 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:41,170 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:41,171 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:41,172 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:41,179 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:41,180 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:41,181 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:41,187 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:41,188 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:41,192 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:41,430 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:41,432 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:41,433 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:41,437 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:41,438 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:41,439 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:41,445 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:41,446 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:41,452 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:41,647 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:41,648 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:41,649 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:41,656 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:41,658 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:41,658 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:41,665 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:41,666 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:41,674 - src.utils.validation - INFO - Data validation passed
+2025-11-24 00:31:41,908 - src.utils.validation - INFO - Initialized Kucoin Futures API connection
+2025-11-24 00:31:41,911 - src.utils.validation - INFO - Symbol 'BTC/USDT' normalized to 'BTCUSDT' for futures exchange
+2025-11-24 00:31:41,913 - src.utils.validation - INFO - Fetching 1 days of BTCUSDT 1m data ending 2025-11-22 (excludes today)
+2025-11-24 00:31:41,921 - src.utils.validation - INFO - [OK] All 1 data file(s) already cached - no downloading needed
+2025-11-24 00:31:41,923 - src.utils.validation - INFO - Data ready: 1 file(s) total (1 from cache, 0 newly downloaded)
+2025-11-24 00:31:41,926 - src.utils.validation - INFO - Loading 1 data files in parallel
+2025-11-24 00:31:41,937 - src.utils.validation - INFO - Loaded total of 1440 candles (excludes today's incomplete data)
+2025-11-24 00:31:41,938 - src.utils.validation - INFO - Validating data integrity
+2025-11-24 00:31:41,945 - src.utils.validation - INFO - Data validation passed
