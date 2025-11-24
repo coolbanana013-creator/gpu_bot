@@ -33,3 +33,13 @@ def test_normalize_prefers_swap_perpetual():
     df.contract_type = 'perpetual'
     norm = df._normalize_symbol('BTC/USDT')
     assert norm == 'XBT/USDT:USDT' or norm == 'BTC/USDT:USDT'
+
+
+def test_normalize_by_market_id_prefers_id_lookup():
+    df = DataFetcher(exchange_type='futures', skip_load_markets=True)
+    # Simulate markets_by_id mapping where the id is 'XBTUSDTM'
+    df.exchange.markets_by_id = {
+        'XBTUSDTM': {'symbol': 'XBT/USDT:USDT', 'base': 'XBT', 'quote': 'USDT', 'contract': True, 'swap': True}
+    }
+    norm = df._normalize_symbol('xbtusdtm')
+    assert norm == 'XBT/USDT:USDT'

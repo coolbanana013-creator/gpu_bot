@@ -97,6 +97,18 @@ class DataFetcher:
         """
         # Remove underscores and slashes for parsing
         clean_pair = pair.replace('_', '').replace('/', '').replace(':', '').upper()
+
+        # If markets_by_id exists (exchange-specific ids like XBTUSDTM), prefer mapping by id first
+        try:
+            markets_by_id = getattr(self.exchange, 'markets_by_id', None)
+            if markets_by_id:
+                for mid, m in markets_by_id.items():
+                    if mid and mid.upper() == clean_pair:
+                        # Return the unified symbol stored in the market dict (ccxt uses 'symbol')
+                        return m.get('symbol') or mid
+        except Exception:
+            # ignore any errors and fall through to heuristic matching
+            pass
         
         # Extract base and quote (assuming standard pairs like BTCUSDT, ETHUSDT)
         # Common quote currencies

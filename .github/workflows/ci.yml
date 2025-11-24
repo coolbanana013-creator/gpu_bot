@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, revert-to-v1.8.1, '**' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run offline tests
+        env:
+          PYTHONIOENCODING: utf-8
+          SKIP_LOAD_MARKETS: '1'
+        run: |
+          python -m pytest -q tests/test_debug_scripts.py
+          python -m pytest -q tests/test_indicator_parity.py
+      - name: Run debug wrappers
+        env:
+          PYTHONIOENCODING: utf-8
+          SKIP_LOAD_MARKETS: '1'
+        run: |
+          python scripts/tools/run_all_debug_tests.py
+
+  integration:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run integration tests (manual)
+        env:
+          PYTHONIOENCODING: utf-8
+          RUN_INTEGRATION_TESTS: '1'
+          # Supply KUCOIN_ credentials in repo secrets when enabling this workflow
+        run: |
+          python -m pytest -q tests/test_fetcher_perpetual_symbols.py
