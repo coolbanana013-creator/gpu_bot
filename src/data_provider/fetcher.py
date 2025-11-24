@@ -98,16 +98,20 @@ class DataFetcher:
         # Remove underscores and slashes for parsing
         clean_pair = pair.replace('_', '').replace('/', '').replace(':', '').upper()
 
-        # If markets_by_id exists (exchange-specific ids like XBTUSDTM), prefer mapping by id first
+        # Check if caller passed a raw market id that matches markets_by_id (e.g., 'XBTUSDTM')
+        markets_by_id_exact_fallback = None
         try:
             markets_by_id = getattr(self.exchange, 'markets_by_id', None)
             if markets_by_id:
+                # Prefer returning a contract market for exact id names; otherwise keep a fallback
                 for mid, m in markets_by_id.items():
                     if mid and mid.upper() == clean_pair:
-                        # Return the unified symbol stored in the market dict (ccxt uses 'symbol')
-                        return m.get('symbol') or mid
+                        if m.get('contract', False):
+                            return m.get('symbol') or mid
+                        markets_by_id_exact_fallback = m.get('symbol') or mid
+                # do not return fallback now; allow heuristic search to prefer contracts
         except Exception:
-            # ignore any errors and fall through to heuristic matching
+            # ignore and continue
             pass
         
         # Extract base and quote (assuming standard pairs like BTCUSDT, ETHUSDT)
@@ -141,6 +145,44 @@ class DataFetcher:
                         swap_candidates = []
                         future_candidates = []
                         generic_candidates = []
+
+                        # Prefer markets_by_id mapping (exchange-specific codes like XBTUSDTM)
+                        markets_by_id = getattr(self.exchange, 'markets_by_id', None)
+                        if markets_by_id:
+                            # Try to find an id match with candidates such as XBTUSDTM and BTCUSDTM and alias variants
+                            # The incoming pair may be 'BTC/USDT' or 'BTCUSDT' or 'XBTUSDTM'. Accept all.
+                            ids_to_try = [clean_pair]
+                            # Add a variant with 'M' suffix for common KuCoin perpetual id
+                            if not clean_pair.endswith('M'):
+                                ids_to_try.append(clean_pair + 'M')
+                            # Add XBT/BTC alias variations for ids
+                            if 'BTC' in clean_pair and 'XBT' not in clean_pair:
+                                ids_to_try.append(clean_pair.replace('BTC', 'XBT'))
+                                # also add M-suffixed alias
+                                if not clean_pair.endswith('M'):
+                                    ids_to_try.append(clean_pair.replace('BTC', 'XBT') + 'M')
+                            if 'XBT' in clean_pair and 'BTC' not in clean_pair:
+                                ids_to_try.append(clean_pair.replace('XBT', 'BTC'))
+                                if not clean_pair.endswith('M'):
+                                    ids_to_try.append(clean_pair.replace('XBT', 'BTC') + 'M')
+                            for cid in ids_to_try:
+                                try:
+                                    if cid in markets_by_id:
+                                        m = markets_by_id[cid]
+                                        # If contract is true and matches desired type preference
+                                        if m.get('contract', False):
+                                            if desired_type == 'perpetual' and m.get('swap', False):
+                                                return m.get('symbol')
+                                            if desired_type == 'future' and m.get('future', False):
+                                                return m.get('symbol')
+                                            # If no preference, pick swap > future > others
+                                            if desired_type is None:
+                                                if m.get('swap', False):
+                                                    return m.get('symbol')
+                                                if m.get('future', False):
+                                                    return m.get('symbol')
+                                except Exception:
+                                    continue
 
                         for m in markets.values():
                             try:
@@ -183,6 +225,9 @@ class DataFetcher:
                             return perp_unified
                         if standard_format in markets:
                             return standard_format
+                        # If we had a markets_by_id exact fallback (non-contract) prefer it now
+                        if markets_by_id_exact_fallback:
+                            return markets_by_id_exact_fallback
                         # fallback to unadorned id string
                         return standard_format
         
