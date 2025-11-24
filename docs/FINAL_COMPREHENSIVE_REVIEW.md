@@ -293,6 +293,12 @@ $env:KUCOIN_SANDBOX='true'  # Use sandbox
 
 # Run tests
 python tests/test_api_endpoints.py
+
+# Optional: To run tests offline and avoid calling exchange APIs, set:
+# ```powershell
+# $env:SKIP_LOAD_MARKETS='1'
+# $env:DATA_FETCHER_SKIP_LOAD_MARKETS='1'
+# ```
 ```
 
 ### **3.3 Expected Results**

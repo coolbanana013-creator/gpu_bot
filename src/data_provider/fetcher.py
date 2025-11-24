@@ -33,7 +33,7 @@ class DataFetcher:
     Data is organized by pair/timeframe: data/{pair}/{timeframe}/{date}.parquet
     """
     
-    def __init__(self, data_dir: str = DATA_DIR, max_workers: int = 4, exchange_type: str = 'spot', skip_load_markets: bool = False):
+    def __init__(self, data_dir: str = DATA_DIR, max_workers: int = 4, exchange_type: str = 'spot', skip_load_markets: bool = False, contract_type: str = None):
         """
         Initialize DataFetcher.
         
@@ -46,6 +46,14 @@ class DataFetcher:
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.max_workers = max_workers
         self.exchange_type = exchange_type
+        # Accept 'perpetual', 'future', or None (auto); environment variable overrides
+        self.contract_type = contract_type or os.environ.get('DATA_FETCHER_CONTRACT_TYPE')
+        # If the caller didn't explicitly request whether to skip loading markets,
+        # allow environment variables to override for testing/offline use.
+        if not skip_load_markets:
+            env_skip = os.environ.get('SKIP_LOAD_MARKETS') or os.environ.get('DATA_FETCHER_SKIP_LOAD_MARKETS')
+            if env_skip and env_skip.lower() in ('1', 'true', 'yes'):
+                skip_load_markets = True
         
         # Initialize Kucoin exchange
         try:
@@ -102,59 +110,68 @@ class DataFetcher:
                     else:
                         # Futures/SWAP format: Prefer unified swap symbol
                         standard_format = f"{base}{quote}"
-                        unified_swap = f"{base}/{quote}:{quote}"
+                        perp_unified = f"{base}/{quote}:{quote}"
 
-                        # We may have differing symbol ids (e.g., XBT vs BTC), so attempt
-                        # to resolve via loaded markets when possible to pick the 'swap'
-                        # contract symbol (perpetual) first.
                         markets = getattr(self.exchange, 'markets', None)
-                        if markets:
-                            # Preferred: any market with swap == True, base==base or alt base
-                            # Candidate bases to account for XBT/BTC differences
-                            alt_base_candidates = {base}
-                            if base == 'BTC':
-                                alt_base_candidates.add('XBT')
-                            elif base == 'XBT':
-                                alt_base_candidates.add('BTC')
+                        if not markets:
+                            # No markets loaded (skipped) — return default standard format
+                            return standard_format
 
-                            # First, try a direct unified symbol lookup
-                            if unified_swap in markets:
-                                return unified_swap
+                        desired_type = self.contract_type  # 'perpetual' or 'future' or None
 
-                            # If not a direct lookup, iterate markets to find a swap/perpetual
-                            # contract that matches base/quote
-                            for symbol, mkt in markets.items():
-                                try:
-                                    props = mkt if isinstance(mkt, dict) else {}
-                                    mkt_base = props.get('base')
-                                    mkt_quote = props.get('quote')
-                                    mkt_swap = props.get('swap') or props.get('contract') or False
-                                    mkt_settle = props.get('settle')
-                                    # Prefer linear swap (settle == quote) or any swap
-                                    if mkt_base in alt_base_candidates and mkt_quote == quote and mkt_swap:
-                                        return symbol
-                                except Exception:
+                        # Build candidate base forms (XBT <-> BTC)
+                        base_candidates = [base]
+                        if base == 'BTC' and 'XBT' not in base_candidates:
+                            base_candidates.append('XBT')
+                        if base == 'XBT' and 'BTC' not in base_candidates:
+                            base_candidates.append('BTC')
+
+                        swap_candidates = []
+                        future_candidates = []
+                        generic_candidates = []
+
+                        for m in markets.values():
+                            try:
+                                m_base = (m.get('base') or '').upper()
+                                m_quote = (m.get('quote') or '').upper()
+                                if m_base not in base_candidates or m_quote != quote:
                                     continue
+                                if not m.get('contract', False):
+                                    continue
+                                if m.get('swap', False):
+                                    swap_candidates.append(m.get('symbol'))
+                                elif m.get('future', False):
+                                    future_candidates.append(m.get('symbol'))
+                                else:
+                                    generic_candidates.append(m.get('symbol'))
+                            except Exception:
+                                continue
 
-                            # As a last resort, check for exchange-specific IDs that may end with
-                            # 'M' (KuCoin uses symbols like 'XBTUSDTM' for perpetuals)
-                            # Try with both base and alt base
-                            for cand_base in list(alt_base_candidates):
-                                cand_id = f"{cand_base}{quote}M"
-                                # markets_by_id may map id->market; try to find market with this id
-                                markets_by_id = getattr(self.exchange, 'markets_by_id', None)
-                                if markets_by_id and cand_id in markets_by_id:
-                                    # Convert to the unified symbol
-                                    mkt = markets_by_id[cand_id]
-                                    if isinstance(mkt, list):
-                                        mkt = mkt[0]
-                                    symbol = mkt.get('symbol') if isinstance(mkt, dict) else None
-                                    if symbol:
-                                        return symbol
+                        # Apply desired contract preference
+                        if desired_type == 'perpetual':
+                            if swap_candidates:
+                                return swap_candidates[0]
+                            if future_candidates:
+                                return future_candidates[0]
+                        elif desired_type == 'future':
+                            if future_candidates:
+                                return future_candidates[0]
+                            if swap_candidates:
+                                return swap_candidates[0]
+                        else:
+                            if swap_candidates:
+                                return swap_candidates[0]
+                            if future_candidates:
+                                return future_candidates[0]
+                            if generic_candidates:
+                                return generic_candidates[0]
 
-                        # If markets not loaded or nothing matched, fall back to simple formats
-                        # Try the exchange-native 'id' pattern (no separators)
-                        # KuCoin often uses XBTUSDTM for perpetuals; attempt to guess
+                        # Try direct unified key fallback
+                        if perp_unified in markets:
+                            return perp_unified
+                        if standard_format in markets:
+                            return standard_format
+                        # fallback to unadorned id string
                         return standard_format
         
         # If no match found, return as-is (validation will catch errors later)

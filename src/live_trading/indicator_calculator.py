@@ -573,7 +573,91 @@ class RealTimeIndicatorCalculator:
             # ADX (27)
             elif indicator_index == 27:
                 period = int(param0) if param0 > 0 else int(_default_params(indicator_index)[0])
-                return talib.ADX(highs, lows, closes, timeperiod=period)[-1]
+                # Implement kernel-like ADX computation to match GPU exactly
+                def _kernel_adx(highs, lows, closes, period):
+                    n = len(closes)
+                    out = np.full(n, np.nan, dtype=np.float32)
+                    if n < period * 2:
+                        return out
+
+                    smoothed_tr = np.float32(0.0)
+                    smoothed_plus_dm = np.float32(0.0)
+                    smoothed_minus_dm = np.float32(0.0)
+                    dx_sum = np.float32(0.0)
+                    prev_adx = np.float32(0.0)
+
+                    # Initial smoothing using first 'period' bars (from 1..period inclusive)
+                    for i in range(1, period + 1):
+                        if i == 0:
+                            tr = np.float32(highs[i] - lows[i])
+                        else:
+                            hl = np.float32(highs[i] - lows[i])
+                            hc = np.float32(abs(highs[i] - closes[i - 1]))
+                            lc = np.float32(abs(lows[i] - closes[i - 1]))
+                            tr = np.float32(max(hl, max(hc, lc)))
+                        plus_dm = np.float32(0.0)
+                        minus_dm = np.float32(0.0)
+                        if highs[i] - highs[i - 1] > lows[i - 1] - lows[i]:
+                            plus_dm = np.float32(max(highs[i] - highs[i - 1], np.float32(0.0)))
+                        if lows[i - 1] - lows[i] > highs[i] - highs[i - 1]:
+                            minus_dm = np.float32(max(lows[i - 1] - lows[i], np.float32(0.0)))
+                        smoothed_tr = np.float32(smoothed_tr + tr)
+                        smoothed_plus_dm = np.float32(smoothed_plus_dm + plus_dm)
+                        smoothed_minus_dm = np.float32(smoothed_minus_dm + minus_dm)
+
+                    # Compute DX values and accumulate for SMA
+                    for bar in range(period, period * 2):
+                        if bar > period:
+                            # Update smoothed values using Wilder's method
+                            hl = np.float32(highs[bar] - lows[bar])
+                            hc = np.float32(abs(highs[bar] - closes[bar - 1]))
+                            lc = np.float32(abs(lows[bar] - closes[bar - 1]))
+                            tr = np.float32(max(hl, max(hc, lc)))
+                            plus_dm = np.float32(0.0)
+                            minus_dm = np.float32(0.0)
+                            if highs[bar] - highs[bar - 1] > lows[bar - 1] - lows[bar]:
+                                plus_dm = np.float32(max(highs[bar] - highs[bar - 1], np.float32(0.0)))
+                            if lows[bar - 1] - lows[bar] > highs[bar] - highs[bar - 1]:
+                                minus_dm = np.float32(max(lows[bar - 1] - lows[bar], np.float32(0.0)))
+                            smoothed_tr = np.float32(smoothed_tr - (smoothed_tr / np.float32(period)) + tr)
+                            smoothed_plus_dm = np.float32(smoothed_plus_dm - (smoothed_plus_dm / np.float32(period)) + plus_dm)
+                            smoothed_minus_dm = np.float32(smoothed_minus_dm - (smoothed_minus_dm / np.float32(period)) + minus_dm)
+
+                        plus_di = np.float32((smoothed_plus_dm / smoothed_tr) * 100.0) if smoothed_tr > 0.0 else np.float32(0.0)
+                        minus_di = np.float32((smoothed_minus_dm / smoothed_tr) * 100.0) if smoothed_tr > 0.0 else np.float32(0.0)
+                        dx = np.float32(((abs(plus_di - minus_di) / (plus_di + minus_di)) * 100.0) if (plus_di + minus_di) > 0.0 else np.float32(0.0))
+                        dx_sum = np.float32(dx_sum + dx)
+
+                    prev_adx = np.float32(dx_sum / np.float32(period))
+
+                    # Fill final output values
+                    for bar in range(n):
+                        if bar < period * 2 - 1:
+                            out[bar] = np.float32(np.nan)
+                        elif bar == period * 2 - 1:
+                            out[bar] = prev_adx
+                        else:
+                            hl = np.float32(highs[bar] - lows[bar])
+                            hc = np.float32(abs(highs[bar] - closes[bar - 1]))
+                            lc = np.float32(abs(lows[bar] - closes[bar - 1]))
+                            tr = np.float32(max(hl, max(hc, lc)))
+                            plus_dm = np.float32(0.0)
+                            minus_dm = np.float32(0.0)
+                            if highs[bar] - highs[bar - 1] > lows[bar - 1] - lows[bar]:
+                                plus_dm = np.float32(max(highs[bar] - highs[bar - 1], np.float32(0.0)))
+                            if lows[bar - 1] - lows[bar] > highs[bar] - highs[bar - 1]:
+                                minus_dm = np.float32(max(lows[bar - 1] - lows[bar], np.float32(0.0)))
+                            smoothed_tr = np.float32(smoothed_tr - (smoothed_tr / np.float32(period)) + tr)
+                            smoothed_plus_dm = np.float32(smoothed_plus_dm - (smoothed_plus_dm / np.float32(period)) + plus_dm)
+                            smoothed_minus_dm = np.float32(smoothed_minus_dm - (smoothed_minus_dm / np.float32(period)) + minus_dm)
+                            plus_di = np.float32((smoothed_plus_dm / smoothed_tr) * 100.0) if smoothed_tr > 0.0 else np.float32(0.0)
+                            minus_di = np.float32((smoothed_minus_dm / smoothed_tr) * 100.0) if smoothed_tr > 0.0 else np.float32(0.0)
+                            dx = np.float32(((abs(plus_di - minus_di) / (plus_di + minus_di)) * 100.0) if (plus_di + minus_di) > 0.0 else np.float32(0.0))
+                            prev_adx = np.float32((prev_adx * np.float32(period - 1) + dx) / np.float32(period))
+                            out[bar] = prev_adx
+                    return out
+
+                return float(_kernel_adx(highs32, lows32, closes32, period)[-1])
             
             # Aroon Up (28)
             elif indicator_index == 28:
